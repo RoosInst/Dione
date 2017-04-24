@@ -1,0 +1,15 @@
+CTZGJ8
+:INFO
+guru 
+logWindow
+logSm
+admin
+appTitle=Rtalk v1
+:ACTIONS,handler=RtAppLoader
+async,topic=admin/monitor/1,omap=+channel=whiteboard+className=rtalk.whiteboard.SmPortalWhiteboard
+sync,topic=admin/app/1,omap=+runLocal+channel=updateGuru+className=rtalk.remoteGuru.RemoteGuruPortal+remoteIp=192.168.56.15+update=true+backup=true
+async,topic=admin/app/1,omap=+runLocal+channel=rtalk+className=rtalk.SmPortalForRtalk+rtLaunch=RiRemoteViewTranscript:open+rtLoad=GAKRE8CABJADXV00+rtDebug=true+logSm=true
+
+:CHECKSUM
+168985
+zzN00

@@ -6,6 +6,7 @@ import Login from './components/login';
 import Dashboard from './components/dashboard';
 import AppGuru from './components/appGuru';
 import Users from './components/users';
+import MQTT from './components/MQTT';
 
 class App extends PureComponent {
 
@@ -52,9 +53,11 @@ class App extends PureComponent {
 
 
 	authenticate() {
+		<MQTT />
 		if (this.state.auth) {
 			return (
 	      <div>
+	
 	        <div className="nav-side-menu">
 	          <i className="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
 	          <div className="menu-list">

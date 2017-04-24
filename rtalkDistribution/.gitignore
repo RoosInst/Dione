@@ -1,0 +1,6 @@
+!/.gitignore
+.*
+guru/*
+tmp/*
+gurukey.dat
+moquette/bin/*_store.*
