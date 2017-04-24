@@ -1,0 +1,11 @@
+launch args
+
+updateGuruChannel=updateGuru boot=/Users/markroos/rtalkTest/bootRtalk.txt
+
+no update
+
+boot=/Users/markroos/rtalkTest/bootRtalk.txt
+
+to launch on OS X  ./startOsx
+
+

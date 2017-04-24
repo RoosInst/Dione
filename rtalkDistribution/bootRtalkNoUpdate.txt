@@ -1,0 +1,19 @@
+CTZGJ8
+:INFO
+guru 
+logWindow
+logSm
+admin
+appTitle=Rtalk v1
+:ACTIONS,handler=RtAppLoader
+async,topic=admin/monitor/1,omap=+channel=whiteboard+className=rtalk.whiteboard.SmPortalWhiteboard
+sync,topic=admin/app/1,omap=+runLocal+channel=console+className=rtalk.ConsolePortal
+async,topic=admin/app/1,omap=+runLocal+channel=rtalk+className=rtalk.SmPortalForRtalk+rtLaunch=RiRemoteViewTranscript:open+rtLoad=GAKRE8CAB39TNC00+rtDebug=true+logSm=true
+async,topic=console/register/1,omap=^choose+path=apps/guru/browser+title=mb guru+help=Java Based Browser+actionTopic=admin/app^runLocal+className=ri.app.guru.browser.GEU43Y2A+guruIp=127/0/0/1:1883
+async,topic=console/register/2,omap=choose+path=apps/rtalk/guru+title=rtalk guru+help=Rtalk Based Browser+actionTopic=rtalk/app^createSubscriber+className=RiRmtViewGuru^+viewDef+view=Browser
+async,topic=console/register/2,omap=choose+path=apps/rtalk/workspace+title=rtalk workspace+help=Rtalk Workspace+actionTopic=rtalk/app^createSubscriber+className=RiRemoteViewWorkspace^+viewDef+view=Workspace
+async,topic=console/register/2,omap=choose+path=apps/rtalk/code+title=rtalk code+help=Rtalk Code Browser+actionTopic=rtalk/app^createSubscriber+className=RiRmtViewCode^+viewDef+view=Browser
+
+:CHECKSUM
+168985
+zzN00
