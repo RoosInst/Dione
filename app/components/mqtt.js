@@ -19,7 +19,7 @@ const clientID = "JS" + Math.random().toString(16).substr(2, 6);  //ka mqtt sess
 const ra = clientID; //set return adress to client ID
 var cellID;  //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
 
-const mqttBroker = 'ws://localhost:8080';  // websocket port (ws) (init by rTalkDistribution/moquette/bin/moquette.sh)
+const mqttBroker = 'ws://localhost:8081';  // websocket port (ws) (init by rTalkDistribution/moquette/bin/moquette.sh)
 
 //class omapCbor_createSub {
 //	constructor () {
@@ -183,5 +183,8 @@ client.on('error', function(err) {
 });
 
 
-const Blank = () => {return;}
+const Blank = ({IsConnected}) => {
+	IsConnected({'mqttConnect': client.connected});
+	return <button />;
+	}
 export default Blank;
