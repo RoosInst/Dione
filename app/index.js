@@ -18,7 +18,8 @@ class App extends PureComponent {
 			dashboard: true,
 			profile: false,
 			appGuru: false,
-			users: false
+			users: false,
+			mqttConnect: false
 		};
 	}
 
@@ -53,11 +54,10 @@ class App extends PureComponent {
 
 
 	authenticate() {
-		<MQTT />
 		if (this.state.auth) {
 			return (
 	      <div>
-	
+		  	<MQTT IsConnected={(mqttConnect) => this.setState(mqttConnect)} />
 	        <div className="nav-side-menu">
 	          <i className="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
 	          <div className="menu-list">
