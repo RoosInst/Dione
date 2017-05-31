@@ -1,6 +1,6 @@
 .nav-side-menu {
   overflow: auto;
-  font-family: verdana;
+  /*font-family: verdana;*/
   font-size: 12px;
   font-weight: 200;
   background-color: #2e353d;
@@ -171,11 +171,13 @@ body {
 body {
   height: 100vh;
   background-color: #F0F0F0;
+  font-family: 'Source Sans Pro','HelveticaNeue-Light','Helvetica Neue Light','Helvetica Neue',Arial,Helvetica,sans-serif
 }
 
 #main .card > .card-header > i {
   cursor: pointer;
   color: grey;
+  margin-top: -2px;
 }
 
 #main .card > .card-header > i:hover {
@@ -184,3 +186,6 @@ body {
 }
 
 .card {margin-top: 15px;}
+.card-header {
+  padding: .75rem .75rem .75rem 1.25rem
+}
