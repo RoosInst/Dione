@@ -8,7 +8,7 @@ import Login from '../components/login';
 import Dashboard from '../components/dashboard';
 import AppGuru from '../components/appGuru';
 import Users from '../components/users';
-//import MQTT from '../components/mqtt';
+import MQTT from '../components/mqtt';
 
 class App extends Component {
 
@@ -40,22 +40,27 @@ class App extends Component {
 		if (state === true) return 'active'; else return '';
 	}
 
+
 	authenticate(auth) {
 		if (auth) {
 			return (
 	      <div>
-		  	{/*<MQTT IsConnected={(mqttConnect) => this.setState(mqttConnect)} />*/}
+		  	  <MQTT ClientID={this.props.clientID}
+							Connected={() => {this.props.sendAction('MQTT_CONNECTED')}}
+							Disconnected={() => {this.props.sendAction('MQTT_DISCONNECTED')}}
+							Reconnecting={() => {this.props.sendAction('MQTT_RECONNECTING')}}
+				  />
 	        <div className="nav-side-menu">
 	          <i className="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
 	          <div className="menu-list">
 	            <div className="brand">
-	              <img src="app/images/ri-logo-white-33.png" alt="Roos Instruments Logo" />
+	              <img src="/app/images/ri-logo-white-33.png" alt="Roos Instruments Logo" />
 	            </div>
 	            <ul id="menu-content" className="menu-content collapse out">
 	              <li onClick={() => {this.props.sendAction('ADD_DASHBOARD')}} className={`${this.returnActiveClass(this.props.dashboard)}`}><i className="fa fa-dashboard fa-lg"></i> Dashboard</li>
 	             <li data-toggle="collapse" data-target="#appList" className={`collapsed ${this.returnActiveClass(this.props.appGuru)}`}><i className="fa fa-folder fa-lg"></i>RI Applications<span className="arrow"></span></li>
 	              <ul className="sub-menu collapse" id="appList">
-	               <li onClick={() => {this.props.sendAction('ADD_APPGURU')}} className={`${this.returnActiveClass(this.props.appGuru)}`}>Guru</li>
+	               <li onClick={() => {this.props.sendAction('ADD_APPGURU')}} className={this.returnActiveClass(this.props.appGuru)}>Guru</li>
 	              </ul>
 	              <li data-toggle="collapse" data-target="#service" className={`collapsed ${this.returnActiveClass(this.props.services)}`}><i className="fa fa-globe fa-lg"></i> Services <span className="arrow"></span></li>
 	              <ul className="sub-menu collapse" id="service">
@@ -67,6 +72,10 @@ class App extends Component {
 	              <li onClick={() => {this.props.sendAction('ADD_USERS')}} className={`${this.returnActiveClass(this.props.users)}`}><i className="fa fa-users fa-lg"></i> Users</li>
 								<li onClick={() => {this.props.sendAction('DEAUTH')}}><i className="fa fa-sign-out fa-lg"></i> Sign Out</li>
 	            </ul>
+							<div className="mqttInfo">
+								<div className="pull-left">Client ID: {this.props.clientID}</div>
+								<div className="pull-right">Connection <div className={`pull-right connectionIcon ${this.props.mqttConnection}`} /></div>
+							</div>
 	          </div>
 	        </div>
 	        <div className="container" id="main">
@@ -95,13 +104,13 @@ class App extends Component {
 
 function mapStateToProps(state) {
   return {
-		clientID: state.ClientID,
+		clientID: state.clientID,
 		auth: state.auth,
 		dashboard: state.dashboard,
 		profile: state.profile,
 		appGuru: state.appGuru,
 		users: state.users,
-		//mqttConnect: state.mqttconnect
+	  mqttConnection: state.mqttConnection
   };
 }
 

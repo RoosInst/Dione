@@ -15,12 +15,11 @@ var mqtt    = require('mqtt');
 var cbor	= require('cbor');
 
 
-const Blank = ({IsConnected}) => {
-
+const MQTT = ({Connected, Disconnected, Reconnecting, ClientID}) => {
 
 	//identifications
- const clientID='';
-	const ra = clientID; //set return adress to client ID
+ console.log(ClientID);
+	const ra = ClientID; //set return adress to client ID
 	var cellID;  //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
 
 	const mqttBroker = 'ws://localhost:8081';  // websocket port (ws) (init by rTalkDistribution/moquette/bin/moquette.sh)
@@ -46,16 +45,16 @@ const Blank = ({IsConnected}) => {
 	//console.log(cbor.encode(createSubMsgTagged));
 
 	var mqttConnectOptions = {
-		clientId: "mqtt-" + clientID //MQTT ID is "mqtt-" plus clientID
+		ClientId: "mqtt-" + ClientID //MQTT ID is "mqtt-" plus ClientID
 		//rejectUnauthorized: false	//false for self-signed certificates, true in production
 		};
 
-	console.info('Client ID: '+ clientID); // (currently unique at each run, persist as cookie or guru logon to make apps survive refresh)');
+	console.info('Client ID: '+ ClientID); // (currently unique at each run, persist as cookie or guru logon to make apps survive refresh)');
 
 	const adminTopic = 'admin/+/cellinfo/info/#';  //only used to discover cellID
-	var appSubscribeTopic = 'GURUBROWSER/' + clientID + '/createSubscriber/1';  //vars updated after cellID discovered
+	var appSubscribeTopic = 'GURUBROWSER/' + ClientID + '/createSubscriber/1';  //vars updated after cellID discovered
 	var GURUBROWSER_App_Topics = ['GURUBROWSER/' + cellID + 'whiteboard/createSubscriber/1', ra+'/'+cellID+'/GURUBROWSER/subscribe/1', 'T0A597LL/'+cellID+'/'+ra+'/action/1'];
-	var appWbTopic = clientID + '/GURUBROWSER/subscribe/1';
+	var appWbTopic = ClientID + '/GURUBROWSER/subscribe/1';
 
 	const createSubscriberMsg = cbor.encode(['createSubscriber','className','RiRmtViewGuru'],['viewDef','view','Browser']); //todo: tag each array with 211
 	var viewDefMsg = cbor.encode(['viewDef','view','Browser']); //todo: tag with 211
@@ -86,7 +85,7 @@ const Blank = ({IsConnected}) => {
 
 	// MQTT Connect sequence - adminTopic - appTopic
 	client.on('connect', function () {
-		IsConnected({'mqttConnect': client.connected});
+    {Connected()}
 		console.log('Subscribing to admin topic: '+ adminTopic);
 		client.subscribe(adminTopic, {qos: 2}); //after subscribe, should receive cellID then UNSUBSCRIBE
 	});
@@ -120,8 +119,8 @@ const Blank = ({IsConnected}) => {
 			client.publish(createSubscriberMsg, appSubscribeTopic);
 
 			//UNSUBSCRIBE
-			//console.log('Unsubscribing to: GURUBROWSER/' + clientID + '/createSubscriber/1');
-			//client.unsubscribe('GURUBROWSER/' + clientID + '/createSubscriber/1');
+			//console.log('Unsubscribing to: GURUBROWSER/' + ClientID + '/createSubscriber/1');
+			//client.unsubscribe('GURUBROWSER/' + ClientID + '/createSubscriber/1');
 
 		//app registration
 		} else if (topic == GURUBROWSER_App_Topics[0]) {
@@ -134,13 +133,13 @@ const Blank = ({IsConnected}) => {
 				console.log('Compare! Valid CBOR:' + cbor.decodeAllSync(message) + '\nCreated CBOR: ' + cbor.decodeAllSync(viewDefMsg));
 			}
 
-		} else if (topic.includes(clientID)) {
+		} else if (topic.includes(ClientID)) {
 				console.log("Storing Message: ", cborMsg);
 				storeMsg(store, cborMsg);
 		}
 
 	  if (message.toString()=="end") {
-		 client.unsubscribe('+/+/' + clientID + '/#');
+		 client.unsubscribe('+/+/' + ClientID + '/#');
 		client.end();
 	  }
 	});
@@ -152,13 +151,13 @@ const Blank = ({IsConnected}) => {
 
 	client.on('close', function () {
 		console.log("Connection closed");
-		IsConnected({'mqttConnect': client.connected});
+		{Disconnected()}
 	});
 
 
 
 	// IsConnected({'mqttConnect': client.connected});
-	return <button />;
+	return <li>Testing {ClientID}</li>;
 }
 
-export default Blank;
+export default MQTT;
