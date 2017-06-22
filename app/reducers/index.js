@@ -3,7 +3,7 @@ import { combineReducers } from 'redux';
 import AppGuru from './reducer_appGuru';
 import Auth from './reducer_auth';
 import Dashboard from './reducer_dashboard';
-//import MqttConnect from './reducer_mqttConnect';
+import MqttConnection from './reducer_mqttConnection';
 import Profile from './reducer_profile';
 import Users from './reducer_users';
 import ClientID from './reducer_clientID';
@@ -13,7 +13,7 @@ const rootReducer = combineReducers({
   auth: Auth,
   clientID: ClientID,
   dashboard: Dashboard,
-  //mqttConnect: MqttConnect,
+  mqttConnection: MqttConnection,
   profile: Profile,
   users: Users
 });
