@@ -12,10 +12,45 @@ import React from 'react';
 
 
 var mqtt    = require('mqtt');
-var cbor	= require('cbor');
+//var cbor	= require('cbor');
+const cbor	= require('borc');
+var assert  = require('assert');
 
 
 const MQTT = ({Connected, Disconnected, Reconnecting, ClientID}) => {
+
+
+
+  //riri separators
+  var riri_1C = String.fromCharCode(28); //^ hex 0x1C, first level separator, parameters, ^parameter^parameter
+  var riri_1D = String.fromCharCode(29); //+ hex 0x1D, second level separator, attributes, +key=value or +value
+  var riri_1E = String.fromCharCode(30); //~ hex 0x1E, third level, ArrayElements, ~item~item
+  var riri_1F = String.fromCharCode(31); //# hex 0x1F, fourth level and touples, shown as #item#item
+  var omap_start = String.fromCharCode(159); // hex x9F, cbor start byte for unbounded arrays
+  var omap_cborTag = String.fromCharCode(211); // hex xD3, start object map (omap cbor tag)
+  var cbor_end = String.fromCharCode(255); // hex xFF, cbor end byte for unbounded arrays
+  var cbor_null = String.fromCharCode(246); // hex 0xF6, null (string==null, aka empty omap)
+
+  //array to buffer
+
+  const createSubscriberMsgArray = [riri_1C + 'createSubscriber', 'className=RiRmtViewGuru'];
+  const viewDefMsgArray = [riri_1C + 'viewDef','view=Browser'];
+  const createSubBody = cbor.encode(['className','RiRmtViewGuru',255]);
+  //const createSubscriberMsg = Buffer().write(createSubscriberMsgRiRi);
+
+
+  //riri as string (buffer)
+  const createSubscriberMsgRiRi = omap_start + omap_cborTag + riri_1C + 'createSubscriber' + riri_1D + 'className=RiRmtViewGuru' + cbor_end;
+  const viewDefMsgRiri = omap_start + 'viewDef' + riri_1D + 'view=Browser' + cbor_end;
+  const createSubscriberMsg = cbor.encode(createSubscriberMsgRiRi, cbor_end, viewDefMsgRiri ,cbor_end);
+  //var createSubscriberMsg = new Buffer(1000);
+//  createSubscriberMsg.write(createSubscriberMsgRiRi);
+  var viewDefMsg = viewDefMsgRiri;
+
+
+  var cbor_createSub = new cbor.Tagged(211, createSubscriberMsgRiRi);
+  cbor_createSub = cbor.encode(cbor_createSub);
+
 
 	//identifications
  console.log(ClientID);
@@ -23,26 +58,6 @@ const MQTT = ({Connected, Disconnected, Reconnecting, ClientID}) => {
 	var cellID;  //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
 
 	const mqttBroker = 'ws://localhost:8081';  // websocket port (ws) (init by rTalkDistribution/moquette/bin/moquette.sh)
-
-	//class omapCbor_createSub {
-	//	constructor () {
-	//		this.fun = 'createSubscriber';
-	//		this.msgkey = 'className';
-	//		this.msgval = 'RiRmtViewGuru';
-	//	}
-	//	encodeCBOR (encoder) {
-	//		const cbor_createSub = new Tagged(211, [this.fun, this.msgkey, this.msgval]);
-	//		const cbor_viewDef = new Tagged(211, ['viewDef', 'view', 'Browser']);
-	//		var buffer;
-	//		buffer = encoder.pushAny(cbor_createSub);
-	//		buffer = encoder.pushAny(cbor_viewDef);
-	//		return buffer;
-	//	}
-	//};
-
-	//var createSubMsgTagged = new omapCbor_createSub();
-
-	//console.log(cbor.encode(createSubMsgTagged));
 
 	var mqttConnectOptions = {
 		ClientId: "mqtt-" + ClientID //MQTT ID is "mqtt-" plus ClientID
@@ -56,8 +71,8 @@ const MQTT = ({Connected, Disconnected, Reconnecting, ClientID}) => {
 	var GURUBROWSER_App_Topics = ['GURUBROWSER/' + cellID + 'whiteboard/createSubscriber/1', ra+'/'+cellID+'/GURUBROWSER/subscribe/1', 'T0A597LL/'+cellID+'/'+ra+'/action/1'];
 	var appWbTopic = ClientID + '/GURUBROWSER/subscribe/1';
 
-	const createSubscriberMsg = cbor.encode(['createSubscriber','className','RiRmtViewGuru'],['viewDef','view','Browser']); //todo: tag each array with 211
-	var viewDefMsg = cbor.encode(['viewDef','view','Browser']); //todo: tag with 211
+	//const createSubscriberMsg = cbor.encode(['createSubscriber','className','RiRmtViewGuru'],['viewDef','view','Browser']); //todo: tag each array with 211
+	//viewDefMsg = cbor.encode(['viewDef','view','Browser']); //todo: tag with 211
 
 	var store = {};  //react JSON
 	var client  = mqtt.connect(mqttBroker, mqttConnectOptions);
@@ -83,40 +98,49 @@ const MQTT = ({Connected, Disconnected, Reconnecting, ClientID}) => {
 		return store;
 	}
 
+
+//-------------------------------------
+//-----CLIENT.ON LISTENING OPTIONS-----
+//-------------------------------------
 	// MQTT Connect sequence - adminTopic - appTopic
 	client.on('connect', function () {
     {Connected()}
 		console.log('Subscribing to admin topic: '+ adminTopic);
-		client.subscribe(adminTopic, {qos: 2}); //after subscribe, should receive cellID then UNSUBSCRIBE
+		client.subscribe(adminTopic, {qos: 2}); //after subscribe, should receive message with cellID then UNSUBSCRIBE
 	});
 
 	//Main MQTT Parsing loop
 	client.on('message', function (topic, message) {
-		var cborMsg = cbor.decodeAllSync(message);
+		var cborMsg = cbor.decode(message);
 		console.info('Message Received - \nTopic: ' + topic.toString() + '\n' + 'CBOR Decoded Message: ', cborMsg);
-		console.log("Storing Message.");
-			storeMsg(store, cborMsg);
+		//console.log("Storing Message.");
+			//storeMsg(store, cborMsg);
 		//cell registration
 		if (topic.includes("admin/")) {
 			//REGISTERING CELLID
-			if ( cborMsg[0][1] == "cellId") {
+			if ( cborMsg[1] == "cellId") {
 				//multiple admin messages could be received
-				cellID = cborMsg[0][2];
+				cellID = cborMsg[2];
 				console.info('CellID: ', cellID);
-				//UNSUBSCRIBE
-				console.log('Unsubscribing from: ' +adminTopic);
+
+        //UNSUBSCRIBE
+				console.log('Unsubscribing from: ' + adminTopic);
 				client.unsubscribe(adminTopic);
-				//SUBSCRIBE
-				GURUBROWSER_App_Topics = ['GURUBROWSER/' + cellID + 'whiteboard/createSubscriber/1', ra+'/'+cellID+'/GURUBROWSER/subscribe/1', 'T0A597LL/'+cellID+'/'+ra+'/action/1'];
+
+        //SUBSCRIBE
+        GURUBROWSER_App_Topics = ['GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', ra+'/'+cellID+'/GURUBROWSER/subscribe/1', 'T0A597LL/'+cellID+'/'+ra+'/action/1'];
 				console.log('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
 				client.subscribe(GURUBROWSER_App_Topics, {qos: 2});
 				//PUBLISH to App createSubscriber
-				appSubscribeTopic = 'whiteboard/'+cellID +'/rtalk/app/1';
+				var appPublishTopic = 'whiteboard/' + cellID + '/rtalk/app/1';
+        client.publish(appPublishTopic, cbor_createSub);
+      console.log(cbor_createSub);
+        //console.log("Published");
 				//console.log('Publishing createSubscriber: ' + cbor.decodeAllSync(createSubMsgCBOR) + '\nTo Topic: ' + appSubscribeTopic);
 				//client.publish(appSubscribeTopic, createSubMsgCBOR);  //send createSubMsg to register this JS_App
 				}
 
-			client.publish(createSubscriberMsg, appSubscribeTopic);
+			//client.publish(createSubscriberMsg, appSubscribeTopic);
 
 			//UNSUBSCRIBE
 			//console.log('Unsubscribing to: GURUBROWSER/' + ClientID + '/createSubscriber/1');
@@ -128,7 +152,7 @@ const MQTT = ({Connected, Disconnected, Reconnecting, ClientID}) => {
 			// task: open new whiteboard (this) and send registration message ^viewDef+view=Browser to GURUBROWSER/whiteboard/createSubscriber/1
 			if (cborMsg[0][1] == 'viewDef') {
 				// echo message to
-				console.log('2 Forwarding subscription requiest: ' + message + '\nTo Topic: ' + GURUBROWSER_App_Topics[1]);
+				console.log('2 Forwarding subscription request: ' + message + '\nTo Topic: ' + GURUBROWSER_App_Topics[1]);
 				client.publish(GURUBROWSER_App_Topics[1], message);
 				console.log('Compare! Valid CBOR:' + cbor.decodeAllSync(message) + '\nCreated CBOR: ' + cbor.decodeAllSync(viewDefMsg));
 			}
@@ -157,7 +181,7 @@ const MQTT = ({Connected, Disconnected, Reconnecting, ClientID}) => {
 
 
 	// IsConnected({'mqttConnect': client.connected});
-	return <li>Testing {ClientID}</li>;
+	return <div />; //Don't want to actually display any HTML, just want to be able to change store
 }
 
 export default MQTT;
