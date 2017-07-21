@@ -1,3 +1,0 @@
-syntax: glob
-node_modules/**
-rtalkDistribution/moquette/bin/moquette_store.mapdb*
