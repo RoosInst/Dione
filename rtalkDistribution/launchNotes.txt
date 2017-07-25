@@ -6,6 +6,20 @@ no update
 
 boot=/Users/markroos/rtalkTest/bootRtalk.txt
 
-to launch on OS X  ./startOsx
+osx bash
+ #!/bin/sh
+#  mac OSX version must be in rtalk type ./startOsx
+# cd "$(dirname ${BASH_SOURCE[0]})"
+java -agentpath:javaDebug.dylib -cp jars/rtalkCore.jar:jars/* rtalk/RtalkMqttLauncher updateGuruChannel=updateGuru boot=bootRtalk2.txt 
 
+
+win64
+@REM Rtalk Startup - Win64 version
+@java -agentlib:JvmtiDebug64 -cp RtalkOpen.jar;jars/* rtalk.RtalkMqttLauncher updateGuruChannel=updateGuru boot=bootRtalk2.txt
+
+
+Linux
+#!/bin/sh
+#must be in rtalk  type ./RtalkOpenDev 
+./jre/bin/java  -agentpath:./libJvmtiDebug.so -cp jars/rtalkCore.jar:jars/* rtalk/RtalkMqttLauncher updateGuruChannel=updateGuru boot=bootRtalk2.txt 
 

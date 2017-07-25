@@ -10,12 +10,9 @@
 
 import React from 'react';
 
-
-var mqtt    = require('mqtt');
-//var cbor	= require('cbor');
-const cbor	= require('borc');
-var assert  = require('assert');
-
+const mqtt = require('mqtt');
+const cbor = require('cbor');
+const assert  = require('assert');
 
 const MQTT = ({Connected, Disconnected, Reconnecting, ClientID}) => {
 
@@ -32,7 +29,7 @@ const MQTT = ({Connected, Disconnected, Reconnecting, ClientID}) => {
   var cbor_null = String.fromCharCode(246); // hex 0xF6, null (string==null, aka empty omap)
 
   //array to buffer
-
+  const createSubscriberMsgObjArray = 'className=RiRmtViewGuru';
   const createSubscriberMsgArray = [riri_1C + 'createSubscriber', 'className=RiRmtViewGuru'];
   const viewDefMsgArray = [riri_1C + 'viewDef','view=Browser'];
   const createSubBody = cbor.encode(['className','RiRmtViewGuru',255]);
@@ -47,9 +44,9 @@ const MQTT = ({Connected, Disconnected, Reconnecting, ClientID}) => {
 //  createSubscriberMsg.write(createSubscriberMsgRiRi);
   var viewDefMsg = viewDefMsgRiri;
 
+  var cbor_createSub = new cbor.Tagged(211, 'createSubscriber');
+  cbor_createSub = cbor.encode([cbor_createSub,createSubscriberMsgObjArray]);
 
-  var cbor_createSub = new cbor.Tagged(211, createSubscriberMsgRiRi);
-  cbor_createSub = cbor.encode(cbor_createSub);
 
 
 	//identifications
@@ -133,8 +130,9 @@ const MQTT = ({Connected, Disconnected, Reconnecting, ClientID}) => {
 				client.subscribe(GURUBROWSER_App_Topics, {qos: 2});
 				//PUBLISH to App createSubscriber
 				var appPublishTopic = 'whiteboard/' + cellID + '/rtalk/app/1';
+        //client.publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
         client.publish(appPublishTopic, cbor_createSub);
-      console.log(cbor_createSub);
+      //console.log(cbor_createSub);
         //console.log("Published");
 				//console.log('Publishing createSubscriber: ' + cbor.decodeAllSync(createSubMsgCBOR) + '\nTo Topic: ' + appSubscribeTopic);
 				//client.publish(appSubscribeTopic, createSubMsgCBOR);  //send createSubMsg to register this JS_App

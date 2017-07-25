@@ -1,4 +1,4 @@
  #!/bin/sh
 #  mac OSX version must be in rtalk type ./startOsx
-# cd "$(dirname ${BASH_SOURCE[0]})"
+#cd "$(dirname ${BASH_SOURCE[0]})Ó
 java -agentpath:javaDebug.dylib -cp jars/rtalkCore.jar:jars/* rtalk/RtalkMqttLauncher updateGuruChannel=updateGuru boot=bootRtalk.txt 
