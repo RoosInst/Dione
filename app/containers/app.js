@@ -8,7 +8,7 @@ import Login from '../components/login';
 import Dashboard from '../components/dashboard';
 import AppGuru from '../components/appGuru';
 import Users from '../components/users';
-import MQTT from '../components/mqtt';
+import MQTT from '../containers/mqtt';
 
 class App extends Component {
 
@@ -45,11 +45,7 @@ class App extends Component {
 		if (auth) {
 			return (
 	      <div>
-		  	  <MQTT ClientID={this.props.clientID}
-							Connected={() => {this.props.sendAction('MQTT_CONNECTED')}}
-							Disconnected={() => {this.props.sendAction('MQTT_DISCONNECTED')}}
-							Reconnecting={() => {this.props.sendAction('MQTT_RECONNECTING')}}
-				  />
+		  	  <MQTT/>
 	        <div className="nav-side-menu">
 	          <i className="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
 	          <div className="menu-list">
