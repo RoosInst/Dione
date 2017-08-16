@@ -31,31 +31,49 @@ class MQTT extends Component {
 
 
     //riri separators
-    var riri_1C = Buffer.from('1c', 'hex'); //^ hex 0x1C, first level separator, parameters, ^parameter^parameter
-    var riri_1D = Buffer.from('1d', 'hex'); //+ hex 0x1D, second level separator, attributes, +key=value or +value
-    var riri_1E = Buffer.from('1e', 'hex'); //~ hex 0x1E, third level, ArrayElements, ~item~item
-    var riri_1F = Buffer.from('1f', 'hex'); //# hex 0x1F, fourth level and touples, shown as #item#item
+  //  var riri_1C = Buffer.from('1c', 'hex'); //^ hex 0x1C, first level separator, parameters, ^parameter^parameter
+  //  var riri_1D = Buffer.from('1d', 'hex'); //+ hex 0x1D, second level separator, attributes, +key=value or +value
+  //  var riri_1E = Buffer.from('1e', 'hex'); //~ hex 0x1E, third level, ArrayElements, ~item~item
+  //  var riri_1F = Buffer.from('1f', 'hex'); //# hex 0x1F, fourth level and touples, shown as #item#item
     var omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
     var omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
     var omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
     var cbor_null = Buffer.from('f6', 'hex'); // hex 0xF6, null (string==null, aka empty omap)
 
-
+//60, ^ = 9fd3, if = or + then start of new string
     //array to buffer
-    const createSubscriberMsgString = Buffer.from('className=RiRmtViewGuru', 'ascii');
-    const createSub = Buffer.from('createSubscriber', 'ascii');
+  //  const classNameSM = Buffer.from('className', 'ascii');
+  //  const createSub = Buffer.from('createSubscriber', 'ascii');
+    //const RiRmtViewGuruSM = Buffer.from('RiRmtViewGuru', 'ascii');
+
+      //cbor.encode automatically creates buffer, no need to use Buffer.from(...)
+      const classNameSM = cbor.encode('className');
+      const createSubSM = cbor.encode('createSubscriber');
+      const RiRmtViewGuruSM = cbor.encode('RiRmtViewGuru');
+
+      const viewDefSM = cbor.encode('viewDef');
+      const viewSM = cbor.encode('view');
+      const browserSM = cbor.encode('Browser');
+
 
     //riri as string (buffer)
-    const createSubscriberMsgRiRi = omap_start + omap_cborTag + riri_1C + 'createSubscriber' + riri_1D + 'className=RiRmtViewGuru' + omap_end;
+    //const createSubscriberMsgRiRi = omap_start + omap_cborTag + riri_1C + 'createSubscriber' + riri_1D + 'className=RiRmtViewGuru' + omap_end;
 
     //var cbor_createSub_taggedObj = new cbor.Tagged(211, 'createSubscriber');
 
     //console.log([cbor_createSub_taggedObj, createSubscriberMsgString]);
     //var cbor_createSub = cbor.encode([omap_start, cbor_createSub_taggedObj, createSubscriberMsgString, omap_end]);
     //console.log("DECODE: ", cbor.decode(cbor_createSub));
-    var cbor_createSub = Buffer.concat([omap_start, omap_cborTag, createSub, riri_1D, createSubscriberMsgString, omap_end]);
+
+    //var pubMsg = [createSubSM, classNameSM, RiRmtViewGuruSM];
+
+    //var cbor_createSub = cbor.encode(pubMsg);
+
+    var cborPubMsg = Buffer.concat([omap_start, omap_cborTag, createSubSM, classNameSM, RiRmtViewGuruSM, omap_end]);
+    var cborPubMsgPt2 = Buffer.concat([omap_start, omap_cborTag, viewDefSM, viewSM, browserSM, omap_end]);
+    cborPubMsg = Buffer.concat([cborPubMsg, cborPubMsgPt2]);
+
     //var cbor_createSub = new Buffer(omap_start + omap_cborTag + 'createSubscriber' + riri_1D + 'className=RiRmtViewGuru' + omap_end, "binary");
-    console.log("cbor_createSub: ", cbor_createSub);
 
 
   	var cellID;  //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
@@ -79,9 +97,11 @@ class MQTT extends Component {
   	client.on('message', function (topic, message) {
       try {
         var cborMsg = cbor.decode(message);
-        console.info('Message Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', cborMsg);
+        if (!topic.includes("admin/") || !cellID) {
+          console.info('Message Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', cborMsg);
+        }
 
-  		  if (topic.includes("admin/")) {
+  		  if (topic.includes("admin/") && !cellID) {
     			//REGISTERING CELLID
     			if ( cborMsg[1] == "cellId") {
     				//multiple admin messages could be received
@@ -99,8 +119,8 @@ class MQTT extends Component {
     				//PUBLISH to App createSubscriber
     				var appPublishTopic = 'whiteboard/' + cellID + '/rtalk/app/1';
             //client.publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
-            console.log("Publishing -\n Topic: " + appPublishTopic + "\n Message: " + cbor_createSub);
-            client.publish(appPublishTopic, cbor_createSub);
+            console.log("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
+            client.publish(appPublishTopic, cborPubMsg);
   				}
         }
       } catch(err) {
