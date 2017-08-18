@@ -20,15 +20,17 @@ const assert  = require('assert');
 class MQTT extends Component {
 
   componentDidMount() {
+    const mqttHost = 'ws://localhost';
+    const port = '8081';
+
+    const ra = this.props.clientID; //set return adress to client ID
     const sendAction = this.props.sendAction;
-    const mqttBroker = 'ws://localhost:8081';  // websocket port (ws) (init by rTalkDistribution/moquette/bin/moquette.sh)
+    const mqttBroker = mqttHost + ':' + port + '/mqtt';  // websocket port (ws) (init by rTalkDistribution/moquette/bin/moquette.sh)
     const mqttConnectOptions = {
-      ClientId: "mqtt-" + this.props.clientID, //MQTT ID is "mqtt-" plus clientID
+      clientId: "mqtt_" + ra //MQTT ID is "mqtt-" plus clientID
       //rejectUnauthorized: false	//false for self-signed certificates, true in production
     };
     const client  = mqtt.connect(mqttBroker, mqttConnectOptions);
-    const ra = this.props.clientID; //set return adress to client ID
-
 
     //riri separators
   //  var riri_1C = Buffer.from('1c', 'hex'); //^ hex 0x1C, first level separator, parameters, ^parameter^parameter
@@ -71,17 +73,17 @@ class MQTT extends Component {
 
     var cborPubMsg = Buffer.concat([omap_start, omap_cborTag, createSubSM, classNameSM, RiRmtViewGuruSM, omap_end]);
     var cborPubMsgPt2 = Buffer.concat([omap_start, omap_cborTag, viewDefSM, viewSM, browserSM, omap_end]);
-    cborPubMsg = Buffer.concat([cborPubMsg, cborPubMsgPt2]);
+  //  cborPubMsg = Buffer.concat([cborPubMsg, cborPubMsgPt2]);
 
     //var cbor_createSub = new Buffer(omap_start + omap_cborTag + 'createSubscriber' + riri_1D + 'className=RiRmtViewGuru' + omap_end, "binary");
 
 
   	var cellID;  //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
 
-  	console.info('Client ID: '+ this.props.clientID); // (currently unique at each run, persist as cookie or guru logon to make apps survive refresh)');
+  	console.info('Client ID: '+ ra); // (currently unique at each run, persist as cookie or guru logon to make apps survive refresh)');
 
   	const adminTopic = 'admin/+/cellinfo/info/#';  //only used to discover cellID
-  	var appSubscribeTopic = 'GURUBROWSER/' + this.props.clientID + '/createSubscriber/1';  //vars updated after cellID discovered
+  	var appSubscribeTopic = 'GURUBROWSER/' + ra + '/createSubscriber/1';  //vars updated after cellID discovered
 
   //-------------------------------------
   //-----CLIENT.ON LISTENING OPTIONS-----
@@ -117,10 +119,12 @@ class MQTT extends Component {
     				console.log('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
     				client.subscribe(GURUBROWSER_App_Topics, {qos: 2});
     				//PUBLISH to App createSubscriber
-    				var appPublishTopic = 'whiteboard/' + cellID + '/rtalk/app/1';
+    				var appPublishTopic = ra + '/' + cellID + '/rtalk/app/1';
             //client.publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
             console.log("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
-            client.publish(appPublishTopic, cborPubMsg);
+            //client.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
+                        //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
+            //client.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
   				}
         }
       } catch(err) {
@@ -129,7 +133,7 @@ class MQTT extends Component {
 
 
   	  if (message.toString()=="end") {
-  		 client.unsubscribe('+/+/' + this.props.clientID + '/#');
+  		 client.unsubscribe('+/+/' + ra + '/#');
   		 client.end();
   	  }
   	});
@@ -142,6 +146,7 @@ class MQTT extends Component {
   	client.on('close', function () {
   		console.log("Connection closed");
   		sendAction('MQTT_DISCONNECTED');
+      cellID = null;
   	});
   }
 

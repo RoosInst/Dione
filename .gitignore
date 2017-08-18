@@ -1,4 +1,7 @@
 rtalkDistribution/moquette/bin/moquette_store.mapdb*
+rtalkDistribution/guru/
+desktop.ini
+.DS_Store
 
 # Logs
 logs
