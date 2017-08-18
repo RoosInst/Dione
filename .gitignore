@@ -1,7 +1,8 @@
 rtalkDistribution/moquette/bin/moquette_store.mapdb*
-rtalkDistribution/guru/
+rtalkDistribution/guru/guruKeys.sqlite
 desktop.ini
 .DS_Store
+moquette.log*
 
 # Logs
 logs
