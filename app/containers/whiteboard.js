@@ -63,23 +63,10 @@ class Whiteboard extends Component {
 
 
 
-
-
-
-
-
-
-
-
 function mapStateToProps(state) {
   return {
-		//clientID: state.clientID
+		whiteboard: state.whiteboard;
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({sendAction}, dispatch);
-}
-
-
-export default connect(mapStateToProps, mapDispatchToProps)(Whiteboard);
+export default connect(mapStateToProps,{sendAction})(Whiteboard);

@@ -117,8 +117,8 @@ class MQTT extends Component {
             //client.publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
             console.log("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
             client.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
-                        //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
-            client.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
+            //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
+            //client.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
   				}
         }
       } catch(err) {
