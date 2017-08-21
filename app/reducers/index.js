@@ -7,6 +7,7 @@ import MqttConnection from './reducer_mqttConnection';
 import Profile from './reducer_profile';
 import Users from './reducer_users';
 import ClientID from './reducer_clientID';
+import Whiteboard from './reducer_whiteboard';
 
 const rootReducer = combineReducers({
   appGuru: AppGuru,
@@ -15,8 +16,8 @@ const rootReducer = combineReducers({
   dashboard: Dashboard,
   mqttConnection: MqttConnection,
   profile: Profile,
-  users: Users
+  users: Users,
+  whiteboard: Whiteboard
 });
 
 export default rootReducer;
-  //clientID: "JS" + Math.random().toString(16).substr(2, 6),  //ka mqtt session ID, Return Address (ra)

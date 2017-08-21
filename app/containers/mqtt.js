@@ -1,17 +1,7 @@
-/*-----------------------------------------------------------------------------------------
-  startMQTT_rb.js.
-  MQTT connection to RI Guru with Node.js for JS rTalkApps
-  Supported Apps: GURUBROWSER
-  Joseph Theberge & Ryan Benech
-  08/25/16 early alpha
-  3/6/16 cbor tagging
-  ------------------------------------------------------------------------------------------
-*/
-
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { sendAction } from '../actions/index';
+import {sendAction, updateWhiteboard } from '../actions';
 
 const mqtt = require('mqtt');
 const cbor = require('cbor');
@@ -25,6 +15,7 @@ class MQTT extends Component {
 
     const ra = this.props.clientID; //set return adress to client ID
     const sendAction = this.props.sendAction;
+    const updateWhiteboard = this.props.updateWhiteboard;
     const mqttBroker = mqttHost + ':' + port + '/mqtt';  // websocket port (ws) (init by rTalkDistribution/moquette/bin/moquette.sh)
     const mqttConnectOptions = {
       clientId: "mqtt_" + ra //MQTT ID is "mqtt-" plus clientID
@@ -97,17 +88,20 @@ class MQTT extends Component {
 
   	//Main MQTT Parsing loop
   	client.on('message', function (topic, message) {
+
       try {
-        var cborMsg = cbor.decode(message);
-        if (!topic.includes("admin/") || !cellID) {
-          console.info('Message Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', cborMsg);
+        var cborMsg = cbor.decodeAllSync(message);
+        console.info('Message Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', cborMsg);
+
+       if (cborMsg[0][0].value == "toppane") {
+         updateWhiteboard(cborMsg);
         }
 
-  		  if (topic.includes("admin/") && !cellID) {
+        if (topic.includes("admin/") && !cellID) {
     			//REGISTERING CELLID
-    			if ( cborMsg[1] == "cellId") {
+    			if ( cborMsg[0][1] == "cellId") {
     				//multiple admin messages could be received
-    				cellID = cborMsg[2];
+    				cellID = cborMsg[0][2];
     				console.info('CellID: ', cellID);
 
             //UNSUBSCRIBE
@@ -122,9 +116,9 @@ class MQTT extends Component {
     				var appPublishTopic = ra + '/' + cellID + '/rtalk/app/1';
             //client.publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
             console.log("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
-            //client.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
+            client.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
                         //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
-            //client.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
+            client.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
   				}
         }
       } catch(err) {
@@ -162,9 +156,4 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({sendAction}, dispatch);
-}
-
-
-export default connect(mapStateToProps, mapDispatchToProps)(MQTT);
+export default connect(mapStateToProps, {sendAction, updateWhiteboard })(MQTT);

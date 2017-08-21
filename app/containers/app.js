@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 
-import { sendAction } from '../actions/index';
+import { sendAction } from '../actions';
 import { bindActionCreators } from 'redux';
 
 import Login from '../components/login';
@@ -110,10 +110,4 @@ function mapStateToProps(state) {
   };
 }
 
-
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({sendAction}, dispatch);
-}
-
-
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(mapStateToProps, { sendAction} )(App);
