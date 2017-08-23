@@ -9,6 +9,7 @@ import Dashboard from '../components/dashboard';
 import AppGuru from '../components/appGuru';
 import Users from '../components/users';
 import MQTT from '../containers/mqtt';
+import Whiteboard from '../containers/whiteboard';
 
 class App extends Component {
 
@@ -46,6 +47,7 @@ class App extends Component {
 			return (
 	      <div>
 		  	  <MQTT/>
+					<Whiteboard/>
 	        <div className="nav-side-menu">
 	          <i className="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
 	          <div className="menu-list">

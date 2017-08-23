@@ -7,6 +7,7 @@ import MqttConnection from './reducer_mqttConnection';
 import Profile from './reducer_profile';
 import Users from './reducer_users';
 import ClientID from './reducer_clientID';
+import LatestMessage from './reducer_latestMessage';
 import Whiteboard from './reducer_whiteboard';
 
 const rootReducer = combineReducers({
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
   mqttConnection: MqttConnection,
   profile: Profile,
   users: Users,
+  latestMessage: LatestMessage,
   whiteboard: Whiteboard
 });
 

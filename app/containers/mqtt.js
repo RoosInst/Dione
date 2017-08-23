@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import {sendAction, updateWhiteboard } from '../actions';
+import {sendAction, setLatestMessage } from '../actions';
 
 const mqtt = require('mqtt');
 const cbor = require('cbor');
@@ -15,7 +15,7 @@ class MQTT extends Component {
 
     const ra = this.props.clientID; //set return adress to client ID
     const sendAction = this.props.sendAction;
-    const updateWhiteboard = this.props.updateWhiteboard;
+    const setLatestMessage = this.props.setLatestMessage;
     const mqttBroker = mqttHost + ':' + port + '/mqtt';  // websocket port (ws) (init by rTalkDistribution/moquette/bin/moquette.sh)
     const mqttConnectOptions = {
       clientId: "mqtt_" + ra //MQTT ID is "mqtt-" plus clientID
@@ -92,37 +92,37 @@ class MQTT extends Component {
       try {
         var cborMsg = cbor.decodeAllSync(message);
         console.info('Message Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', cborMsg);
-
-       if (cborMsg[0][0].value == "toppane") {
-         updateWhiteboard(cborMsg);
-        }
-
-        if (topic.includes("admin/") && !cellID) {
-    			//REGISTERING CELLID
-    			if ( cborMsg[0][1] == "cellId") {
-    				//multiple admin messages could be received
-    				cellID = cborMsg[0][2];
-    				console.info('CellID: ', cellID);
-
-            //UNSUBSCRIBE
-    				console.log('Unsubscribing from: ' + adminTopic);
-    				client.unsubscribe(adminTopic);
-
-            //SUBSCRIBE
-            var GURUBROWSER_App_Topics = ['#', 'GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', ra+'/'+cellID+'/GURUBROWSER/subscribe/1', 'T0A597LL/'+cellID+'/'+ra+'/action/1'];
-    				console.log('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
-    				client.subscribe(GURUBROWSER_App_Topics, {qos: 2});
-    				//PUBLISH to App createSubscriber
-    				var appPublishTopic = ra + '/' + cellID + '/rtalk/app/1';
-            //client.publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
-            console.log("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
-            client.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
-            //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
-            //client.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
-  				}
-        }
       } catch(err) {
         console.info('Message Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString());
+        return;
+      }
+      if (cborMsg[0][0].value == "toppane") {
+        setLatestMessage(cborMsg);
+      }
+
+      if (topic.includes("admin/") && !cellID) {
+  			//REGISTERING CELLID
+  			if ( cborMsg[0][1] == "cellId") {
+  				//multiple admin messages could be received
+  				cellID = cborMsg[0][2];
+  				console.info('CellID: ', cellID);
+
+          //UNSUBSCRIBE
+  				console.log('Unsubscribing from: ' + adminTopic);
+  				client.unsubscribe(adminTopic);
+
+          //SUBSCRIBE
+          var GURUBROWSER_App_Topics = ['#', 'GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', ra+'/'+cellID+'/GURUBROWSER/subscribe/1', 'T0A597LL/'+cellID+'/'+ra+'/action/1'];
+  				console.log('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
+  				client.subscribe(GURUBROWSER_App_Topics, {qos: 2});
+  				//PUBLISH to App createSubscriber
+  				var appPublishTopic = ra + '/' + cellID + '/rtalk/app/1';
+          //client.publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
+          console.log("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
+          client.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
+          //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
+          //client.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
+				}
       }
 
 
@@ -156,4 +156,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, {sendAction, updateWhiteboard })(MQTT);
+export default connect(mapStateToProps, {sendAction, setLatestMessage })(MQTT);
