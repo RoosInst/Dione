@@ -211,3 +211,11 @@ body {
 .connectionIcon.reconnecting {
     background-color: yellow;
 }
+
+body {
+  word-wrap: break-word;
+}
+
+.card-block div {
+  border: 1px solid grey;
+}

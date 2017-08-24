@@ -1,4 +1,4 @@
-export const SET_LATEST_MESSAGE = 'set_lateset_message';
+export const SET_LATEST_MESSAGE = 'set_latest_message';
 export const UPDATE_WHITEBOARD = 'update_whiteboard';
 
 export function sendAction(action) {
