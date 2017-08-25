@@ -52,7 +52,7 @@ class App extends Component {
 							</div>
 	          </div>
 	        </div>
-	        <div className="container" id="main">
+	        <div id="main">
 							<Whiteboard/>
 	            {this.returnComponent('AppGuru')}
 	        </div>
