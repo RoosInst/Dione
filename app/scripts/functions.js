@@ -1,5 +1,6 @@
 /*Here exists functions essential to building the app.*/
 import React from 'react';
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 
 function getFrameRatioFor(val) {
   var frameRatio, doing, p0, i, len; //local vars
@@ -341,7 +342,9 @@ export function renderApp(newObj) {
     </div>);
 }
 
-
+function handleClick(e, data) {
+  console.log(data);
+}
 
 function renderObj(obj) {
   if (obj.class) {
@@ -350,8 +353,39 @@ function renderObj(obj) {
        return (<div className="btn btn-primary">{obj.contents}</div>);
 
        case 'ListPane':
-                   console.log(obj);
-        if (obj.contents) {
+        if (obj.wbMenu && obj.wbMenu.value && obj.identifier) {
+          var i = 0;
+          var j = 0;
+          return (
+            <div className="contextMenu shell">
+              <ContextMenuTrigger id={obj.identifier}>
+                <div className="shell">
+                  <ul>
+                  {
+                    obj.contents.map((arrayVal) => {
+                      i++;
+                      return(getRiStringAsLi(arrayVal, i));
+                    })
+                  }
+                  </ul>
+                </div>
+              </ContextMenuTrigger>
+              <ContextMenu id={obj.identifier}>
+                {
+                obj.wbMenu.value.map((menuItem) => {
+                  j++;
+                  return(
+                    <MenuItem key={'menuItem' + j} onClick={handleClick}>
+                        {menuItem}
+                    </MenuItem>
+                  );
+                })
+                }
+              </ContextMenu>
+            </div>
+          );
+        }
+        else if (obj.contents) {
           var i = 0;
           return (<ul>
             {
