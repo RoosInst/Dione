@@ -68,7 +68,7 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard) {
     if (obj.value) { //is an array
       var arr = [];
       for (var i = 0; i < obj.value.length; i++) {
-        arr[i] = parseSmMsgs(obj.value[i]);
+        arr[i] = parseSmMsgs(obj.value[i]); //returns array
       }
       obj.value = arr;
     }
@@ -76,12 +76,12 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard) {
       if (obj.owner == "top") {
         tree[obj.identifier] = obj;
       } else {
-        var owner = tree[obj.owner];
-        owner[obj.identifier] = obj;
+        var Owner = tree[obj.owner];
+        Owner[obj.identifier] = obj;
       }
     } else if (obj.contents) {
-      var owner = tree[obj.value];
-      owner["contents"] = parseSmMsgs(obj.contents);
+      var Owner = tree[obj.value];
+      Owner["contents"] = parseSmMsgs(obj.contents);
 
     } else if (!obj.identifier) { //checks not toppane, because toppane has id but not owner
       tree["_msg" + i] = obj;
@@ -108,9 +108,8 @@ export function convertArrayToKeyValues(decodedCbor) {
   var store = {};
   var msgObj = {};
   for (var array = 0; array < decodedCbor.length; array++) {
-
-    if (decodedCbor[array][1] == "contents") {
-      msgObj['value']  = decodedCbor[array][0].value;
+    if (decodedCbor[array][1] === "contents") {
+      msgObj['value'] = decodedCbor[array][0].value;
     };
 
     //msgObj[decodedCbor[array][0]] = decodedCbor[array][0].

@@ -5,8 +5,8 @@ import { sendAction } from '../actions';
 import { bindActionCreators } from 'redux';
 
 import AppGuru from '../components/appGuru';
-import MQTT from '../containers/mqtt';
-import Whiteboard from '../containers/whiteboard';
+import MQTT from './mqtt';
+import Whiteboard from './whiteboard';
 
 class App extends Component {
 
