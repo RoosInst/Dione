@@ -7,12 +7,13 @@ const mqtt = require('mqtt');
 const cbor = require('cbor');
 const assert  = require('assert');
 
+export var client = null;
+export var cellID = null;   //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
 class MQTT extends Component {
 
   componentDidMount() {
     const mqttHost = 'ws://localhost';
     const port = '8081';
-
     const ra = this.props.clientID; //set return adress to client ID
     const sendAction = this.props.sendAction;
     const setLatestMessage = this.props.setLatestMessage;
@@ -21,7 +22,7 @@ class MQTT extends Component {
       clientId: "mqtt_" + ra //MQTT ID is "mqtt-" plus clientID
       //rejectUnauthorized: false	//false for self-signed certificates, true in production
     };
-    const client  = mqtt.connect(mqttBroker, mqttConnectOptions);
+    client  = mqtt.connect(mqttBroker, mqttConnectOptions);
 
     //riri separators
   //  var riri_1C = Buffer.from('1c', 'hex'); //^ hex 0x1C, first level separator, parameters, ^parameter^parameter
@@ -33,12 +34,6 @@ class MQTT extends Component {
     var omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
     var cbor_null = Buffer.from('f6', 'hex'); // hex 0xF6, null (string==null, aka empty omap)
 
-//60, ^ = 9fd3, if = or + then start of new string
-    //array to buffer
-  //  const classNameSM = Buffer.from('className', 'ascii');
-  //  const createSub = Buffer.from('createSubscriber', 'ascii');
-    //const RiRmtViewGuruSM = Buffer.from('RiRmtViewGuru', 'ascii');
-
       //cbor.encode automatically creates buffer, no need to use Buffer.from(...)
       const classNameSM = cbor.encode('className');
       const createSubSM = cbor.encode('createSubscriber');
@@ -49,27 +44,11 @@ class MQTT extends Component {
       const browserSM = cbor.encode('Browser');
 
 
-    //riri as string (buffer)
-    //const createSubscriberMsgRiRi = omap_start + omap_cborTag + riri_1C + 'createSubscriber' + riri_1D + 'className=RiRmtViewGuru' + omap_end;
-
-    //var cbor_createSub_taggedObj = new cbor.Tagged(211, 'createSubscriber');
-
-    //console.log([cbor_createSub_taggedObj, createSubscriberMsgString]);
-    //var cbor_createSub = cbor.encode([omap_start, cbor_createSub_taggedObj, createSubscriberMsgString, omap_end]);
-    //console.log("DECODE: ", cbor.decode(cbor_createSub));
-
-    //var pubMsg = [createSubSM, classNameSM, RiRmtViewGuruSM];
-
-    //var cbor_createSub = cbor.encode(pubMsg);
-
     var cborPubMsg = Buffer.concat([omap_start, omap_cborTag, createSubSM, classNameSM, RiRmtViewGuruSM, omap_end]);
     var cborPubMsgPt2 = Buffer.concat([omap_start, omap_cborTag, viewDefSM, viewSM, browserSM, omap_end]);
   //  cborPubMsg = Buffer.concat([cborPubMsg, cborPubMsgPt2]);
 
-    //var cbor_createSub = new Buffer(omap_start + omap_cborTag + 'createSubscriber' + riri_1D + 'className=RiRmtViewGuru' + omap_end, "binary");
-
-
-  	var cellID;  //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
+    var numMsgs = 1;
 
   	console.info('Client ID: '+ ra); // (currently unique at each run, persist as cookie or guru logon to make apps survive refresh)');
 
@@ -91,14 +70,17 @@ class MQTT extends Component {
 
       try {
         var cborMsg = cbor.decodeAllSync(message);
-        console.info('Message Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', cborMsg);
+        console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', cborMsg);
       } catch(err) {
-        console.info('Message Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString());
+        console.info('Message' + numMsgs + 'Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString());
         return;
       }
+      numMsgs++;
+      
       if (cborMsg[0][0].value == "toppane") {
         setLatestMessage(cborMsg);
       }
+
 
       if (topic.includes("admin/") && !cellID) {
   			//REGISTERING CELLID
@@ -112,7 +94,15 @@ class MQTT extends Component {
   				client.unsubscribe(adminTopic);
 
           //SUBSCRIBE
-          var GURUBROWSER_App_Topics = ['#', 'GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', ra+'/'+cellID+'/GURUBROWSER/subscribe/1', 'T0A597LL/'+cellID+'/'+ra+'/action/1'];
+          var channelID = '+';
+          const domainTopic = '+/' + cellID + '/#';
+          const wbCreateSubTopic = '+/' + cellID + '/whiteboard/createSubscriber/1'; //get app ID
+          var GURUBROWSER_App_Topics = [
+            domainTopic,
+            wbCreateSubTopic,
+            channelID + '/'+ cellID + '/' + ra + '/+/subscribe/1',
+            channelID + '/' + cellID + '/'+ra +'/action/1'
+           ];
   				console.log('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
   				client.subscribe(GURUBROWSER_App_Topics, {qos: 2});
   				//PUBLISH to App createSubscriber

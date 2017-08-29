@@ -27,7 +27,7 @@ class Whiteboard extends Component {
                 <div className="card">
                   <div className="card-header">{obj.label}</div>
                   <div className="card-block">
-                    {renderApp(obj)}
+                    {renderApp(model, obj, this.props.clientID)}
                   </div>
                 </div>
               </div>
@@ -44,7 +44,8 @@ class Whiteboard extends Component {
 function mapStateToProps(state) {
   return {
 		latestMessage: state.latestMessage,
-    whiteboard: state.whiteboard
+    whiteboard: state.whiteboard,
+    clientID: state.clientID
   };
 }
 

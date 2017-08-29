@@ -1,6 +1,9 @@
 /*Here exists functions essential to building the app.*/
 import React from 'react';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import {client, cellID} from '../containers/mqtt';
+const cbor = require('cbor');
+const mqtt = require('mqtt');
 
 function getFrameRatioFor(val) {
   var frameRatio, doing, p0, i, len; //local vars
@@ -62,6 +65,13 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard) {
     if (obj.frameRatio) {
       obj.style = makeStyleFromFrameRatio(obj.frameRatio);
     }
+    if (obj.value) { //is an array
+      var arr = [];
+      for (var i = 0; i < obj.value.length; i++) {
+        arr[i] = parseSmMsgs(obj.value[i]);
+      }
+      obj.value = arr;
+    }
     if (obj.owner) {
       if (obj.owner == "top") {
         tree[obj.identifier] = obj;
@@ -110,7 +120,6 @@ export function convertArrayToKeyValues(decodedCbor) {
     store[msgObj.identifier] = msgObj;
     msgObj = {};
   }
-  console.log("STORE: ", store);
   return store;
 }
 
@@ -184,7 +193,7 @@ function riStringCheckAndConvert(s) {
 
 
 /**Given an RiString returns a fomatted JSX list <li>...</li> element*/
-function getRiStringAsLi(riString, key) {
+function getRiStringAsLi(model, riString, key, obj, clientID) {
     key = 'string' + key;
     var indent, color, font, a; //local vars
     if(!riString.text) { //if no text field then it's not an RiString
@@ -200,7 +209,7 @@ function getRiStringAsLi(riString, key) {
       return (<li key={key}>{riString.text}</li>); //nothing to format
     }
     return (
-      <li key={key} className={`${color !==0 ? 'rsColor'+color : ''}${font !== 0 ? 'rsStyle'+font : '' }`}>
+      <li onClick={() => handleClick(model, obj, clientID, riString)} key={key} className={`${color !==0 ? 'rsColor'+color : ''}${font !== 0 ? 'rsStyle'+font : '' }`}>
         {nbspaces(indent)}{riString.text}
       </li>
     );
@@ -308,17 +317,18 @@ function parseSmMsgs(smMsgs) {
 
 
 
-export function renderApp(newObj) {
+export function renderApp(model, newObj, clientID) {
   var arr = Object.keys(newObj);
+  var model = null;
+  if (newObj.model) model = newObj.model;
   return (
     <div className="shell">
       {
         arr.map((key) => {
           var val = newObj[key];
           //console.log("key:", key, " val:", val);
-
           if (val.identifier && val.style && val !== null && typeof val === 'object' && Object.prototype.toString.call( val ) !== '[object Array]') { //if type object but not style obj, null, or array
-             return (<div className={val.class} style={val.style} id={val.identifier} key={val.identifier}>{renderObj(val)}{renderApp(val)}</div>)
+             return (<div className={val.class} style={val.style} id={model + '_' + val.identifier} key={val.identifier}>{renderObj(model, val, clientID)}{renderApp(model, val, clientID)}</div>)
           }
 
           else if (Array.isArray(val)) {
@@ -342,41 +352,59 @@ export function renderApp(newObj) {
     </div>);
 }
 
-function handleClick(e, data) {
-  console.log(data);
+function handleClick(model, obj, clientID, riString) {
+  var msg = convertObjToArrayForPublish(model, obj, clientID, riString);
+  var topic = clientID + '/' + cellID + '/' + model + '/action/1';
+  if (client && cellID) {
+      console.log("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
+    client.publish(topic, msg);
+  }
+
+
 }
 
-function renderObj(obj) {
+function renderObj(model, obj, clientID) {
+
+  var menu = null;
+
   if (obj.class) {
     switch(obj.class) {
       case 'Button':
        return (<div className="btn btn-primary">{obj.contents}</div>);
 
+       case 'TextPane':
        case 'ListPane':
-        if (obj.wbMenu && obj.wbMenu.value && obj.identifier) {
+       for (var key in obj) { //Check for "*Menu" obj inside current obj
+         if (key.indexOf("Menu") >= 0) {
+           menu = key;
+         }
+       }
+        if (obj[menu] && obj.identifier && obj[menu].value) {
           var i = 0;
           var j = 0;
           return (
             <div className="contextMenu shell">
               <ContextMenuTrigger id={obj.identifier}>
-                <div className="shell">
+                {obj.contents ?
                   <ul>
-                  {
+                    {
+
                     obj.contents.map((arrayVal) => {
                       i++;
-                      return(getRiStringAsLi(arrayVal, i));
+                      return(getRiStringAsLi(model, arrayVal, i, obj, clientID));
                     })
                   }
                   </ul>
-                </div>
+                  : ''
+              }
               </ContextMenuTrigger>
               <ContextMenu id={obj.identifier}>
                 {
-                obj.wbMenu.value.map((menuItem) => {
+                obj[menu].value.map((menuItem) => {
                   j++;
                   return(
-                    <MenuItem key={'menuItem' + j} onClick={handleClick}>
-                        {menuItem}
+                    <MenuItem key={'menuItem' + j} onClick={() => handleClick(model, obj.menuItem, clientID, menuItem[0])}>
+                        {menuItem[0].text}
                     </MenuItem>
                   );
                 })
@@ -391,7 +419,7 @@ function renderObj(obj) {
             {
               obj.contents.map((arrayVal) => {
               i++;
-              return(getRiStringAsLi(arrayVal, i));
+              return(getRiStringAsLi(model, arrayVal, i, obj, clientID));
             })
           }
           </ul>);
@@ -401,4 +429,26 @@ function renderObj(obj) {
     }
 
   }
+}
+
+
+
+var omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
+var omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
+var omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
+var cbor_null = Buffer.from('f6', 'hex'); // hex 0xF6, null (string==null, aka empty omap)
+
+function convertObjToArrayForPublish(model, obj, clientID, riString) {
+  var objVal = cbor.encode('event');
+  var widgetKey = cbor.encode('widget');
+  var widgetVal = cbor.encode(obj.identifier);
+  var channelKey = cbor.encode('channel');
+  var channelVal = cbor.encode(clientID);
+  var selectionKey = cbor.encode('selection');
+  var selectionVal = cbor.encode(riString.header + riString.text);
+  var selectorKey = cbor.encode('selector');
+  var selectorVal = cbor.encode(obj.selector);
+
+  return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, omap_end]);
+
 }
