@@ -9,50 +9,16 @@ const assert  = require('assert');
 
 export var client = null;
 export var cellID = null;   //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
-var numMsgs = 1;
-var updated = false;
+var numMsgs = 0;
+
+var ra = null;
+var wb = null;
 
 class MQTT extends Component {
   componentDidUpdate() {
-    updated = true;
-    const wb = this.props.whiteboard;
-    const setLatestMessage = this.props.setLatestMessage;
-    const clientID = this.props.clientID;
-    //Main MQTT Parsing loop
-    client.on('message', function (topic, message) {
-
-      try {
-        var decodedCborMsg = cbor.decodeAllSync(message);
-        console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', decodedCborMsg);
-      } catch(err) {
-        console.info('Message' + numMsgs + 'Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString());
-        return;
-      }
-
-      numMsgs++;
-
-      if (wb) {
-        var arr = Object.keys(wb);
-        for (var i = 0; i < arr.length; i++) {
-          console.log(arr[i], topic);
-          if (topic.indexOf(arr[i] + '/' + cellID + '/' + clientID) >= 0) { // if message for us @ model/cellID/clientID
-            setLatestMessage(decodedCborMsg);
-          }
-        }
-      }
-
-      else if (decodedCborMsg[0][0].value == "toppane") {
-        setLatestMessage(decodedCborMsg);
-      }
-
-      else if (message.toString()=="end") {
-       client.unsubscribe('+/+/' + ra + '/#');
-       client.end();
-      }
-
-    });
+    wb = this.props.whiteboard;
+    ra = this.props.clientID;
   }
-
   componentDidMount() {
     const mqttHost = 'ws://localhost';
     const port = '8081';
@@ -107,7 +73,7 @@ class MQTT extends Component {
 
   	//Main MQTT Parsing loop
   	client.on('message', function (topic, message) {
-      if (!updated) {
+      numMsgs++;
       try {
         var decodedCborMsg = cbor.decodeAllSync(message);
         console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', decodedCborMsg);
@@ -115,12 +81,6 @@ class MQTT extends Component {
         console.info('Message' + numMsgs + 'Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString());
         return;
       }
-      numMsgs++;
-
-      if (decodedCborMsg[0][0].value == "toppane") {
-        setLatestMessage(decodedCborMsg);
-      }
-
 
       if (topic.includes("admin/") && !cellID) {
   			//REGISTERING CELLID
@@ -154,13 +114,28 @@ class MQTT extends Component {
           //client.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
 				}
       }
+      else if (decodedCborMsg[0][0].value == "toppane") {
+        console.log('test', decodedCborMsg);
+        for (var i = 0; i < decodedCborMsg[0].length; i++) {
+          if (decodedCborMsg[0][i] === 'model') {
+            setLatestMessage(decodedCborMsg, decodedCborMsg[0][i + 1]);
+            break;
+          }
+        }
+      }
+      else if (wb) {
+        var arr = Object.keys(wb);
+        for (var i = 0; i < arr.length; i++) {
+          if (topic.indexOf(arr[i] + '/' + cellID + '/' + ra) >= 0) { // if message for us @ model/cellID/clientID
+            setLatestMessage(decodedCborMsg, arr[i]);
+          }
+        }
+      }
+      else if (message.toString()=="end") {
+       client.unsubscribe('+/+/' + ra + '/#');
+       client.end();
+      }
 
-
-  	  if (message.toString()=="end") {
-  		 client.unsubscribe('+/+/' + ra + '/#');
-  		 client.end();
-  	  }
-    }
   	});
 
   	client.on('error', function(err) {

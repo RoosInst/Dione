@@ -6,12 +6,10 @@ import {getStyleAndCreateHierarchy, convertArrayToKeyValues, renderApp} from '..
 class Whiteboard extends Component {
 
   componentDidUpdate(prevProps, prevState) {
-    // console.log("PREVPROPS: ", prevProps);
-    // console.log("Whiteboard: ", this.props.whiteboard);
-    if (prevProps.latestMessage !== this.props.latestMessage) {
-      var ObjFromArray = convertArrayToKeyValues(this.props.latestMessage);
+    if ((!prevProps.latestMessage && this.props.latestMessage.payload) || prevProps.latestMessage.payload !== this.props.latestMessage.payload) {
+      var ObjFromArray = convertArrayToKeyValues(this.props.latestMessage.payload);
       this.props.updateWhiteboard(
-        getStyleAndCreateHierarchy(ObjFromArray, this.props.whiteboard)
+        getStyleAndCreateHierarchy(ObjFromArray, this.props.whiteboard, this.props.latestMessage.model)
       );
     }
   }

@@ -54,44 +54,59 @@ function makeStyleFromFrameRatio(val) {
 whiteboard is current existing state of all apps in a hierarchical object.
 Function nests objects into its owners (makes flat obj into hierarchical)
  and creates "style" key with values for positioning for each obj with frameRatio.*/
-export function getStyleAndCreateHierarchy(unsortedStore, whiteboard) {
+export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, LM_model) {
   var forest = {};
-  var tree = jQuery.extend({}, unsortedStore.top); //must clone
+  var tree = {};
+  if (whiteboard && whiteboard[LM_model]) {
+      tree = jQuery.extend({}, whiteboard[LM_model]);
+  }
+  else  if (unsortedStore.top) {
+    tree = jQuery.extend({}, unsortedStore.top); //must clone
+  }
+
+
   var i = 0;
   for (var key in unsortedStore) {
     // skip loop if the property is from prototype
     if (!unsortedStore.hasOwnProperty(key)) continue;
-    var obj =unsortedStore[key];
-    if (obj.frameRatio) {
-      obj.style = makeStyleFromFrameRatio(obj.frameRatio);
-    }
-    if (obj.value) { //is an array
-      var arr = [];
-      for (var i = 0; i < obj.value.length; i++) {
-        arr[i] = parseSmMsgs(obj.value[i]); //returns array
-      }
-      obj.value = arr;
-    }
-    if (obj.owner) {
-      if (obj.owner == "top") {
-        tree[obj.identifier] = obj;
-      } else {
-        var Owner = tree[obj.owner];
-        Owner[obj.identifier] = obj;
-      }
-    } else if (obj.contents) {
-      var Owner = tree[obj.value];
-      Owner["contents"] = parseSmMsgs(obj.contents);
 
-    } else if (!obj.identifier) { //checks not toppane, because toppane has id but not owner
-      tree["_msg" + i] = obj;
-      tree["_msg" + i].identifier = "_msg" + i;
-      i++;
+    var obj = unsortedStore[key];
+
+    if (Array.isArray(obj)) { //loops through array of objects
+      for (var i = 0; i < obj.length; i++) {
+        var objVal = obj[i].value;
+        tree[objVal].contents = parseSmMsgs(obj[i].contents);
+      }
+    } else {
+      if (obj.value) { //is an array
+        var arr = [];
+        for (var i = 0; i < obj.value.length; i++) {
+          arr[i] = parseSmMsgs(obj.value[i]); //returns array
+        }
+        obj.value = arr;
+      }
+
+      if (obj.frameRatio) {
+        obj.style = makeStyleFromFrameRatio(obj.frameRatio);
+      }
+
+      if (obj.owner) {
+        if (obj.owner == "top") {
+          tree[obj.identifier] = obj;
+        } else {
+          var Owner = tree[obj.owner];
+          Owner[obj.identifier] = obj;
+        }
+      } else if (!obj.identifier) { //checks not toppane, because toppane has id but not owner
+        tree["_msg" + i] = obj;
+        tree["_msg" + i].identifier = "_msg" + i;
+        i++;
+      }
     }
   }
   if (whiteboard) {
     var wb = jQuery.extend({}, whiteboard);
-    wb[tree.model] = tree;
+    wb[LM_model] = tree;
     return wb;
   }
   forest[tree.model] = tree;
@@ -100,7 +115,7 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard) {
 
 
 
-/*Converts the message of arrays into flat object.*/
+/*Converts the message of arrays into flat object. Exception: values is array of objs*/
 export function convertArrayToKeyValues(decodedCbor) {
   if (decodedCbor == null) {
    return;
@@ -116,7 +131,15 @@ export function convertArrayToKeyValues(decodedCbor) {
     for (var i = 1; i < decodedCbor[array].length; i=i+2) {
       msgObj[decodedCbor[array][i]] = decodedCbor[array][i+1];
     }
-    store[msgObj.identifier] = msgObj;
+    if (msgObj.identifier) {
+      store[msgObj.identifier] = msgObj;
+    } else if (msgObj.contents) {
+      if (store['values']) {
+      store['values'].push(msgObj);
+    } else {
+      store['values'] = [msgObj];
+    }
+    }
     msgObj = {};
   }
   return store;
@@ -269,6 +292,9 @@ RIRISEP = [RIRISEP1, RIRISEP2, RIRISEP3, RIRISEP4] //for array access of RIRI se
           First message missing RIRISEP3 in front of it (only '\u0001'), so add it.
 */
 function parseSmMsgs(smMsgs) {
+  if (smMsgs.indexOf('\u0001') < 0) { //if no riri inside string
+    return smMsgs;
+  }
   var s, ndx, b, item0, p, key;
   var val0, entry, len;
   var smMsgsJson;
@@ -384,7 +410,7 @@ function renderObj(model, obj, clientID) {
           return (
             <div className="contextMenu shell">
               <ContextMenuTrigger id={obj.identifier}>
-                {obj.contents ?
+                {obj.contents && Array.isArray(obj.contents) ?
                   <ul>
                     {
 
@@ -394,7 +420,7 @@ function renderObj(model, obj, clientID) {
                     })
                   }
                   </ul>
-                  : ''
+                  : <span style={{whiteSpace: 'pre'}}>{obj.contents}</span>
               }
               </ContextMenuTrigger>
               <ContextMenu id={obj.identifier}>

@@ -7,10 +7,11 @@ export function sendAction(action) {
   }
 };
 
-export function setLatestMessage(msg) {
+export function setLatestMessage(msg, model) {
   return {
     type: SET_LATEST_MESSAGE,
-    payload: msg
+    payload: msg,
+    model: model
   }
 };
 
