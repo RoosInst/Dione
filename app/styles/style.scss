@@ -6,6 +6,7 @@ $subMenuActive: #d19b3d;
 $menuHover: #4f5b69;
 $background: #f0f0f0;
 $highlightColor: yellow;
+$activeBackgroundColor: lightblue;
 
 
 $menuWidthLg: 300px;
@@ -413,3 +414,13 @@ ul {
 /*END REACT-CONTEXTMENU ALTERED CSS*/
 
 .highlight {background-color: $highlightColor};
+
+.active {background-color: $activeBackgroundColor};
+
+.card-block li {
+	cursor: pointer;
+}
+
+.card-header, .card-block li {
+	user-select: none;
+}

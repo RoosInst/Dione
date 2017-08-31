@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import {sendAction, setLatestMessage } from '../actions';
+import {sendAction, updateWhiteboard } from '../actions';
+import { getStyleAndCreateHierarchy, convertArrayToKeyValues } from '../scripts/functions';
 
 const mqtt = require('mqtt');
 const cbor = require('cbor');
@@ -24,7 +25,7 @@ class MQTT extends Component {
     const port = '8081';
     const ra = this.props.clientID; //set return adress to client ID
     const sendAction = this.props.sendAction;
-    const setLatestMessage = this.props.setLatestMessage;
+    const updateWhiteboard = this.props.updateWhiteboard;
     const mqttBroker = mqttHost + ':' + port + '/mqtt';  // websocket port (ws) (init by rTalkDistribution/moquette/bin/moquette.sh)
     const mqttConnectOptions = {
       clientId: "mqtt_" + ra //MQTT ID is "mqtt-" plus clientID
@@ -115,10 +116,12 @@ class MQTT extends Component {
 				}
       }
       else if (decodedCborMsg[0][0].value == "toppane") {
-        console.log('test', decodedCborMsg);
         for (var i = 0; i < decodedCborMsg[0].length; i++) {
           if (decodedCborMsg[0][i] === 'model') {
-            setLatestMessage(decodedCborMsg, decodedCborMsg[0][i + 1]);
+            var ObjFromArray = convertArrayToKeyValues(decodedCborMsg);
+            updateWhiteboard(
+              getStyleAndCreateHierarchy(ObjFromArray, wb, decodedCborMsg[0][i])
+            );
             break;
           }
         }
@@ -127,7 +130,12 @@ class MQTT extends Component {
         var arr = Object.keys(wb);
         for (var i = 0; i < arr.length; i++) {
           if (topic.indexOf(arr[i] + '/' + cellID + '/' + ra) >= 0) { // if message for us @ model/cellID/clientID
-            setLatestMessage(decodedCborMsg, arr[i]);
+
+            var ObjFromArray = convertArrayToKeyValues(decodedCborMsg);
+            updateWhiteboard(
+              getStyleAndCreateHierarchy(ObjFromArray, wb, arr[i])
+            );
+            break;
           }
         }
       }
@@ -163,4 +171,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, {sendAction, setLatestMessage })(MQTT);
+export default connect(mapStateToProps, {sendAction, updateWhiteboard })(MQTT);

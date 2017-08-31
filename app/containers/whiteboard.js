@@ -5,14 +5,6 @@ import {getStyleAndCreateHierarchy, convertArrayToKeyValues, renderApp} from '..
 
 class Whiteboard extends Component {
 
-  componentDidUpdate(prevProps, prevState) {
-    if ((!prevProps.latestMessage && this.props.latestMessage.payload) || prevProps.latestMessage.payload !== this.props.latestMessage.payload) {
-      var ObjFromArray = convertArrayToKeyValues(this.props.latestMessage.payload);
-      this.props.updateWhiteboard(
-        getStyleAndCreateHierarchy(ObjFromArray, this.props.whiteboard, this.props.latestMessage.model)
-      );
-    }
-  }
 
   render() {
       if (this.props.whiteboard) {
@@ -41,7 +33,6 @@ class Whiteboard extends Component {
 
 function mapStateToProps(state) {
   return {
-		latestMessage: state.latestMessage,
     whiteboard: state.whiteboard,
     clientID: state.clientID
   };

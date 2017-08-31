@@ -55,7 +55,6 @@ whiteboard is current existing state of all apps in a hierarchical object.
 Function nests objects into its owners (makes flat obj into hierarchical)
  and creates "style" key with values for positioning for each obj with frameRatio.*/
 export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, LM_model) {
-  console.log('unsorted store', unsortedStore);
   var forest = {};
   var tree = {};
   if (whiteboard && whiteboard[LM_model]) {
@@ -382,14 +381,15 @@ export function renderApp(model, newObj, clientID) {
 }
 
 function handleClick(model, obj, clientID, riString) {
+  $('.card-block li.active').removeClass('active');
+  $('.card-block li:eq(' + (riString.tag - 1) + ')').addClass('active');
+
   var msg = convertObjToArrayForPublish(model, obj, clientID, riString);
   var topic = clientID + '/' + cellID + '/' + model + '/action/1';
   if (client && cellID) {
       console.log("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
     client.publish(topic, msg);
   }
-
-
 }
 
 function renderObj(model, obj, clientID) {
@@ -399,11 +399,12 @@ function renderObj(model, obj, clientID) {
   if (obj.class) {
     switch(obj.class) {
       case 'Button':
-       return (<div className="btn btn-primary">{obj.contents}</div>);
-
+        if (obj.type === 'momentary') {
+         return (<div className="btn btn-primary momentary">{obj.contents}</div>);
+        }
        case 'TextPane':
        case 'ListPane':
-       for (var key in obj) { //Check for "*Menu" obj inside current obj
+       for (var key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu
          if (key.indexOf("Menu") >= 0) {
            menu = key;
          }
@@ -418,7 +419,6 @@ function renderObj(model, obj, clientID) {
                   obj.contents && Array.isArray(obj.contents) ?
                     <ul>
                       {
-
                       obj.contents.map((arrayVal) => {
                         i++;
                         return(getRiStringAsLi(model, arrayVal, i, obj, clientID));
@@ -490,5 +490,4 @@ function convertObjToArrayForPublish(model, obj, clientID, riString) {
   var selectorVal = cbor.encode(obj.selector);
 
   return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, omap_end]);
-
 }

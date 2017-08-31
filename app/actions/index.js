@@ -7,15 +7,6 @@ export function sendAction(action) {
   }
 };
 
-export function setLatestMessage(msg, model) {
-  return {
-    type: SET_LATEST_MESSAGE,
-    payload: msg,
-    model: model
-  }
-};
-
-
 export function updateWhiteboard(instructions) {
   return {
     type: UPDATE_WHITEBOARD,
