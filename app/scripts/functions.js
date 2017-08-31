@@ -381,8 +381,17 @@ export function renderApp(model, newObj, clientID) {
 }
 
 function handleClick(model, obj, clientID, riString) {
-  $('.card-block li.active').removeClass('active');
-  $('.card-block li:eq(' + (riString.tag - 1) + ')').addClass('active');
+  console.log(obj);
+  $('.card-block #' + (model + '_' + obj.identifier) + ' li.active').removeClass('active');
+  var arr = Object.values(obj.contents);
+  var numLi = null;
+  for (var i = 0; i < arr.length; i++) { //find which <li> should be active
+    if (arr[i] === riString) {
+      numLi = i;
+      break;
+    }
+  }
+  $('.card-block #' + (model + '_' + obj.identifier) + ' li:eq(' + (numLi) + ')').addClass('active');
 
   var msg = convertObjToArrayForPublish(model, obj, clientID, riString);
   var topic = clientID + '/' + cellID + '/' + model + '/action/1';
