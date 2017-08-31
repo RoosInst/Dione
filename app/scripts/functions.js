@@ -55,6 +55,7 @@ whiteboard is current existing state of all apps in a hierarchical object.
 Function nests objects into its owners (makes flat obj into hierarchical)
  and creates "style" key with values for positioning for each obj with frameRatio.*/
 export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, LM_model) {
+  console.log('unsorted store', unsortedStore);
   var forest = {};
   var tree = {};
   if (whiteboard && whiteboard[LM_model]) {
@@ -76,6 +77,9 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, LM_model) 
       for (var i = 0; i < obj.length; i++) {
         var objVal = obj[i].value;
         tree[objVal].contents = parseSmMsgs(obj[i].contents);
+        if (obj[i].highlight) {
+            tree[objVal].highlight = obj[i].highlight;
+        }
       }
     } else {
       if (obj.value) { //is an array
@@ -410,18 +414,29 @@ function renderObj(model, obj, clientID) {
           return (
             <div className="contextMenu shell">
               <ContextMenuTrigger id={obj.identifier}>
-                {obj.contents && Array.isArray(obj.contents) ?
-                  <ul>
-                    {
+                {
+                  obj.contents && Array.isArray(obj.contents) ?
+                    <ul>
+                      {
 
-                    obj.contents.map((arrayVal) => {
-                      i++;
-                      return(getRiStringAsLi(model, arrayVal, i, obj, clientID));
-                    })
-                  }
-                  </ul>
-                  : <span style={{whiteSpace: 'pre'}}>{obj.contents}</span>
-              }
+                      obj.contents.map((arrayVal) => {
+                        i++;
+                        return(getRiStringAsLi(model, arrayVal, i, obj, clientID));
+                      })
+                    }
+                    </ul>
+                  :
+                    obj.highlight ?
+                        <span style={{whiteSpace: 'pre'}}>
+                          {obj.contents.substring(0, obj.highlight[0] - 1)}
+                          <span className='highlight'>
+                            {obj.contents.substring(obj.highlight[0] - 1, obj.highlight[1] - 1)}
+                          </span>
+                            {obj.contents.substring(obj.highlight[1] - 1)}
+                      </span>
+                    :
+                      <span style={{whiteSpace: 'pre'}}>{obj.contents}</span>
+                }
               </ContextMenuTrigger>
               <ContextMenu id={obj.identifier}>
                 {

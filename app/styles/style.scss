@@ -5,6 +5,7 @@ $logoBackground: #23282e;
 $subMenuActive: #d19b3d;
 $menuHover: #4f5b69;
 $background: #f0f0f0;
+$highlightColor: yellow;
 
 
 $menuWidthLg: 300px;
@@ -410,3 +411,5 @@ ul {
     display: block;
 }
 /*END REACT-CONTEXTMENU ALTERED CSS*/
+
+.highlight {background-color: $highlightColor};
