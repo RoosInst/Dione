@@ -121,20 +121,21 @@ class MQTT extends Component {
           if (decodedCborMsg[0][i] === 'model') {
             var ObjFromArray = convertArrayToKeyValues(decodedCborMsg);
             updateWhiteboard(
-              getStyleAndCreateHierarchy(ObjFromArray, wb, decodedCborMsg[0][i])
+              getStyleAndCreateHierarchy(ObjFromArray, wb, decodedCborMsg[0][i + 1]) //i+1 b/c model name is i+1
             );
             break;
           }
         }
       }
       else if (wb) {
+        console.log("WB", wb);
         var arr = Object.keys(wb);
         for (var i = 0; i < arr.length; i++) {
           if (topic.indexOf(arr[i] + '/' + cellID + '/' + ra) >= 0) { // if message for us @ model/cellID/clientID
 
             var ObjFromArray = convertArrayToKeyValues(decodedCborMsg);
             updateWhiteboard(
-              getStyleAndCreateHierarchy(ObjFromArray, wb, arr[i])
+              getStyleAndCreateHierarchy(ObjFromArray, wb, arr[i]) //arr[i] is model name from topic
             );
             break;
           }

@@ -60,10 +60,13 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, LM_model) 
   if (whiteboard && whiteboard[LM_model]) {
       tree = jQuery.extend({}, whiteboard[LM_model]);
   }
-  else  if (unsortedStore.top) {
+  else if (unsortedStore.top) {
     tree = jQuery.extend({}, unsortedStore.top); //must clone
   }
-
+  else {
+    console.error('ERR: tree not properly copied. \nunsortedStore:', unsortedStore, '\nwhiteboard:', whiteboard, '\nLM_MODEL:', LM_model);
+    return -1;
+  }
 
   var i = 0;
   for (var key in unsortedStore) {
@@ -381,7 +384,6 @@ export function renderApp(model, newObj, clientID) {
 }
 
 function handleClick(model, obj, clientID, riString) {
-  console.log(obj);
   $('.card-block #' + (model + '_' + obj.identifier) + ' li.active').removeClass('active');
   var arr = Object.values(obj.contents);
   var numLi = null;
