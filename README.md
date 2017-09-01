@@ -26,6 +26,9 @@ This README documents the steps necessary to get this development environment an
           
 * After the command is complete, open a browser and type into the browser "localhost:8080".
 
+### Problems? ####
+* For "Module not found" issues, run 'npm install' again to get new modules.
+
 ### Who do I talk to? ###
 
 * For issues or questions, contact support@roos.com.
