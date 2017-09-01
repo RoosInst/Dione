@@ -1,5 +1,5 @@
-export const SET_LATEST_MESSAGE = 'set_latest_message';
 export const UPDATE_WHITEBOARD = 'update_whiteboard';
+export const ADD_SELECTION = 'add_selection';
 
 export function sendAction(action) {
   return {
@@ -13,3 +13,11 @@ export function updateWhiteboard(instructions) {
     payload: instructions
   }
 };
+
+export function addSelection(objID, riString) {
+  return {
+    type: ADD_SELECTION,
+    identifier: objID,
+    selected: riString
+  }
+}

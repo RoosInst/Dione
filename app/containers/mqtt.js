@@ -8,7 +8,7 @@ const mqtt = require('mqtt');
 const cbor = require('cbor');
 const assert  = require('assert');
 
-export var client = null;
+export var mqttClient = null;
 export var cellID = null;   //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
 var numMsgs = 0;
 
@@ -23,7 +23,7 @@ class MQTT extends Component {
   componentDidMount() {
     const mqttHost = 'ws://localhost';
     const port = '8081';
-    ra = this.props.clientID; //set return adress to client ID
+    ra = this.props.clientID; //set return adress to clientID
     wb = this.props.whiteboard;
     const sendAction = this.props.sendAction;
     const updateWhiteboard = this.props.updateWhiteboard;
@@ -32,7 +32,7 @@ class MQTT extends Component {
       clientId: "mqtt_" + ra //MQTT ID is "mqtt-" plus clientID
       //rejectUnauthorized: false	//false for self-signed certificates, true in production
     };
-    client  = mqtt.connect(mqttBroker, mqttConnectOptions);
+    mqttClient = mqtt.connect(mqttBroker, mqttConnectOptions);
 
     //riri separators
   //  var riri_1C = Buffer.from('1c', 'hex'); //^ hex 0x1C, first level separator, parameters, ^parameter^parameter
@@ -64,17 +64,17 @@ class MQTT extends Component {
   	var appSubscribeTopic = 'GURUBROWSER/' + ra + '/createSubscriber/1';  //vars updated after cellID discovered
 
   //-------------------------------------
-  //-----CLIENT.ON LISTENING OPTIONS-----
+  //-----MQTTCLIENT.ON LISTENING OPTIONS-----
   //-------------------------------------
   	// MQTT Connect sequence - adminTopic - appTopic
-  	client.on('connect', function () {
+  	mqttClient.on('connect', function () {
       sendAction('MQTT_CONNECTED');
   		console.log('Subscribing to admin topic: '+ adminTopic);
-  		client.subscribe(adminTopic, {qos: 2}); //after subscribe, should receive message with cellID then UNSUBSCRIBE
+  		mqttClient.subscribe(adminTopic, {qos: 2}); //after subscribe, should receive message with cellID then UNSUBSCRIBE
   	});
 
   	//Main MQTT Parsing loop
-  	client.on('message', function (topic, message) {
+  	mqttClient.on('message', function (topic, message) {
       numMsgs++;
       try {
         var decodedCborMsg = cbor.decodeAllSync(message);
@@ -93,7 +93,7 @@ class MQTT extends Component {
 
           //UNSUBSCRIBE
   				console.log('Unsubscribing from: ' + adminTopic);
-  				client.unsubscribe(adminTopic);
+  				mqttClient.unsubscribe(adminTopic);
 
           //SUBSCRIBE
           var channelID = '+';
@@ -106,14 +106,14 @@ class MQTT extends Component {
             channelID + '/' + cellID + '/'+ra +'/action/1'
            ];
   				console.log('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
-  				client.subscribe(GURUBROWSER_App_Topics, {qos: 2});
+  				mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 2});
   				//PUBLISH to App createSubscriber
   				var appPublishTopic = ra + '/' + cellID + '/rtalk/app/1';
-          //client.publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
+          //mqttClient..publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
           console.log("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
-          client.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
+          mqttClient.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
           //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
-          //client.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
+          //mqttClient.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
 				}
       }
       else if (decodedCborMsg[0][0].value == "toppane") {
@@ -128,7 +128,6 @@ class MQTT extends Component {
         }
       }
       else if (wb) {
-        console.log("WB", wb);
         var arr = Object.keys(wb);
         for (var i = 0; i < arr.length; i++) {
           if (topic.indexOf(arr[i] + '/' + cellID + '/' + ra) >= 0) { // if message for us @ model/cellID/clientID
@@ -142,18 +141,18 @@ class MQTT extends Component {
         }
       }
       else if (message.toString()=="end") {
-       client.unsubscribe('+/+/' + ra + '/#');
-       client.end();
+       mqttClient.unsubscribe('+/+/' + ra + '/#');
+       mqttClient.end();
       }
 
   	});
 
-  	client.on('error', function(err) {
+  	mqttClient.on('error', function(err) {
   		console.log("Error: " + err.toString());
   	});
 
 
-  	client.on('close', function () {
+  	mqttClient.on('close', function () {
   		console.log("Connection closed");
   		sendAction('MQTT_DISCONNECTED');
       cellID = null;

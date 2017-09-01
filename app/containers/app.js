@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import { connect } from 'react-redux';
 
 import { sendAction } from '../actions';
-import { bindActionCreators } from 'redux';
 
 import AppGuru from '../components/appGuru';
 import MQTT from './mqtt';
@@ -53,7 +52,7 @@ class App extends Component {
 	          </div>
 	        </div>
 	        <div id="main">
-							<Whiteboard/>
+							<Whiteboard />
 	            {this.returnComponent('AppGuru')}
 	        </div>
 	      </div>

@@ -1,7 +1,5 @@
 /*Here exists functions essential to building the app.*/
 import React from 'react';
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
-import {client, cellID} from '../containers/mqtt';
 const cbor = require('cbor');
 const mqtt = require('mqtt');
 
@@ -53,18 +51,25 @@ function makeStyleFromFrameRatio(val) {
 /*unSortedStore is flat obj containing everything after converted from array.
 whiteboard is current existing state of all apps in a hierarchical object.
 Function nests objects into its owners (makes flat obj into hierarchical)
- and creates "style" key with values for positioning for each obj with frameRatio.*/
-export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, LM_model) {
-  var forest = {};
+ and creates "style" key with values for positioning for each obj with frameRatio.
+ Also decodes riri strings into array of usable objects.*/
+export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
+  var forest = {}; //copy of whiteboard if exists
   var tree = {};
-  if (whiteboard && whiteboard[LM_model]) {
-      tree = jQuery.extend({}, whiteboard[LM_model]);
+  if (whiteboard) {
+    forest = jQuery.extend({}, whiteboard); //deep clone, do not alter redux store (treat as immutable)
+    if (whiteboard[model]) { //if app exists in whiteboard
+      tree = forest[model];
+    }
+    else if (unsortedStore.top) {
+      tree = unsortedStore.top;
+    }
   }
   else if (unsortedStore.top) {
-    tree = jQuery.extend({}, unsortedStore.top); //must clone
+    tree = unsortedStore.top;
   }
   else {
-    console.error('ERR: tree not properly copied. \nunsortedStore:', unsortedStore, '\nwhiteboard:', whiteboard, '\nLM_MODEL:', LM_model);
+    console.error('ERR: tree not properly copied. \nunsortedStore:', unsortedStore, '\nwhiteboard:', whiteboard, '\nmodel:', model);
     return -1;
   }
 
@@ -109,11 +114,6 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, LM_model) 
         i++;
       }
     }
-  }
-  if (whiteboard) {
-    var wb = jQuery.extend({}, whiteboard);
-    wb[LM_model] = tree;
-    return wb;
   }
   forest[tree.model] = tree;
   return forest;
@@ -221,7 +221,7 @@ function riStringCheckAndConvert(s) {
 
 
 /**Given an RiString returns a fomatted JSX list <li>...</li> element*/
-function getRiStringAsLi(model, riString, key, obj, clientID) {
+export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick) {
     key = 'string' + key;
     var indent, color, font, a; //local vars
     if(!riString.text) { //if no text field then it's not an RiString
@@ -237,7 +237,7 @@ function getRiStringAsLi(model, riString, key, obj, clientID) {
       return (<li key={key}>{riString.text}</li>); //nothing to format
     }
     return (
-      <li onClick={() => handleClick(model, obj, clientID, riString)} key={key} className={`${color !==0 ? 'rsColor'+color : ''}${font !== 0 ? 'rsStyle'+font : '' }`}>
+      <li onClick={() => handleClick(riString)} key={key} className={`${color !==0 ? 'rsColor'+color : ''}${font !== 0 ? 'rsStyle'+font : '' }`}>
         {nbspaces(indent)}{riString.text}
       </li>
     );
@@ -348,148 +348,12 @@ function parseSmMsgs(smMsgs) {
 
 
 
-export function renderApp(model, newObj, clientID) {
-  var arr = Object.keys(newObj);
-  var model = null;
-  if (newObj.model) model = newObj.model;
-  return (
-    <div className="shell">
-      {
-        arr.map((key) => {
-          var val = newObj[key];
-          //console.log("key:", key, " val:", val);
-          if (val.identifier && val.style && val !== null && typeof val === 'object' && Object.prototype.toString.call( val ) !== '[object Array]') { //if type object but not style obj, null, or array
-             return (<div className={val.class} style={val.style} id={model + '_' + val.identifier} key={val.identifier}>{renderObj(model, val, clientID)}{renderApp(model, val, clientID)}</div>)
-          }
-
-          else if (Array.isArray(val)) {
-            var i = 0;
-            return (
-              <div className="shell" key={'arrayShell' + (i + 1)}>
-                {
-                  val.map((arrayVal) => {
-                    i++;
-                    return(
-                    <div className='shell' key={'array' + i}></div>
-                  );
-                  })
-                }
-              </div>
-            )
-          }
-           else return (null);
-        })
-      }
-    </div>);
-}
-
-function handleClick(model, obj, clientID, riString) {
-  $('.card-block #' + (model + '_' + obj.identifier) + ' li.active').removeClass('active');
-  var arr = Object.values(obj.contents);
-  var numLi = null;
-  for (var i = 0; i < arr.length; i++) { //find which <li> should be active
-    if (arr[i] === riString) {
-      numLi = i;
-      break;
-    }
-  }
-  $('.card-block #' + (model + '_' + obj.identifier) + ' li:eq(' + (numLi) + ')').addClass('active');
-
-  var msg = convertObjToArrayForPublish(model, obj, clientID, riString);
-  var topic = clientID + '/' + cellID + '/' + model + '/action/1';
-  if (client && cellID) {
-      console.log("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
-    client.publish(topic, msg);
-  }
-}
-
-function renderObj(model, obj, clientID) {
-
-  var menu = null;
-
-  if (obj.class) {
-    switch(obj.class) {
-      case 'Button':
-        if (obj.type === 'momentary') {
-         return (<div className="btn btn-primary momentary">{obj.contents}</div>);
-        }
-       case 'TextPane':
-       case 'ListPane':
-       for (var key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu
-         if (key.indexOf("Menu") >= 0) {
-           menu = key;
-         }
-       }
-        if (obj[menu] && obj.identifier && obj[menu].value) {
-          var i = 0;
-          var j = 0;
-          return (
-            <div className="contextMenu shell">
-              <ContextMenuTrigger id={obj.identifier}>
-                {
-                  obj.contents && Array.isArray(obj.contents) ?
-                    <ul>
-                      {
-                      obj.contents.map((arrayVal) => {
-                        i++;
-                        return(getRiStringAsLi(model, arrayVal, i, obj, clientID));
-                      })
-                    }
-                    </ul>
-                  :
-                    obj.highlight ?
-                        <span style={{whiteSpace: 'pre'}}>
-                          {obj.contents.substring(0, obj.highlight[0] - 1)}
-                          <span className='highlight'>
-                            {obj.contents.substring(obj.highlight[0] - 1, obj.highlight[1] - 1)}
-                          </span>
-                            {obj.contents.substring(obj.highlight[1] - 1)}
-                      </span>
-                    :
-                      <span style={{whiteSpace: 'pre'}}>{obj.contents}</span>
-                }
-              </ContextMenuTrigger>
-              <ContextMenu id={obj.identifier}>
-                {
-                obj[menu].value.map((menuItem) => {
-                  j++;
-                  return(
-                    <MenuItem key={'menuItem' + j} onClick={() => handleClick(model, obj.menuItem, clientID, menuItem[0])}>
-                        {menuItem[0].text}
-                    </MenuItem>
-                  );
-                })
-                }
-              </ContextMenu>
-            </div>
-          );
-        }
-        else if (obj.contents) {
-          var i = 0;
-          return (<ul>
-            {
-              obj.contents.map((arrayVal) => {
-              i++;
-              return(getRiStringAsLi(model, arrayVal, i, obj, clientID));
-            })
-          }
-          </ul>);
-        } else return null;
-
-      default: return null;
-    }
-
-  }
-}
-
-
-
 var omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
 var omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
 var omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
 var cbor_null = Buffer.from('f6', 'hex'); // hex 0xF6, null (string==null, aka empty omap)
 
-function convertObjToArrayForPublish(model, obj, clientID, riString) {
+export function convertObjToArrayForPublish(model, obj, clientID, riString) {
   var objVal = cbor.encode('event');
   var widgetKey = cbor.encode('widget');
   var widgetVal = cbor.encode(obj.identifier);
