@@ -1,3 +1,4 @@
-#!/bin/sh
-#  mac OSX version
-./jdk1.8.0/bin/java  -agentpath:./libJvmtiDebug.so -cp jars/rtalkCore.jar:jars/* rtalk/Rtalk rtDebug rtalk whiteboard logWindow rtBoot=GAKRE8CAB39TNC00 rtLaunch=RiRemoteViewTranscript:open rtLoad=GAKRE8CAB39TNC00 launch
+ #!/bin/sh
+#  mac OSX version must be in rtalk type ./startOsx
+#cd "$(dirname ${BASH_SOURCE[0]})�
+java -agentpath:./libJvmtiDebug.so -cp jars/rtalkCore.jar:jars/* rtalk/RtalkMqttLauncher updateGuruChannel=updateGuru boot=bootRtalk.txt 
