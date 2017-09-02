@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {sendAction, updateWhiteboard } from '../actions';
-import { getStyleAndCreateHierarchy, convertArrayToKeyValues } from '../scripts/functions';
 
 const mqtt = require('mqtt');
 const cbor = require('cbor');
@@ -119,10 +118,7 @@ class MQTT extends Component {
       else if (decodedCborMsg[0][0].value == "toppane") {
         for (var i = 0; i < decodedCborMsg[0].length; i++) {
           if (decodedCborMsg[0][i] === 'model') {
-            var ObjFromArray = convertArrayToKeyValues(decodedCborMsg);
-            updateWhiteboard(
-              getStyleAndCreateHierarchy(ObjFromArray, wb, decodedCborMsg[0][i + 1]) //i+1 b/c model name is i+1
-            );
+            updateWhiteboard(decodedCborMsg, decodedCborMsg[0][i + 1]);
             break;
           }
         }
@@ -131,11 +127,7 @@ class MQTT extends Component {
         var arr = Object.keys(wb);
         for (var i = 0; i < arr.length; i++) {
           if (topic.indexOf(arr[i] + '/' + cellID + '/' + ra) >= 0) { // if message for us @ model/cellID/clientID
-
-            var ObjFromArray = convertArrayToKeyValues(decodedCborMsg);
-            updateWhiteboard(
-              getStyleAndCreateHierarchy(ObjFromArray, wb, arr[i]) //arr[i] is model name from topic
-            );
+            updateWhiteboard(decodedCborMsg, arr[i]); //arr[i] is model name from topic
             break;
           }
         }

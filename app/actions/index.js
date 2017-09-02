@@ -1,3 +1,4 @@
+import { convertArrayToKeyValues } from '../scripts/functions';
 export const UPDATE_WHITEBOARD = 'update_whiteboard';
 export const ADD_SELECTION = 'add_selection';
 
@@ -7,16 +8,18 @@ export function sendAction(action) {
   }
 };
 
-export function updateWhiteboard(instructions) {
+export function updateWhiteboard(decodedCborMsg, model) {
   return {
     type: UPDATE_WHITEBOARD,
-    payload: instructions
+    payload: convertArrayToKeyValues(decodedCborMsg),
+    model: model
   }
 };
 
-export function addSelection(objID, riString) {
+export function addSelection(model, objID, riString) {
   return {
     type: ADD_SELECTION,
+    model: model,
     identifier: objID,
     selected: riString
   }

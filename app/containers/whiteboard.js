@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { updateWhiteboard } from '../actions';
-import {getStyleAndCreateHierarchy, convertArrayToKeyValues, getRiStringAsLi} from '../scripts/functions';
+import {getStyleAndCreateHierarchy, getRiStringAsLi} from '../scripts/functions';
 
 import Pane from './pane';
 
@@ -93,4 +92,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { updateWhiteboard })(Whiteboard);
+export default connect(mapStateToProps, null)(Whiteboard);

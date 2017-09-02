@@ -14,7 +14,7 @@ class Pane extends Component {
     const model = this.props.model;
     const clientID = this.props.clientID;
 
-    this.props.addSelection(obj.identifier, riString);
+    this.props.addSelection(model, obj.identifier, riString);
     //console.log('model', model, '\nobj', obj, '\nclientID', clientID, '\nriString', riString);
     $('.card-block #' + (model + '_' + obj.identifier) + ' li.active').removeClass('active');
     var arr = Object.values(obj.contents);
@@ -26,9 +26,7 @@ class Pane extends Component {
       }
     }
     $('.card-block #' + (model + '_' + obj.identifier) + ' li:eq(' + (numLi) + ')').addClass('active');
-    console.log("err");
     var msg = convertObjToArrayForPublish(model, obj, clientID, riString);
-    console.log('decoded msg', cbor.decode(msg));
     var topic = clientID + '/' + cellID + '/' + model + '/action/1';
     if (mqttClient && cellID) {
         console.log("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
