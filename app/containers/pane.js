@@ -9,27 +9,23 @@ const cbor = require('cbor');
 
 class Pane extends Component {
 
-  handleClick(riString) {
-    const obj = this.props.obj;
+  handleClick(riString, clickedObj) {
+    if (riString.text === 'Copy') {
+      document.execCommand("copy");
+      return;
+    }
     const model = this.props.model;
     const clientID = this.props.clientID;
+    const selectedItems = this.props.selectedItems;
 
-    this.props.addSelection(model, obj.identifier, riString);
-    //console.log('model', model, '\nobj', obj, '\nclientID', clientID, '\nriString', riString);
-    $('.card-block #' + (model + '_' + obj.identifier) + ' li.active').removeClass('active');
-    var arr = Object.values(obj.contents);
-    var numLi = null;
-    for (var i = 0; i < arr.length; i++) { //find which <li> should be active
-      if (arr[i] === riString) {
-        numLi = i;
-        break;
-      }
+    if (clickedObj.identifier.indexOf("Menu") < 0) { //don't add to selectedItems if context menu (right-click menu) clicked
+      this.props.addSelection(model, clickedObj.identifier, riString);
     }
-    $('.card-block #' + (model + '_' + obj.identifier) + ' li:eq(' + (numLi) + ')').addClass('active');
-    var msg = convertObjToArrayForPublish(model, obj, clientID, riString);
+
+    var msg = convertObjToArrayForPublish(model, clickedObj, clientID, riString, selectedItems);
     var topic = clientID + '/' + cellID + '/' + model + '/action/1';
     if (mqttClient && cellID) {
-        console.log("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
+        console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
       mqttClient.publish(topic, msg);
     }
   }
@@ -41,14 +37,14 @@ class Pane extends Component {
 
     var menu = null;
 
-    for (var key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu
+    for (var key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu. Will be used for right click context menu
       if (key.indexOf("Menu") >= 0) {
         menu = key;
       }
     }
-     if (obj[menu] && obj.identifier && obj[menu].value) {
-       var i = 0;
-       var j = 0;
+     if (obj[menu] && obj.identifier && obj[menu].value) { //if right-clicking capabilities
+       var key1 = 0;
+       var key2 = 0;
        return (
          <div className="contextMenu shell">
            <ContextMenuTrigger id={obj.identifier}>
@@ -57,8 +53,8 @@ class Pane extends Component {
                  <ul>
                    {
                    obj.contents.map((arrayVal) => {
-                     i++;
-                     return(getRiStringAsLi(model, arrayVal, i, obj, this.props.clientID, this.handleClick));
+                     key1++;
+                     return(getRiStringAsLi(model, arrayVal, key1, obj, this.props.clientID, this.handleClick, this.props.selectedItems));
                    })
                  }
                  </ul>
@@ -78,9 +74,9 @@ class Pane extends Component {
            <ContextMenu id={obj.identifier}>
              {
              obj[menu].value.map((menuItem) => {
-               j++;
+               key2++;
                return(
-                 <MenuItem key={'menuItem' + j} onClick={() => this.handleClick(model, obj.menuItem, this.props.clientID, menuItem[0])}>
+                 <MenuItem key={'menuItem' + key2} onClick={() => this.handleClick(menuItem[0], obj[menu])}>
                      {menuItem[0].text}
                  </MenuItem>
                );
@@ -90,17 +86,20 @@ class Pane extends Component {
          </div>
        );
      }
-     else if (obj.contents) {
+     else if (obj.contents && obj.class === 'ListPane') {
        var i = 0;
        return (<ul>
          {
-           obj.contents.map((arrayVal) => {
-           i++;
-           return(getRiStringAsLi(model, arrayVal, i, obj, clientID));
-         })
+          obj.contents.map((arrayVal) => {
+            i++;
+            return(getRiStringAsLi(model, arrayVal, i, obj, clientID));
+          })
        }
        </ul>);
-     } else return null;
+     } else if (obj.contents) { //not a ListPane, don't render in a list
+       return (<span style={{whiteSpace: 'pre'}}>{obj.contents}</span>);
+     }
+     else return null;
 		}
 	}
 
@@ -108,7 +107,8 @@ function mapStateToProps(state) {
   return {
 		clientID: state.clientID,
 		whiteboard: state.whiteboard,
-	  mqttConnection: state.mqttConnection
+	  mqttConnection: state.mqttConnection,
+    selectedItems: state.selectedItems
   };
 }
 

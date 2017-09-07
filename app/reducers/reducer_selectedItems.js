@@ -22,7 +22,6 @@ export default function(state = {}, action) {
     case UPDATE_WHITEBOARD: //if list updated, remove replaced selected items
       if (action.payload.values && forest[action.model]) { //values is array
         for (var i = 0; i < action.payload.values.length; i++) {
-          console.log('ac', action.payload.values);
           delete forest[action.model][action.payload.values[i].value];
         }
         return forest;

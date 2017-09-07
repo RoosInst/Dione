@@ -425,3 +425,11 @@ ul {
 .card-header, .card-block li {
 	user-select: none;
 }
+
+.cardLabel {
+	text-overflow: ellipsis;
+	 overflow: hidden;
+	 white-space: nowrap;
+	  width: 92%;
+		display: inline-block;
+}

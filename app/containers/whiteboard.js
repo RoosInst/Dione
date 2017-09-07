@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import {getStyleAndCreateHierarchy, getRiStringAsLi} from '../scripts/functions';
 
 import Pane from './pane';
+import Button from './button';
 
 class Whiteboard extends Component {
 
@@ -45,11 +46,9 @@ class Whiteboard extends Component {
     if (obj.class) {
       switch(obj.class) {
         case 'Button':
-          if (obj.type === 'momentary') {
-           return (<div className="btn btn-primary momentary">{obj.contents}</div>);
-          }
-         case 'TextPane':
-         case 'ListPane':
+          return <Button model={model} obj={obj}/>
+        case 'TextPane':
+        case 'ListPane':
           return <Pane model={model} obj={obj}/>;
 
         default: return null;
@@ -68,7 +67,7 @@ class Whiteboard extends Component {
             return (
               <div key={model} className={`${arr.length == 1 ? 'col-xl-12' : 'col-xl-6'}`}>
                 <div className="card">
-                  <div className="card-header"><span style={{textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', width: '94%'}}>{obj.label}</span><i className="pull-right fa fa-window-close"></i></div>
+                  <div className="card-header"><span className="cardLabel">{obj.label}</span><i className="pull-right fa fa-window-close"></i></div>
                   <div className="card-block">
                     {this.renderApp(model, obj)}
                   </div>

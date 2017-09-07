@@ -68,7 +68,7 @@ class MQTT extends Component {
   	// MQTT Connect sequence - adminTopic - appTopic
   	mqttClient.on('connect', function () {
       sendAction('MQTT_CONNECTED');
-  		console.log('Subscribing to admin topic: '+ adminTopic);
+  		console.info('Subscribing to admin topic: '+ adminTopic);
   		mqttClient.subscribe(adminTopic, {qos: 2}); //after subscribe, should receive message with cellID then UNSUBSCRIBE
   	});
 
@@ -91,7 +91,7 @@ class MQTT extends Component {
   				console.info('CellID: ', cellID);
 
           //UNSUBSCRIBE
-  				console.log('Unsubscribing from: ' + adminTopic);
+  				console.info('Unsubscribing from: ' + adminTopic);
   				mqttClient.unsubscribe(adminTopic);
 
           //SUBSCRIBE
@@ -104,12 +104,12 @@ class MQTT extends Component {
             channelID + '/'+ cellID + '/' + ra + '/+/subscribe/1',
             channelID + '/' + cellID + '/'+ra +'/action/1'
            ];
-  				console.log('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
+  				console.info('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
   				mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 2});
   				//PUBLISH to App createSubscriber
   				var appPublishTopic = ra + '/' + cellID + '/rtalk/app/1';
           //mqttClient..publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
-          console.log("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
+          console.info("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
           mqttClient.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
           //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
           //mqttClient.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
@@ -140,12 +140,12 @@ class MQTT extends Component {
   	});
 
   	mqttClient.on('error', function(err) {
-  		console.log("Error: " + err.toString());
+  		console.error("Error: " + err.toString());
   	});
 
 
   	mqttClient.on('close', function () {
-  		console.log("Connection closed");
+  		console.info("Connection closed");
   		sendAction('MQTT_DISCONNECTED');
       cellID = null;
   	});

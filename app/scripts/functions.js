@@ -83,10 +83,14 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
     if (Array.isArray(obj)) { //loops through array of objects
       for (var i = 0; i < obj.length; i++) {
         var objVal = obj[i].value;
+        if (whiteboard && whiteboard[model] && whiteboard[model][objVal]) console.log('objVal', whiteboard[model][objVal]);
         tree[objVal].contents = parseSmMsgs(obj[i].contents);
         if (obj[i].highlight) {
             tree[objVal].highlight = obj[i].highlight;
+        } else if (forest[model] && forest[model][objVal] && forest[model][objVal].highlight) { //if no highlight property in new msg but in old, delete old
+          delete forest[model][objVal].highlight;
         }
+        //tree[objVal].highlight = '' will replace highlight for all levels, rather than delete for only top level objs of model
       }
     } else {
       if (obj.value) { //is an array
@@ -139,12 +143,13 @@ export function convertArrayToKeyValues(decodedCbor) {
     }
     if (msgObj.identifier) {
       store[msgObj.identifier] = msgObj;
-    } else if (msgObj.contents) {
+    }
+    else if (msgObj.contents != null) { //not null, but can be empty string
       if (store['values']) {
       store['values'].push(msgObj);
-    } else {
+      } else {
       store['values'] = [msgObj];
-    }
+      }
     }
     msgObj = {};
   }
@@ -204,14 +209,14 @@ function riStringCheckAndConvert(s) {
         //determine the action command length then extract it
         actionLength = ((rawHeaderBytes[4] & 0xff) << 8) + (rawHeaderBytes[5] & 0xff); //convert to int
         if(headerOffset+actionLength > s.length) { //check that specified action string length is not larger than available bytes.
-          console.log('Error parsing RiString (type 2) action cmd because of length: action cmd length='+actionLength+'. Available string length='+(s.length-headerOffset));
+          console.error('Error parsing RiString (type 2) action cmd because of length: action cmd length='+actionLength+'. Available string length='+(s.length-headerOffset));
           actionLength = 0; //if so then set action string to zero so that bytes show up in the regular string data (to help in debug)
         }
         riString.action = s.slice(headerOffset, headerOffset+actionLength);
       }
     }
     catch(e) {
-      console.log('Unable to convert RiString header because: '+e);
+      console.error('Unable to convert RiString header because: '+e);
     }
     riString.text = s.slice(headerOffset+actionLength); //take the remainder as the text. For type1 = 5, for type2 = (7+length of action string)
     riString.header= isType2 ? s.slice(1, 7) : rawHeaderBytes; //the raw header portion
@@ -221,7 +226,7 @@ function riStringCheckAndConvert(s) {
 
 
 /**Given an RiString returns a fomatted JSX list <li>...</li> element*/
-export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick) {
+export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick, selectedItems) {
     key = 'string' + key;
     var indent, color, font, a; //local vars
     if(!riString.text) { //if no text field then it's not an RiString
@@ -237,8 +242,15 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
       return (<li key={key}>{riString.text}</li>); //nothing to format
     }
     return (
-      <li onClick={() => handleClick(riString)} key={key} className={`${color !==0 ? 'rsColor'+color : ''}${font !== 0 ? 'rsStyle'+font : '' }`}>
-        {nbspaces(indent)}{riString.text}
+      <li onClick={() => handleClick(riString, obj)}
+         key={key}
+         className={`
+           ${color !==0 ? 'rsColor'+color : ''}
+           ${font !== 0 ? 'rsStyle'+font : '' }
+          ${selectedItems && selectedItems[model] && selectedItems[model][obj.identifier] && selectedItems[model][obj.identifier].text === riString.text ? 'active' : ''}
+        `}>
+        {nbspaces(indent)}
+        {riString.text}
       </li>
     );
   };
@@ -353,16 +365,28 @@ var omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap 
 var omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
 var cbor_null = Buffer.from('f6', 'hex'); // hex 0xF6, null (string==null, aka empty omap)
 
-export function convertObjToArrayForPublish(model, obj, clientID, riString) {
+export function convertObjToArrayForPublish(model, obj, clientID, riString, selectedItems) {
   var objVal = cbor.encode('event');
   var widgetKey = cbor.encode('widget');
   var widgetVal = cbor.encode(obj.identifier);
   var channelKey = cbor.encode('channel');
   var channelVal = cbor.encode(clientID);
   var selectionKey = cbor.encode('selection');
-  var selectionVal = cbor.encode(riString.header + riString.text);
+  var selectionVal;
+  if (riString) selectionVal = cbor.encode(riString.header + riString.text);
+  else selectionVal = cbor.encode(obj.contents);
   var selectorKey = cbor.encode('selector');
   var selectorVal = cbor.encode(obj.selector);
-
-  return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, omap_end]);
+  if (selectedItems && selectedItems[model]) {
+    var selectedItemsBuffer = null;
+    var selectedItemsModelEntries = Object.entries(selectedItems[model]);
+    for (var i = 0; i < selectedItemsModelEntries.length; i++) {
+      var selectionIDKey = cbor.encode('selection' + selectedItemsModelEntries[i][0]); //0 is key
+      var selectionIDVal = cbor.encode(selectedItemsModelEntries[i][1].header + selectedItemsModelEntries[i][1].text); //1 is value
+      if (selectedItemsBuffer) selectedItemsBuffer = Buffer.concat([selectedItemsBuffer, selectionIDKey, selectionIDVal]);
+      else selectedItemsBuffer = Buffer.concat([selectionIDKey, selectionIDVal]);
+    }
+  }
+  if (selectedItemsBuffer) return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, selectedItemsBuffer, omap_end]);
+  else return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, omap_end]);
 }
