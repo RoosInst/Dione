@@ -20,8 +20,17 @@ class Button extends Component {
 
   render() {
     const obj = this.props.obj;
-    if (obj.type === 'momentary') {
+    console.log('obj', obj);
+    if (obj.type === 'momentary' || !obj.selectionGroup) {
      return (<div className="btn btn-primary momentary" onClick={() => this.handleClick(obj)}>{obj.contents}</div>);
+    } else {
+      console.log('obj.contents', obj.contents);
+     return (
+       <div>
+         <input type='radio' name={obj.owner} value={obj.contents} />
+          {obj.contents}
+       </div>
+     );
     }
   }
 }

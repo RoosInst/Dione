@@ -83,20 +83,19 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
     if (Array.isArray(obj)) { //loops through array of objects
       for (var i = 0; i < obj.length; i++) {
         var objVal = obj[i].value;
-        if (whiteboard && whiteboard[model] && whiteboard[model][objVal]) console.log('objVal', whiteboard[model][objVal]);
         tree[objVal].contents = parseSmMsgs(obj[i].contents);
         if (obj[i].highlight) {
-            tree[objVal].highlight = obj[i].highlight;
-        } else if (forest[model] && forest[model][objVal] && forest[model][objVal].highlight) { //if no highlight property in new msg but in old, delete old
-          delete forest[model][objVal].highlight;
+            tree[objVal].contents[i].highlight = obj[i].highlight;
+            //tree[objVal].highlight = obj[i].highlight;
         }
-        //tree[objVal].highlight = '' will replace highlight for all levels, rather than delete for only top level objs of model
       }
     } else {
       if (obj.value) { //is an array
         var arr = [];
         for (var i = 0; i < obj.value.length; i++) {
-          arr[i] = parseSmMsgs(obj.value[i]); //returns array
+          if (typeof obj.value[i] === 'string') {
+            arr[i] = parseSmMsgs(obj.value[i]); //returns array
+          } else {console.log('Unrecognized obj.value:', obj.value[i])}
         }
         obj.value = arr;
       }
@@ -176,7 +175,10 @@ function riStringCheckAndConvert(s) {
     switch(s[0]) {
       case '\u0001': isType2=false; break;
       case '\u0002': isType2=true;  break;
-      default: return s; //is a regular string (neither type 1 or type 2). Just return the string
+      default:
+        var obj = {};
+        obj['text'] = s;
+        return obj; //is a regular string (neither type 1 or type 2). Return obj with text key's value as string
     }
 
     rawHeaderBytes=null; //raw bytes extracted from input string
@@ -310,8 +312,13 @@ RIRISEP = [RIRISEP1, RIRISEP2, RIRISEP3, RIRISEP4] //for array access of RIRI se
           First message missing RIRISEP3 in front of it (only '\u0001'), so add it.
 */
 function parseSmMsgs(smMsgs) {
+  if (!smMsgs.indexOf) console.log('smMsgs', smMsgs);;
   if (smMsgs.indexOf('\u0001') < 0) { //if no riri inside string
-    return smMsgs;
+    var arr = [];
+    var obj = {};
+    obj['text'] = smMsgs;
+        arr[0] = obj;
+    return arr;
   }
   var s, ndx, b, item0, p, key;
   var val0, entry, len;
@@ -372,9 +379,14 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
   var channelKey = cbor.encode('channel');
   var channelVal = cbor.encode(clientID);
   var selectionKey = cbor.encode('selection');
+
   var selectionVal;
-  if (riString) selectionVal = cbor.encode(riString.header + riString.text);
+  if (riString) {
+    if (riString.header) selectionVal = cbor.encode(riString.header + riString.text);
+    else selectionVal = cbor.encode(riString.text);
+  }
   else selectionVal = cbor.encode(obj.contents);
+
   var selectorKey = cbor.encode('selector');
   var selectorVal = cbor.encode(obj.selector);
   if (selectedItems && selectedItems[model]) {

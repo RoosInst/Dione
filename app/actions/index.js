@@ -1,6 +1,7 @@
 import { convertArrayToKeyValues } from '../scripts/functions';
 export const UPDATE_WHITEBOARD = 'update_whiteboard';
 export const ADD_SELECTION = 'add_selection';
+export const UPDATE_CLIENTID = 'update_clientID';
 
 export function sendAction(action) {
   return {
@@ -8,12 +9,20 @@ export function sendAction(action) {
   }
 };
 
-export function updateWhiteboard(decodedCborMsg, model) {
+export function updateWhiteboard(msg, model) {
+  if (Array.isArray(msg)) { //if msg is decodedCborMsg
   return {
     type: UPDATE_WHITEBOARD,
-    payload: convertArrayToKeyValues(decodedCborMsg),
+    flat_payload: convertArrayToKeyValues(msg), //flat object, not hierarchical
     model: model
   }
+} else {
+  return { //if msg is whiteboard object
+    type: UPDATE_WHITEBOARD,
+    payload: msg,
+    model: model
+  }
+}
 };
 
 export function addSelection(model, objID, riString) {
@@ -24,3 +33,10 @@ export function addSelection(model, objID, riString) {
     selected: riString
   }
 }
+
+export function updateClientID(clientID) {
+  return {
+    type: UPDATE_CLIENTID,
+    payload: clientID
+  }
+};

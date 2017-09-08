@@ -48,8 +48,8 @@ class Pane extends Component {
        return (
          <div className="contextMenu shell">
            <ContextMenuTrigger id={obj.identifier}>
-             {
-               obj.contents && Array.isArray(obj.contents) ?
+             {obj.contents ?
+               obj.contents[0].header ? //if header, then render as list. If not, render as normal string
                  <ul>
                    {
                    obj.contents.map((arrayVal) => {
@@ -59,28 +59,31 @@ class Pane extends Component {
                  }
                  </ul>
                :
-                 obj.highlight ?
+                 obj.contents && obj.contents[0].highlight ? //if highlight exists, then array will only be length 1 (contents[0])
                      <span style={{whiteSpace: 'pre'}}>
-                       {obj.contents.substring(0, obj.highlight[0] - 1)}
+                       {obj.contents[0].text.substring(0, obj.contents[0].highlight[0] - 1)}
                        <span className='highlight'>
-                         {obj.contents.substring(obj.highlight[0] - 1, obj.highlight[1] - 1)}
+                         {obj.contents[0].text.substring(obj.contents[0].highlight[0] - 1, obj.contents[0].highlight[1] - 1)}
                        </span>
-                         {obj.contents.substring(obj.highlight[1] - 1)}
+                         {obj.contents[0].text.substring(obj.contents[0].highlight[1] - 1)}
                    </span>
                  :
-                   <span style={{whiteSpace: 'pre'}}>{obj.contents}</span>
+                   <span style={{whiteSpace: 'pre'}}>{obj.contents[0].text}</span>
+              : ''
              }
            </ContextMenuTrigger>
            <ContextMenu id={obj.identifier}>
              {
              obj[menu].value.map((menuItem) => {
+               if (menuItem) {
                key2++;
                return(
                  <MenuItem key={'menuItem' + key2} onClick={() => this.handleClick(menuItem[0], obj[menu])}>
                      {menuItem[0].text}
                  </MenuItem>
                );
-             })
+             } else return null;
+            })
              }
            </ContextMenu>
          </div>
@@ -97,7 +100,7 @@ class Pane extends Component {
        }
        </ul>);
      } else if (obj.contents) { //not a ListPane, don't render in a list
-       return (<span style={{whiteSpace: 'pre'}}>{obj.contents}</span>);
+       return (<span style={{whiteSpace: 'pre'}}>{obj.contents[0].text}</span>);
      }
      else return null;
 		}

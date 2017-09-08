@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import {sendAction, updateWhiteboard } from '../actions';
+import {sendAction, updateWhiteboard, updateClientID } from '../actions';
 
 const mqtt = require('mqtt');
 const cbor = require('cbor');
@@ -26,6 +26,7 @@ class MQTT extends Component {
     wb = this.props.whiteboard;
     const sendAction = this.props.sendAction;
     const updateWhiteboard = this.props.updateWhiteboard;
+    const updateClientID = this.props.updateClientID;
     const mqttBroker = mqttHost + ':' + port + '/mqtt';  // websocket port (ws) (init by rTalkDistribution/moquette/bin/moquette.sh)
     const mqttConnectOptions = {
       clientId: "mqtt_" + ra //MQTT ID is "mqtt-" plus clientID
@@ -110,12 +111,16 @@ class MQTT extends Component {
   				var appPublishTopic = ra + '/' + cellID + '/rtalk/app/1';
           //mqttClient..publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
           console.info("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
+          console.log(cbor.decode(cborPubMsg));
           mqttClient.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
           //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
           //mqttClient.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
 				}
       }
-      else if (decodedCborMsg[0][0].value == "toppane") {
+      else if (decodedCborMsg[0][0].value == "toppane") { //3rd slash
+        var newClientID = topic.split('/');
+        newClientID = newClientID[2];
+        updateClientID(newClientID);
         for (var i = 0; i < decodedCborMsg[0].length; i++) {
           if (decodedCborMsg[0][i] === 'model') {
             updateWhiteboard(decodedCborMsg, decodedCborMsg[0][i + 1]);
@@ -164,4 +169,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, {sendAction, updateWhiteboard })(MQTT);
+export default connect(mapStateToProps, {sendAction, updateWhiteboard,  updateClientID })(MQTT);
