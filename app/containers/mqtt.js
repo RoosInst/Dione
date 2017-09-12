@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import {sendAction, updateWhiteboard, updateClientID } from '../actions';
+import {sendAction, updateWhiteboard, updateClientID, MQTT_CONNECTED, MQTT_DISCONNECTED, MQTT_RECONNECTING } from '../actions';
 
 const mqtt = require('mqtt');
 const cbor = require('cbor');
@@ -68,7 +68,7 @@ class MQTT extends Component {
   //-------------------------------------
   	// MQTT Connect sequence - adminTopic - appTopic
   	mqttClient.on('connect', function () {
-      sendAction('MQTT_CONNECTED');
+      sendAction(MQTT_CONNECTED);
   		console.info('Subscribing to admin topic: '+ adminTopic);
   		mqttClient.subscribe(adminTopic, {qos: 2}); //after subscribe, should receive message with cellID then UNSUBSCRIBE
   	});
@@ -151,7 +151,7 @@ class MQTT extends Component {
 
   	mqttClient.on('close', function () {
   		console.info("Connection closed");
-  		sendAction('MQTT_DISCONNECTED');
+  		sendAction(MQTT_DISCONNECTED);
       cellID = null;
   	});
   }

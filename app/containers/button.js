@@ -26,10 +26,10 @@ class Button extends Component {
     } else {
       console.log('obj.contents', obj.contents);
      return (
-       <div>
+       <label>
          <input type='radio' name={obj.owner} value={obj.contents} />
-          {obj.contents}
-       </div>
+          <span>{obj.contents}</span>
+       </label>
      );
     }
   }

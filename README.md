@@ -4,17 +4,17 @@ This README documents the steps necessary to get this development environment an
 
 ### What is this repository for? ###
 
-* This is our RI Apps Platform based on React/Redux with MQTT on Node.js, includes rtalkDistribution
-* Version 1.0.0
+* This is our RI Whiteboard based on React/Redux with MQTT on Node.js, includes rtalkDistribution.
+* Version 1.1.0
 
 ### How do I get set up? ###
 
 * Requires Git and Node.js
 * Default Config
-    - Moquette on WS port 8081  (moquette/config)
-    - Node.js webserver on port 8080 (package.json)
-    - Dione config to MQTT WebSocket (WS) port i(~/Dione/app/containers/mqtt.js )
-* Install Dione with "git clone <url>" to create a folder with the App
+    - Moquette on WS port 8081  (moquette/config).
+    - Node.js webserver on port 8080 (package.json).
+    - Dione config to MQTT WebSocket (WS) port i(~/Dione/app/containers/mqtt.js ).
+* Install Dione with "git clone <url>" to create a folder with the App.
 * Type "npm install". This will install all node modules that are dependencies listed in package.json.
 * To launch the App, run the platform specific launch script, 
       Win: Start.bat, 
@@ -32,4 +32,4 @@ This README documents the steps necessary to get this development environment an
 ### Who do I talk to? ###
 
 * For issues or questions, contact support@roos.com.
-* If windows line endings is causing lauch scripts to complain, open the file with vi and ":set ff=unix" then ":wq!" to fix it
+* If windows line endings is causing lauch scripts to complain, open the file with vi and ":set ff=unix" then ":wq!" to fix it.

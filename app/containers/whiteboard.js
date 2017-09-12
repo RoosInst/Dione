@@ -8,6 +8,8 @@ import Button from './button';
 
 const cbor = require('cbor');
 const mqtt = require('mqtt');
+import {Responsive, WidthProvider} from 'react-grid-layout';
+const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 class Whiteboard extends Component {
 
@@ -61,7 +63,7 @@ class Whiteboard extends Component {
     }
   }
 
-  handleClick(model) {
+  handleClick(model) { //delete app, clicking on close 'X' button
     var omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
     var omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
     var omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
@@ -79,17 +81,84 @@ class Whiteboard extends Component {
     return null;
   }
 
+  transformContextMenus(wb) {
+     var wbArr = Object.keys(wb);
+    wbArr.map((model) => {
+      var modelElement = document.getElementById(model);
+      var transformStyle = modelElement.style.transform;
+      if (!transformStyle) transformStyle = 'translate(10px, 10px)'; //won't be stored in store initially, but defaults to translate(10px, 10px)
+
+      var tempNum = 10;
+      var exitFirstNum = false;
+
+      while(true) {
+        if (isNaN(transformStyle.charAt(tempNum))) {
+           tempNum++;
+           exitFirstNum = true;
+        }
+        else if (exitFirstNum === true) break;
+        else tempNum++;
+      }
+
+      var newStyle = transformStyle.slice(0, 10) + '-' + transformStyle.slice(10, tempNum + 1) + '-' + transformStyle.slice(tempNum + 1); //makes negative translate of parent element being translated
+
+      var navElements = modelElement.getElementsByTagName("nav");
+      for (var i = 0; i < navElements.length; i++) {
+       navElements[i].style.transform = newStyle;
+      }
+    });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+
+    if (this.props.whiteboard && this.props.whiteboard !== prevProps.whiteboard) {
+      var wbArr = Object.keys(this.props.whiteboard);
+      var prevWbArr = null;
+
+      this.transformContextMenus(this.props.whiteboard); //if wb updates, always reapply transforms in case apps autoshift on deletion
+
+      if (prevProps.whiteboard) {
+        prevWbArr = Object.keys(prevProps.whiteboard);
+      }
+
+      if (wbArr && prevWbArr && wbArr.length > prevWbArr.length) { //added an app
+        let difference = wbArr.filter(x => !prevWbArr.includes(x));
+        difference.map((model) => { //difference should only be by 1, but map just in case instead of [0]
+          var modelElement = document.getElementById(model);
+          modelElement.addEventListener("mouseup", () => this.transformContextMenus(this.props.whiteboard));
+        });
+      }
+
+       else if (wbArr) { //will only be 1 model that exists, but use map just in case instead of [0]
+        wbArr.map((model) => {
+          document.getElementById(model).addEventListener("mouseup", () => this.transformContextMenus(this.props.whiteboard));
+        });
+      } //else no more wb, so dom element removed along with its event listener
+    }
+  }
+
   render() {
       if (this.props.whiteboard) {
         var arr = Object.keys(this.props.whiteboard);
-        return (<div className="row">
+        return (
+          <ResponsiveReactGridLayout rowHeight={30} className='layout' breakpoints={{lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0}} cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}>
+
+          <div id='mqttInfo' key='mqttInfo' data-grid={{x: 0, y: 0, w: 14, h: 1, static: true}}>
+            <div className="pull-left">Client ID: {this.props.clientID}</div>
+            <div className="pull-right">
+              Connection
+              <div className={`pull-right connectionIcon ${this.props.mqttConnection}`} />
+            </div>
+          </div>
           {
           arr.map((model) => { //map through each app
             var obj = this.props.whiteboard[model];
             return (
-              <div key={model} className={`${arr.length == 1 ? 'col-xl-12' : 'col-xl-6'}`}>
+              <div id={model} key={model} data-grid={{x: 0, y: 0, w: 4, h: 16}}>
                 <div className="card">
-                  <div className="card-header"><span className="cardLabel">{obj.label}</span><i onClick={() => this.handleClick(model)} className="pull-right fa fa-window-close"></i></div>
+                  <div className="card-header">
+                    <img style={{width: '16px', margin: '-2px 5px 0 5px'}} src='/app/images/favicon.ico'/>
+                    <span className="cardLabel">{obj.label}</span><i onClick={() => this.handleClick(model)} className="pull-right fa fa-window-close"></i></div>
                   <div className="card-block">
                     {this.renderApp(model, obj)}
                   </div>
@@ -98,9 +167,20 @@ class Whiteboard extends Component {
             );
           })
           }
-        </div>
+        </ResponsiveReactGridLayout>
       );
-      } else return null;
+      } else return (
+        <ResponsiveReactGridLayout rowHeight={30} className='layout' breakpoints={{lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0}} //rowHeight=30 gives correct min height
+    cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}>
+          <div id='mqttInfo' data-grid={{x: 0, y: 0, w: 2, h: 2}}>
+            <div className="pull-left">Client ID: {this.props.clientID}</div>
+            <div className="pull-right">
+              Connection
+              <div className={`pull-right connectionIcon ${this.props.mqttConnection}`} />
+            </div>
+          </div>
+        </ResponsiveReactGridLayout>
+      )
     }
 }
 
@@ -109,7 +189,8 @@ class Whiteboard extends Component {
 function mapStateToProps(state) {
   return {
     whiteboard: state.whiteboard,
-    clientID: state.clientID
+    clientID: state.clientID,
+    mqttConnection: state.mqttConnection
   };
 }
 
