@@ -46,7 +46,7 @@ body {
 	 white-space: nowrap;
 
 	}
-	.card-block {
+	.card-body {
 		margin: 0;
 		padding: 0;
 		position: relative;
@@ -61,14 +61,15 @@ body {
 	overflow: auto;
 }
 
-.card-block :not(.shell) {
+.card-body :not(.shell) {
 	.btn {
 		width: 100%;
 		height: 100%;
-	}
-	.btn {
+		border: none;
+		outline-color: #0275d8;
+		line-height: 0;
 		border-radius: 0;
-	};
+	}
 }
 
 /* CSS style sheet to support use of ristrings (RiListString) */
@@ -217,11 +218,11 @@ ul {
 
 .active {background-color: $activeBackgroundColor};
 
-.card-block li {
+.card-body li {
 	cursor: pointer;
 }
 
-.card-header, .card-block li {
+.card-header, .card-body li {
 	user-select: none;
 }
 
@@ -236,33 +237,28 @@ ul {
 	background-color: $outlineColor;
 }
 
-react-resizable-handle {
-	z-index: 1000; //show over anything else
-}
-
-.react-grid-item.react-grid-placeholder {
-	background: #0275d8 !important; //when expanding, color of temporary grid
-}
-
 body {
-	background-image: url('/app/images/ri-logo-white-33.png');
+	background: #f0f0f0 url('/app/images/RILogoWeb.png');
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-attachment: fixed;
-	//margin: 0 10px;
+//margin: 0 10px;
+
 }
 
 #mqttInfo {
 	background-color: $menuBackground;
 	padding: 3px 10px;
 	color: $menuText;
+	height: 29px;
+	margin-bottom: 10px;
 
 	.connectionIcon {
 		border-radius: 50%;
 		width: 12px;
 		height: 12px;
-		margin-left: 8px;
-		margin-top: 8px;
+		margin-left: 6px;
+		margin-top: 6px;
 		&.disconnected {
 			background-color: red;
 		}

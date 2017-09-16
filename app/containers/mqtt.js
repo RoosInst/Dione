@@ -78,7 +78,12 @@ class MQTT extends Component {
       numMsgs++;
       try {
         var decodedCborMsg = cbor.decodeAllSync(message);
-        console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', decodedCborMsg);
+        //check if not empty message
+        if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', decodedCborMsg);
+        else {
+          console.info('Message ' + numMsgs + ' (empty) Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', decodedCborMsg);
+          return;
+        }
       } catch(err) {
         console.info('Message' + numMsgs + 'Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString());
         return;
@@ -107,20 +112,33 @@ class MQTT extends Component {
            ];
   				console.info('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
   				mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 2});
-  				//PUBLISH to App createSubscriber
-  				var appPublishTopic = ra + '/' + cellID + '/rtalk/app/1';
-          //mqttClient..publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
-          console.info("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
-          console.log(cbor.decode(cborPubMsg));
-          mqttClient.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
-          //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
-          //mqttClient.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
+
+          var consoleCreateSub = Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
+          var consoleCreateSubTopic = 'console/X1PD0ZR3/whiteboard/createSubscriber/8';
+
+          var selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex');
+          var guruAppTopic = ra + '/X1PD0ZR3/console/action/1';
+         console.log('publishing');
+          mqttClient.publish(consoleCreateSubTopic, consoleCreateSub);
+          mqttClient.publish(guruAppTopic, selectGuruApp); //launches guru app
+
+
+
+
+  				// //PUBLISH to App createSubscriber
+  				// var appPublishTopic = ra + '/' + cellID + '/rtalk/app/1';
+          // //mqttClient..publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
+          // console.info("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
+          // console.log(cbor.decode(cborPubMsg));
+          // mqttClient.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
+          // //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
+          // //mqttClient.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
 				}
       }
-      else if (decodedCborMsg[0][0].value == "toppane") { //3rd slash
-        var newClientID = topic.split('/');
-        newClientID = newClientID[2];
-        updateClientID(newClientID);
+      else if (decodedCborMsg[0][0].value == 'toppane') { //3rd slash
+        // var newClientID = topic.split('/');
+        // newClientID = newClientID[2];
+        // updateClientID(newClientID);
         for (var i = 0; i < decodedCborMsg[0].length; i++) {
           if (decodedCborMsg[0][i] === 'model') {
             updateWhiteboard(decodedCborMsg, decodedCborMsg[0][i + 1]);
@@ -131,13 +149,16 @@ class MQTT extends Component {
       else if (wb) {
         var arr = Object.keys(wb);
         for (var i = 0; i < arr.length; i++) {
-          if (topic.indexOf(arr[i] + '/' + cellID + '/' + ra) >= 0) { // if message for us @ model/cellID/clientID
+          if (topic.indexOf(arr[i] + '/' + cellID + '/' + ra) >= 0 && decodedCborMsg[0][0].value == 'toppane') { // if message for us @ model/cellID/clientID
             updateWhiteboard(decodedCborMsg, arr[i]); //arr[i] is model name from topic
             break;
           }
         }
+      } else if (topic.includes(cellID + '/console/subscribe/8')) {
+          var newClientID = topic.split('/')[0];
+          updateClientID(newClientID);
       }
-      else if (message.toString()=="end") {
+      else if (message.toString()=='end') {
        mqttClient.unsubscribe('+/+/' + ra + '/#');
        mqttClient.end();
       }

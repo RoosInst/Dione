@@ -80,22 +80,34 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
 
     var obj = unsortedStore[key];
 
-    if (Array.isArray(obj)) { //loops through array of objects
-      for (var i = 0; i < obj.length; i++) {
-        var objVal = obj[i].value;
-        tree[objVal].contents = parseSmMsgs(obj[i].contents);
-        if (obj[i].highlight) {
-            tree[objVal].contents[i].highlight = obj[i].highlight;
-            //tree[objVal].highlight = obj[i].highlight;
-        }
-      }
-    } else {
-      if (obj.value) { //is an array
+    if (Array.isArray(obj)) {
+      console.log("ARR:", obj);
+      insertArray(tree, obj);
+    }
+
+    else {
+      if (obj.value) { //obj.value always an array
         var arr = [];
-        for (var i = 0; i < obj.value.length; i++) {
-          if (typeof obj.value[i] === 'string') {
-            arr[i] = parseSmMsgs(obj.value[i]); //returns array
-          } else {console.log('Unrecognized obj.value:', obj.value[i])}
+        for (var i, j = 0; j < obj.value.length - 1; j++) {
+          if (typeof obj.value[j] === 'string' && typeof obj.value[j + 1] === 'string' && obj.value[j].includes('\u0001') && !obj.value[j + 1].includes('\u0001')) { //if array contains pairs
+              if (arr.length === 0) console.error('ERR: Both riri and non-riri strings detected in obj.value ', obj.value, 'Detected pairs and combining.'); //only make error message once, so checks arr.length
+              arr[i] = obj.value[j] + '=' + obj.value[j+1];
+              j++; //increment j twice at end of loop
+              i++;
+          } else if (typeof obj.value[j] !== 'string') console.error('ERR: Unrecognized obj.value:', obj.value[j]);
+            else if (typeof obj.value[j + 1] !== 'string') console.error('ERR: Unrecognized obj.value:', obj.value[j + 1]);
+        }
+        if (arr.length > 0) {
+          for (var i = 0; i < arr.length; i++) {
+            arr[i] = parseSmMsgs(arr[i]); //returns array
+          }
+        }
+        else {
+          for (var i = 0; i < obj.value.length; i++) {
+            if (typeof obj.value[i] === 'string') {
+              arr[i] = parseSmMsgs(obj.value[i]); //returns array
+            } else {console.error('ERR: Unrecognized obj.value:', obj.value[i])}
+          }
         }
         obj.value = arr;
       }
@@ -105,15 +117,15 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
       }
 
       if (obj.owner) {
-        if (obj.owner == "top") {
+        if (obj.owner === 'top') {
           tree[obj.identifier] = obj;
-        } else {
-          var Owner = tree[obj.owner];
-          Owner[obj.identifier] = obj;
+        }
+        else {
+          insertObject(tree, obj);
         }
       } else if (!obj.identifier) { //checks not toppane, because toppane has id but not owner
-        tree["_msg" + i] = obj;
-        tree["_msg" + i].identifier = "_msg" + i;
+        tree['_msg' + i] = obj;
+        tree['_msg' + i].identifier = '_msg' + i;
         i++;
       }
     }
@@ -122,6 +134,66 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
   return forest;
 }
 
+function insertArray(tree, arr) { //assuming array of objects
+  var found = false;
+  for (var i = 0; i < arr.length; i++) {
+    var obj = arr[i];
+    recursiveCheck(tree);
+  }
+
+  function recursiveCheck(newObj) {
+    var objVal = obj.value; //owner = object's value in array of objects
+    if (newObj[objVal]) {
+      newObj[objVal].contents = parseSmMsgs(obj.contents);
+      if (obj.highlight) {
+        newObj[objVal].contents[i].highlight = obj.highlight;
+      }
+      found = true;
+    }
+    else if (!found) { //look for owner (objVal) with recursion
+      var tempEntries = Object.entries(newObj);
+      for (var i = 0; i < tempEntries.length; i++) {
+        if (tempEntries[i][0] !== 'style' && typeof tempEntries[i][1] === 'object' && Object.prototype.toString.call(tempEntries[i][1]) !== '[object Array]') {
+         if (newObj[tempEntries[i][0]]) recursiveCheck(newObj[tempEntries[i][0]]);
+         if (found) break;
+       }
+     }
+    }
+    if (!found) { //if still not found after recursion executed above
+      console.error('ERR: Object "' + obj + '"\'s owner "'+ objVal +'" not found!');
+      found = true; //set found to true so message doesn't repeat in console
+    }
+  }
+}
+
+
+function insertObject(tree, obj) {
+  var found = false;
+  recursiveCheck(tree);
+
+  function recursiveCheck(newObj) { //if called again, found = false
+
+     if (newObj[obj.owner]) {
+       var Owner = newObj[obj.owner];
+       Owner[obj.identifier] = obj;
+       found = true;
+     }
+     else if (!found) {
+       var tempEntries = Object.entries(newObj);
+       for (var i = 0; i < tempEntries.length; i++) {
+         if (tempEntries[i][0] !== 'style' && typeof tempEntries[i][1] === 'object' && Object.prototype.toString.call(tempEntries[i][1]) !== '[object Array]') {
+            //console.log('newObj[tempEntries['+i+'][0]]', newObj[tempEntries[i][0]]);
+            if (newObj[tempEntries[i][0]]) recursiveCheck(newObj[tempEntries[i][0]]);
+            if (found) break;
+        }
+      }
+    }
+    if (!found) { //if still not found after recursion executed above
+      console.error('ERR: Object "'+ obj.identifier +'"\'s owner "'+ obj.owner +'" not found!');
+      found = true; //set found to true so message doesn't repeat in console
+    }
+  }
+}
 
 
 /*Converts the message of arrays into flat object. Exception: values is array of objs*/
@@ -132,7 +204,7 @@ export function convertArrayToKeyValues(decodedCbor) {
   var store = {};
   var msgObj = {};
   for (var array = 0; array < decodedCbor.length; array++) {
-    if (decodedCbor[array][1] === "contents") {
+    if (decodedCbor[array][1] === 'contents') {
       msgObj['value'] = decodedCbor[array][0].value;
     };
 
@@ -312,7 +384,6 @@ RIRISEP = [RIRISEP1, RIRISEP2, RIRISEP3, RIRISEP4] //for array access of RIRI se
           First message missing RIRISEP3 in front of it (only '\u0001'), so add it.
 */
 function parseSmMsgs(smMsgs) {
-  if (!smMsgs.indexOf) console.log('smMsgs', smMsgs);;
   if (smMsgs.indexOf('\u0001') < 0) { //if no riri inside string
     var arr = [];
     var obj = {};
