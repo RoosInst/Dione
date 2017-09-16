@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import {mqttClient, cellID} from '../containers/mqtt';
+import MQTT, {mqttClient, cellID} from './mqtt';
 import { updateWhiteboard } from '../actions';
 
 import Pane from './pane';
@@ -138,7 +138,7 @@ class Whiteboard extends Component {
     if (this.props.whiteboard) arr = Object.keys(this.props.whiteboard);
     return (
       <div>
-
+        <MQTT />
         <div id='mqttInfo'>
           <div className="pull-left">Client ID: {this.props.clientID}</div>
           <div className="pull-right">
