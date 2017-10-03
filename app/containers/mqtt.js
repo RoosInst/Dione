@@ -121,43 +121,18 @@ class MQTT extends Component {
          console.log('publishing');
           mqttClient.publish(consoleCreateSubTopic, consoleCreateSub);
           mqttClient.publish(guruAppTopic, selectGuruApp); //launches guru app
-
-
-
-
-  				// //PUBLISH to App createSubscriber
-  				// var appPublishTopic = ra + '/' + cellID + '/rtalk/app/1';
-          // //mqttClient..publish('GURUBROWSER/' + cellID + '/whiteboard/createSubscriber/1', cbor_createSub);
-          // console.info("Publishing -\n Topic: " + appPublishTopic + "\n Message: " +  cborPubMsg);
-          // console.log(cbor.decode(cborPubMsg));
-          // mqttClient.publish(appPublishTopic, cborPubMsg); //java program should then subscribe to a topic
-          // //console.log("Publishing -\n Topic: " + ra + '/' + cellID + '/GURUBROWSER/subscribe/1' + "\n Message: " +  cborPubMsgPt2);
-          // //mqttClient.publish(ra + '/' + cellID + '/GURUBROWSER/subscribe/1', cborPubMsgPt2);
 				}
       }
-      else if (decodedCborMsg[0][0].value == 'toppane') { //3rd slash
-        // var newClientID = topic.split('/');
-        // newClientID = newClientID[2];
-        // updateClientID(newClientID);
-        for (var i = 0; i < decodedCborMsg[0].length; i++) {
-          if (decodedCborMsg[0][i] === 'model') {
-            updateWhiteboard(decodedCborMsg, decodedCborMsg[0][i + 1]);
-            break;
-          }
-        }
+      else if (topic.includes(cellID + '/' + ra) && !topic.includes('console')) {
+        var model = topic.split('/')[0];
+        updateWhiteboard(decodedCborMsg, model);
       }
-      else if (wb) {
-        var arr = Object.keys(wb);
-        for (var i = 0; i < arr.length; i++) {
-          if (topic.indexOf(arr[i] + '/' + cellID + '/' + ra) >= 0 && decodedCborMsg[0][0].value == 'toppane') { // if message for us @ model/cellID/clientID
-            updateWhiteboard(decodedCborMsg, arr[i]); //arr[i] is model name from topic
-            break;
-          }
-        }
-      } else if (topic.includes(cellID + '/console/subscribe/8')) {
+
+      else if (topic.includes(cellID + '/GURUBROWSER/subscribe')) { //update to newly received clientID
           var newClientID = topic.split('/')[0];
           updateClientID(newClientID);
       }
+
       else if (message.toString()=='end') {
        mqttClient.unsubscribe('+/+/' + ra + '/#');
        mqttClient.end();

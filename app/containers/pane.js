@@ -10,19 +10,21 @@ const cbor = require('cbor');
 class Pane extends Component {
 
   handleClick(riString, clickedObj) {
-    if (riString.text === 'Copy') {
-      document.execCommand("copy");
-      return;
-    }
+    // if (riString.text === 'Copy') {
+    //   document.execCommand("copy");
+    //   return;
+    // }
     const model = this.props.model;
     const clientID = this.props.clientID;
     const selectedItems = this.props.selectedItems;
+    const whiteboard = this.props.whiteboard;
 
     if (clickedObj.identifier.indexOf("Menu") < 0) { //don't add to selectedItems if context menu (right-click menu) clicked
       this.props.addSelection(model, clickedObj.identifier, riString);
     }
-
-    var msg = convertObjToArrayForPublish(model, clickedObj, clientID, riString, selectedItems);
+    var attributes = null;
+    if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
+    var msg = convertObjToArrayForPublish(model, clickedObj, clientID, riString, selectedItems, attributes);
     var topic = clientID + '/' + cellID + '/' + model + '/action/1';
     if (mqttClient && cellID) {
         console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);

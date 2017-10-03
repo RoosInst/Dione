@@ -33,8 +33,8 @@ class Whiteboard extends Component {
             var val = newObj[key];
             //console.log("key:", key, " val:", val);
 
-            //if type is object but not style or Menu obj, null, or array. Menu obj never has objects inside it, so no need to go through
-            if (key !== 'style' && key.indexOf('Menu') < 0 && val !== null && typeof val === 'object' && Object.prototype.toString.call( val ) !== '[object Array]') {
+            //if type is object but not style, attributes, or Menu obj, null, or array. Menu obj never has objects inside it, so no need to go through
+            if (key !== 'style' && key !== 'attributes' && key.indexOf('Menu') < 0 && val !== null && typeof val === 'object' && Object.prototype.toString.call( val ) !== '[object Array]') {
                return (<div className={val.class} style={val.style} id={model + '_' + val.identifier} key={val.identifier}>{this.renderObj(model, val)}{this.renderApp(model, val)}</div>)
             }
              else return (null);
@@ -57,8 +57,7 @@ class Whiteboard extends Component {
 
         default: return null;
       }
-
-    }
+    } else return null;
   }
 
   handleClick(model) { //delete app, clicking on close 'X' button

@@ -86,6 +86,7 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
     }
 
     else {
+
       if (obj.value) { //obj.value always an array
         var arr = [];
         for (var i, j = 0; j < obj.value.length - 1; j++) {
@@ -112,9 +113,11 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
         obj.value = arr;
       }
 
+
       if (obj.frameRatio) {
         obj.style = makeStyleFromFrameRatio(obj.frameRatio);
       }
+
 
       if (obj.owner) {
         if (obj.owner === 'top') {
@@ -123,10 +126,23 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
         else {
           insertObject(tree, obj);
         }
-      } else if (!obj.identifier) { //checks not toppane, because toppane has id but not owner
-        tree['_msg' + i] = obj;
-        tree['_msg' + i].identifier = '_msg' + i;
-        i++;
+      }
+      else if (!obj.identifier) { //checks not toppane, because toppane has id but not owner
+
+        //if object is to replace portions in top, then this replaces those pieces
+        var entries = Object.entries(obj);
+        for (var i = 0; i < entries.length; i++) {
+            if (entries[i][0] === 'attributes') {
+              var attributeEntries = Object.entries(entries[i][1]);
+              for (var j = 0; j < attributeEntries.length; j++) {
+                tree['attributes'][attributeEntries[j][0]] = attributeEntries[j][1];
+              }
+            }
+            else tree[entries[i][0]] = entries[i][1];
+        }
+        // tree['_msg' + i] = obj;
+        // tree['_msg' + i].identifier = '_msg' + i;
+        // i++;
       }
     }
   }
@@ -172,7 +188,6 @@ function insertObject(tree, obj) {
   recursiveCheck(tree);
 
   function recursiveCheck(newObj) { //if called again, found = false
-
      if (newObj[obj.owner]) {
        var Owner = newObj[obj.owner];
        Owner[obj.identifier] = obj;
@@ -203,14 +218,23 @@ export function convertArrayToKeyValues(decodedCbor) {
   }
   var store = {};
   var msgObj = {};
+
   for (var array = 0; array < decodedCbor.length; array++) {
+
     if (decodedCbor[array][1] === 'contents') {
       msgObj['value'] = decodedCbor[array][0].value;
     };
 
-    //msgObj[decodedCbor[array][0]] = decodedCbor[array][0].
     for (var i = 1; i < decodedCbor[array].length; i=i+2) {
-      msgObj[decodedCbor[array][i]] = decodedCbor[array][i+1];
+
+      if (decodedCbor[array][i] === 'attribute') { //if multiple attributes, make/add to an obj of attributes instead of replacing each attribute w/ latest
+        if (!msgObj['attributes']) msgObj['attributes'] = {};
+        var splitVal = decodedCbor[array][i+1].split('=');
+        msgObj['attributes'][splitVal[0]] = splitVal[1];
+      }
+
+      else msgObj[decodedCbor[array][i]] = decodedCbor[array][i+1];
+
     }
     if (msgObj.identifier) {
       store[msgObj.identifier] = msgObj;
@@ -221,6 +245,9 @@ export function convertArrayToKeyValues(decodedCbor) {
       } else {
       store['values'] = [msgObj];
       }
+    }
+    else if (decodedCbor[0][0].value === 'top') {
+      store['top'] = msgObj;
     }
     msgObj = {};
   }
@@ -443,7 +470,7 @@ var omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap 
 var omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
 var cbor_null = Buffer.from('f6', 'hex'); // hex 0xF6, null (string==null, aka empty omap)
 
-export function convertObjToArrayForPublish(model, obj, clientID, riString, selectedItems) {
+export function convertObjToArrayForPublish(model, obj, clientID, riString, selectedItems, attributes) {
   var objVal = cbor.encode('event');
   var widgetKey = cbor.encode('widget');
   var widgetVal = cbor.encode(obj.identifier);
@@ -460,16 +487,34 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
 
   var selectorKey = cbor.encode('selector');
   var selectorVal = cbor.encode(obj.selector);
+
+  var selectedItemsBuffer = null;
   if (selectedItems && selectedItems[model]) {
-    var selectedItemsBuffer = null;
     var selectedItemsModelEntries = Object.entries(selectedItems[model]);
     for (var i = 0; i < selectedItemsModelEntries.length; i++) {
-      var selectionIDKey = cbor.encode('selection' + selectedItemsModelEntries[i][0]); //0 is key
-      var selectionIDVal = cbor.encode(selectedItemsModelEntries[i][1].header + selectedItemsModelEntries[i][1].text); //1 is value
+      var selectionIDKey = cbor.encode('selection' + selectedItemsModelEntries[i][0]); //0 is key. ex. 'selection15'
+      var selectionIDVal;
+
+      if (selectedItemsModelEntries[i][1].header && selectedItemsModelEntries[i][1].text) selectionIDVal = cbor.encode(selectedItemsModelEntries[i][1].header + selectedItemsModelEntries[i][1].text); //1 is value
+      else selectionIDVal = cbor.encode(selectedItemsModelEntries[i][1]); //if not a riri string
+
       if (selectedItemsBuffer) selectedItemsBuffer = Buffer.concat([selectedItemsBuffer, selectionIDKey, selectionIDVal]);
       else selectedItemsBuffer = Buffer.concat([selectionIDKey, selectionIDVal]);
     }
   }
-  if (selectedItemsBuffer) return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, selectedItemsBuffer, omap_end]);
+
+  var attributesBuffer = null;
+  if (attributes) {
+    var attributesEntries = Object.entries(attributes);
+    for (var i = 0; i < attributesEntries.length; i++) {
+      if (attributesBuffer) attributesBuffer = Buffer.concat([attributesBuffer, cbor.encode(attributesEntries[i][0]), cbor.encode(attributesEntries[i][1])]);
+      else attributesBuffer = Buffer.concat([cbor.encode(attributesEntries[i][0]), cbor.encode(attributesEntries[i][1])]);
+    }
+  }
+
+  if (selectedItemsBuffer && attributesBuffer) return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, selectedItemsBuffer, attributesBuffer, omap_end]);
+  else if (selectedItemsBuffer) return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, selectedItemsBuffer, omap_end]);
+  else if (attributesBuffer) return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, attributesBuffer, omap_end]);
   else return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, omap_end]);
+
 }
