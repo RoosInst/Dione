@@ -15,6 +15,11 @@ export default function(state = {}, action) {
         tree[action.identifier] = action.selected;
         forest[action.model] = tree;
       }
+      if (action.selectionGroup) { //if radio button, need to replace previously selected button
+        for (var i = 0; i < action.selectionGroup.length; i++) {
+          delete forest[action.model][action.selectionGroup[i]]; //if doesn't exist, it silently ignores which is OK. No need for check if exists
+        }
+      }
       return forest;
 
 

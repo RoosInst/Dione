@@ -9,17 +9,23 @@ import {mqttClient, cellID} from '../containers/mqtt';
 class Button extends Component {
 
   handleClick(clickedObj) {
-    const clientID = this.props.clientID;
-    const model = this.props.model;
-    const selectedItems = this.props.selectedItems;
-    const whiteboard = this.props.whiteboard;
-    var attributes = null;
-    if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
-    var msg = convertObjToArrayForPublish(model, clickedObj, clientID, null, selectedItems, attributes);
-    var topic = clientID + '/' + cellID + '/' + model + '/action/1';
-    if (mqttClient && cellID) {
-      console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
-      mqttClient.publish(topic, msg);
+    console.log('clickedObj', clickedObj);
+    if (clickedObj.selectionGroup) {
+      this.props.addSelection(this.props.model, clickedObj.identifier, clickedObj.contents, clickedObj.selectionGroup);
+    }
+    else {
+      const clientID = this.props.clientID;
+      const model = this.props.model;
+      const selectedItems = this.props.selectedItems;
+      const whiteboard = this.props.whiteboard;
+      var attributes = null;
+      if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
+      var msg = convertObjToArrayForPublish(model, clickedObj, clientID, null, selectedItems, attributes);
+      var topic = clientID + '/' + cellID + '/' + model + '/action/1';
+      if (mqttClient && cellID) {
+        console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
+        mqttClient.publish(topic, msg);
+      }
     }
   }
 
@@ -37,7 +43,7 @@ class Button extends Component {
     } else {
       return (
         <label>
-          <input type='radio' defaultChecked={isSelected} value={obj.contents} name={obj.owner} />
+          <input type='radio' defaultChecked={isSelected} onClick={() => this.handleClick(obj)} value={obj.contents} name={obj.owner} />
           <span>{obj.contents}</span>
         </label>
       );

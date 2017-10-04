@@ -123,7 +123,14 @@ class MQTT extends Component {
           mqttClient.publish(guruAppTopic, selectGuruApp); //launches guru app
 				}
       }
+
       else if (topic.includes(cellID + '/' + ra) && !topic.includes('console')) {
+        var model = topic.split('/')[0];
+        updateWhiteboard(decodedCborMsg, model);
+      }
+
+      //ENABLE FOR DEBUGGING
+      else if (decodedCborMsg[0][0].value === 'toppane') { //if msg not going to our clientID, but is still an app (ex. debugging tool)
         var model = topic.split('/')[0];
         updateWhiteboard(decodedCborMsg, model);
       }
