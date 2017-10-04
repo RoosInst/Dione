@@ -100,13 +100,15 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
         }
         if (arr.length > 0) {
           for (var i = 0; i < arr.length; i++) {
-            arr[i] = parseSmMsgs(arr[i]); //returns array
+            var tempArr = parseSmMsgs(arr[i]); //returns array
+            arr[i] = tempArr[0]; //because storing each val in an array already, remove inner array by indexing [0]
           }
         }
         else {
           for (var i = 0; i < obj.value.length; i++) {
             if (typeof obj.value[i] === 'string') {
-              arr[i] = parseSmMsgs(obj.value[i]); //returns array
+              var tempArr = parseSmMsgs(obj.value[i]); //returns array
+              arr[i] = tempArr[0]; //because storing each val in an array already, remove inner array by indexing [0]
             } else {console.error('ERR: Unrecognized obj.value:', obj.value[i])}
           }
         }

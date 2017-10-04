@@ -80,8 +80,8 @@ class Pane extends Component {
                if (menuItem) {
                key2++;
                return(
-                 <MenuItem key={'menuItem' + key2} onClick={() => this.handleClick(menuItem[0], obj[menu])}>
-                     {menuItem[0].text}
+                 <MenuItem key={'menuItem' + key2} onClick={() => this.handleClick(menuItem, obj[menu])}>
+                     {menuItem.text}
                  </MenuItem>
                );
              } else return null;
