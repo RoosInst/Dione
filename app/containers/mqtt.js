@@ -118,7 +118,6 @@ class MQTT extends Component {
 
           var selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex');
           var guruAppTopic = ra + '/X1PD0ZR3/console/action/1';
-         console.log('publishing');
           mqttClient.publish(consoleCreateSubTopic, consoleCreateSub);
           mqttClient.publish(guruAppTopic, selectGuruApp); //launches guru app
 				}

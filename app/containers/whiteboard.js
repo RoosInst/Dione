@@ -161,7 +161,7 @@ class Whiteboard extends Component {
                           <span className="cardLabel">{obj.dialog ? obj.dialog.label : ''}</span>
                           <i className='pull-right fa fa-window-close' onClick={() => {
                             var forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
-                            delete forest[model].dialog;
+                            delete forest[model].dialog; //delete from redux when closing
                             this.props.updateWhiteboard(forest, model);
                             }}
                           />
@@ -170,8 +170,8 @@ class Whiteboard extends Component {
                           {obj.dialog ?
                             <div className='shell'>
                             <ul>
-                              {obj.dialog.contents.map((content) => {
-                                return <li key={content}>{content}</li>
+                              {obj.dialog.contents.map((content, key) => {
+                                return <li key={key}>{content}</li> //no need for content.text
                               })}
                             </ul>
                             <div className='dialogBottom'>

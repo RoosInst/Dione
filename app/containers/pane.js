@@ -14,10 +14,7 @@ class Pane extends Component {
     //   document.execCommand("copy");
     //   return;
     // }
-    const model = this.props.model;
-    const clientID = this.props.clientID;
-    const selectedItems = this.props.selectedItems;
-    const whiteboard = this.props.whiteboard;
+    const { model, clientID, selectedItems, whiteboard } = this.props;
 
     if (clickedObj.identifier.indexOf("Menu") < 0) { //don't add to selectedItems if context menu (right-click menu) clicked
       this.props.addSelection(model, clickedObj.identifier, riString);
@@ -42,7 +39,7 @@ class Pane extends Component {
         menu = key;
       }
     }
-     if (obj[menu] && obj.identifier && obj[menu].value) { //if right-clicking capabilities
+     if (obj.identifier && menu && obj[menu].value) { //if right-clicking capabilities
        return (
          <div className="contextMenu shell">
            <ContextMenuTrigger id={obj.identifier}>
@@ -55,26 +52,26 @@ class Pane extends Component {
                       </span>
                       {obj.contents[0].text.substring(obj.contents[0].highlight[1] - 1)}
                     </span>
-                 : //no highlight
-                    obj.contents.length > 1 ?
+                    : //no highlight
+                  obj.contents.length > 1 ?
                       <ul>
                       {
                         obj.contents.map((arrayVal, key) => {
-                        return(getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems));
-                      })
-                    }
-                  </ul>
+                          return(getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems));
+                        })
+                      }
+                    </ul>
                   : //content length 1
-                   <span style={{whiteSpace: 'pre'}}>{obj.contents[0].text}</span>
+                   <span style={{whiteSpace: 'pre'}}>{obj.contents[0].text}</span> //if length 1, then just display as text, not as list
                 : '' // no contents
              }
            </ContextMenuTrigger>
            <ContextMenu id={obj.identifier}>
              {
              obj[menu].value.map((menuItem, key) => {
-               if (menuItem) {
+               if (menuItem) { //if not null
                return(
-                 <MenuItem key={'menuItem' + key} onClick={() => this.handleClick(menuItem, obj[menu])}>
+                 <MenuItem key={key} onClick={() => this.handleClick(menuItem, obj[menu])}>
                      {menuItem.text}
                  </MenuItem>
                );
@@ -86,12 +83,12 @@ class Pane extends Component {
        );
      }
      else if (obj.contents && obj.class === 'ListPane') {
-       console.log('obj contentz', obj.contents);
        return (
         <ul>
           {
             obj.contents.map((arrayVal, key) => {
-              return(getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems));
+              //arrayVal.text may be empty, so must check
+              if (arrayVal.text) return(getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems));
             })
           }
         </ul>

@@ -34,7 +34,7 @@ export function addSelection(model, objID, riString, selectionGroup) {
     type: ADD_SELECTION,
     model: model,
     identifier: objID,
-    selected: riString,
+    selected: riString.text ? riString.text : riString,
     selectionGroup: selectionGroup //undefined unless a radio button
   }
 }

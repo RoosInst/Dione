@@ -338,8 +338,6 @@ function riStringCheckAndConvert(s) {
 
 /**Given an RiString returns a fomatted JSX list <li>...</li> element*/
 export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick, selectedItems) {
-  console.log('riString', riString);
-    key = 'string' + key;
     var indent, color, font, a; //local vars
     if(!riString.text) { //if no text field then it's not an RiString
       return (<li key={key}>{riString}</li>);
