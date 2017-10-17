@@ -1,6 +1,6 @@
 CTZGJ8
 :INFO
-guru 
+guru
 logWindow
 logSm
 admin

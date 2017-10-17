@@ -124,7 +124,7 @@ class MQTT extends Component {
 				}
       }
 
-      else if (topic.includes(cellID + '/' + ra) && !topic.includes('console')) {
+      else if (topic.includes(cellID + '/' + ra) && !topic.includes('console')) { //if message for us, but ignoring console instructions
         var model = topic.split('/')[0];
         updateWhiteboard(decodedCborMsg, model);
       }

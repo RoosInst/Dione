@@ -159,7 +159,7 @@ function insertArray(tree, arr) { //assuming array of objects
     recursiveCheck(tree);
   }
 
-  function recursiveCheck(newObj) {
+  function recursiveCheck(newObj) { //if called again, found = false
     var objVal = obj.value; //owner = object's value in array of objects
     if (newObj[objVal]) {
       newObj[objVal].contents = parseSmMsgs(obj.contents);
@@ -228,7 +228,6 @@ export function convertArrayToKeyValues(decodedCbor) {
     };
 
     for (var i = 1; i < decodedCbor[array].length; i=i+2) {
-
       if (decodedCbor[array][i] === 'attribute') { //if multiple attributes, make/add to an obj of attributes instead of replacing each attribute w/ latest
         if (!msgObj['attributes']) msgObj['attributes'] = {};
         var splitVal = decodedCbor[array][i+1].split('=');
@@ -236,21 +235,30 @@ export function convertArrayToKeyValues(decodedCbor) {
       }
 
       else msgObj[decodedCbor[array][i]] = decodedCbor[array][i+1];
-
     }
+
     if (msgObj.identifier) {
       store[msgObj.identifier] = msgObj;
     }
-    else if (msgObj.contents != null) { //not null, but can be empty string
+
+    if (msgObj.contents != null) { //not null, but can be empty string
       if (store['values']) {
       store['values'].push(msgObj);
       } else {
       store['values'] = [msgObj];
       }
     }
-    else if (decodedCbor[0][0].value === 'top') {
+
+    if (decodedCbor[0][0].value === 'top') {
       store['top'] = msgObj;
     }
+
+    if (decodedCbor[0][0].value === 'dialog') { //note: not else if
+      if (!store['top']) store['top'] = {}; //want to staticly place dialogs inside top of model (instead of dynamically with assigning an unnecessary owner)
+      var temp = store['values']; //will be undefined until it reaches next level of array for dialog
+      if(temp) store['top']['dialog'] = temp[0];
+    }
+
     msgObj = {};
   }
   return store;
@@ -330,6 +338,7 @@ function riStringCheckAndConvert(s) {
 
 /**Given an RiString returns a fomatted JSX list <li>...</li> element*/
 export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick, selectedItems) {
+  console.log('riString', riString);
     key = 'string' + key;
     var indent, color, font, a; //local vars
     if(!riString.text) { //if no text field then it's not an RiString
@@ -341,9 +350,9 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
     if(riString.indent) { indent = riString.indent; }
     if(riString.color) { color = riString.color; }
     if(riString.font) { font = riString.font; }
-    if(color===0 && indent===0 && font===0) {
-      return (<li key={key}>{riString.text}</li>); //nothing to format
-    }
+    // if(color===0 && indent===0 && font===0) {
+    //   return (<li key={key}>{riString.text}</li>); //nothing to format
+    // }
     return (
       <li onClick={() => handleClick(riString, obj)}
          key={key}
@@ -413,11 +422,23 @@ RIRISEP = [RIRISEP1, RIRISEP2, RIRISEP3, RIRISEP4] //for array access of RIRI se
           First message missing RIRISEP3 in front of it (only '\u0001'), so add it.
 */
 function parseSmMsgs(smMsgs) {
-  if (smMsgs.indexOf('\u0001') < 0) { //if no riri inside string
+  if (Array.isArray(smMsgs)) {
+    var arr = [];
+    var obj = {};
+    for (var i = 0; i < smMsgs.length; i++) {
+      if (smMsgs[i].indexOf('\u0001') < 0) { //if no riri inside string
+        obj.text = smMsgs[i];
+        arr.push(obj);
+        obj = {}; //important, otherwise copies last value smMsgs.length - 1 times
+      }
+    }
+    return arr;
+  }
+  else if (smMsgs.indexOf('\u0001') < 0) { //if no riri inside string
     var arr = [];
     var obj = {};
     obj['text'] = smMsgs;
-        arr[0] = obj;
+    arr[0] = obj;
     return arr;
   }
   var s, ndx, b, item0, p, key;

@@ -39,8 +39,13 @@ class Button extends Component {
     const obj = this.props.obj;
     const isSelected = (obj.selected === 'true');
     if (obj.type === 'momentary' || !obj.selectionGroup) {
-     return (<div className="btn btn-primary momentary" onClick={() => this.handleClick(obj)}>{obj.contents}</div>);
-    } else {
+     return (
+       <div className="btn btn-primary momentary" onClick={() => this.handleClick(obj)}>
+         {Array.isArray(obj.contents) ?  obj.contents.map(content => {return content.text}) : obj.contents}
+       </div>
+     );
+    }
+    else {
       return (
         <label>
           <input type='radio' defaultChecked={isSelected} onClick={() => this.handleClick(obj)} value={obj.contents} name={obj.owner} />

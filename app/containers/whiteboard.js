@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import MQTT, {mqttClient, cellID} from './mqtt';
 import { updateWhiteboard } from '../actions';
+import Modal from 'react-modal';
 
 import Pane from './pane';
 import Button from './button';
@@ -153,12 +154,47 @@ class Whiteboard extends Component {
                 var obj = this.props.whiteboard[model];
                 return (
                   <div id={model} className='grid-stack-item' key={model} data-gs-auto-position data-gs-height='12' data-gs-width='4'>
+                    <Modal className='reactModal' isOpen={obj.dialog ? true : false}>
+                      <div className="card dialog">
+                        <div className="card-header">
+                          <img style={{width: '16px', margin: '-2px 5px 0 5px'}} src='/app/images/favicon.ico'/>
+                          <span className="cardLabel">{obj.dialog ? obj.dialog.label : ''}</span>
+                          <i className='pull-right fa fa-window-close' onClick={() => {
+                            var forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
+                            delete forest[model].dialog;
+                            this.props.updateWhiteboard(forest, model);
+                            }}
+                          />
+                        </div>
+                        <div className="card-body">
+                          {obj.dialog ?
+                            <div className='shell'>
+                            <ul>
+                              {obj.dialog.contents.map((content) => {
+                                return <li key={content}>{content}</li>
+                              })}
+                            </ul>
+                            <div className='dialogBottom'>
+                              <div className='btn btn-primary btn-small pull-left momentary'>
+                                {obj.dialog.addButton}
+                              </div>
+                              <div className='btn btn-primary btn-small pull-right momentary'>
+                                Cancel
+                              </div>
+                            </div>
+                          </div>
+                            : ''
+                          }
+                        </div>
+                      </div>
+                    </Modal>
+
                     <div className='grid-stack-item-content'>
                       <div className="card">
                         <div className="card-header">
                           <img style={{width: '16px', margin: '-2px 5px 0 5px'}} src='/app/images/favicon.ico'/>
                           <span className="cardLabel">{obj.label}</span>
-                          <i onClick={() => this.handleClick(model)} className="pull-right fa fa-window-close"></i>
+                          <i onClick={() => this.handleClick(model)} className="pull-right fa fa-window-close" />
                         </div>
                         <div className="card-body">
                           {this.renderApp(model, obj)}
