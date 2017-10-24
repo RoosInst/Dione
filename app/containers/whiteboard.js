@@ -1,8 +1,10 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
+import Modal from 'react-modal';
+
 import MQTT, {mqttClient, cellID} from './mqtt';
 import { updateWhiteboard } from '../actions';
-import Modal from 'react-modal';
+import { convertObjToArrayForPublish } from '../scripts/functions';
 
 import Pane from './pane';
 import Button from './button';
@@ -38,7 +40,7 @@ class Whiteboard extends Component {
             if (key !== 'style' && key !== 'attributes' && key.indexOf('Menu') < 0 && val !== null && typeof val === 'object' && Object.prototype.toString.call( val ) !== '[object Array]') {
                return (<div className={val.class} style={val.style} id={model + '_' + val.identifier} key={val.identifier}>{this.renderObj(model, val)}{this.renderApp(model, val)}</div>)
             }
-             else return (null);
+             else return null;
           })
         }
       </div>);
@@ -61,22 +63,51 @@ class Whiteboard extends Component {
     } else return null;
   }
 
-  handleClick(model) { //delete app, clicking on close 'X' button
-    var omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
-    var omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
-    var omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
-    var unsub = cbor.encode('unsubscribe');
-    var cborModel = cbor.encode(model);
+  handleClose(model) { //delete app, clicking on close 'X' button
+    let omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
+    let omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
+    let omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
+    let unsub = cbor.encode('unsubscribe');
+    let cborModel = cbor.encode(model);
 
-    var topic = this.props.clientID + '/' + cellID + '/' + model + '/unsubscribe/1';
-    var cborPubMsg = Buffer.concat([omap_start, omap_cborTag, unsub, omap_end, omap_start, omap_cborTag, cborModel, omap_end]);
+    let topic = this.props.clientID + '/' + cellID + '/' + model + '/unsubscribe/1';
+    let cborPubMsg = Buffer.concat([omap_start, omap_cborTag, unsub, omap_end, omap_start, omap_cborTag, cborModel, omap_end]);
 
-    var forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
+    let forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
     delete forest[model];
     this.props.updateWhiteboard(forest, model);
     mqttClient.publish(topic, cborPubMsg);
 
     return null;
+  }
+
+  handleModal(model, clickedObj, selected) {
+    let dialog = clickedObj.dialog;
+    let topic = this.props.clientID + '/' + cellID + '/' + model + '/action/1';
+    let objVal = cbor.encode('event');
+    let omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
+    let omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
+    let omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
+
+    let selectorKey = cbor.encode('selector');
+    let selectorVal = cbor.encode(dialog.selector);
+    let channelKey = cbor.encode('channel');
+    let channelVal = cbor.encode(this.props.clientID);
+    let selectionKey = cbor.encode('selection');
+    let selectionVal = cbor.encode(selected);
+    let cookieKey = cbor.encode('cookie');
+    let cookieVal = cbor.encode(dialog.cookie);
+    let scopeKey = cbor.encode('scope');
+    let scopeVal = cbor.encode(clickedObj.attributes.scope);
+    let rangeKey = cbor.encode('range');
+    let rangeVal = cbor.encode(clickedObj.attributes.range);
+
+    let cborMsg = Buffer.concat([omap_start, omap_cborTag, objVal, selectorKey, selectorVal, channelKey, channelVal, selectionKey, selectionVal, cookieKey, cookieVal, scopeKey, scopeVal, rangeKey, rangeVal, omap_end]);
+    if (mqttClient && cellID) {
+        console.info("Publishing -\n Topic: " + topic + "\n Message: " +  cborMsg);
+      mqttClient.publish(topic, cborMsg);
+    }
+
   }
 
   componentDidMount() {
@@ -154,6 +185,7 @@ class Whiteboard extends Component {
                 var obj = this.props.whiteboard[model];
                 return (
                   <div id={model} className='grid-stack-item' key={model} data-gs-auto-position data-gs-height='12' data-gs-width='4'>
+
                     <Modal className='reactModal' isOpen={obj.dialog ? true : false}>
                       <div className="card dialog">
                         <div className="card-header">
@@ -171,7 +203,14 @@ class Whiteboard extends Component {
                             <div className='shell'>
                             <ul>
                               {obj.dialog.contents.map((content, key) => {
-                                return <li key={key}>{content}</li> //no need for content.text
+                                return <li
+                                  onClick={() => {
+                                    this.handleModal(model, obj, content);
+                                    var forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
+                                    delete forest[model].dialog; //delete from redux when closing
+                                    this.props.updateWhiteboard(forest, model);
+                                  }}
+                                  key={key}>{content}</li> //no need for content.text
                               })}
                             </ul>
                             <div className='dialogBottom'>
@@ -194,7 +233,7 @@ class Whiteboard extends Component {
                         <div className="card-header">
                           <img style={{width: '16px', margin: '-2px 5px 0 5px'}} src='/app/images/favicon.ico'/>
                           <span className="cardLabel">{obj.label}</span>
-                          <i onClick={() => this.handleClick(model)} className="pull-right fa fa-window-close" />
+                          <i onClick={() => this.handleClose(model)} className="pull-right fa fa-window-close" />
                         </div>
                         <div className="card-body">
                           {this.renderApp(model, obj)}

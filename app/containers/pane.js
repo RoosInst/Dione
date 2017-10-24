@@ -89,6 +89,7 @@ class Pane extends Component {
             obj.contents.map((arrayVal, key) => {
               //arrayVal.text may be empty, so must check
               if (arrayVal.text) return(getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems));
+              else return null;
             })
           }
         </ul>

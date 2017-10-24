@@ -504,6 +504,7 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
     if (riString.header) selectionVal = cbor.encode(riString.header + riString.text);
     else selectionVal = cbor.encode(riString.text);
   }
+  else if (Array.isArray(obj.contents)) selectionVal = cbor.encode(obj.contents[0].text);
   else selectionVal = cbor.encode(obj.contents);
 
   var selectorKey = cbor.encode('selector');
