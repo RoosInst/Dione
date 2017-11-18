@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import Modal from 'react-modal';
 
 import MQTT, {mqttClient, cellID} from './mqtt';
-import { updateWhiteboard } from '../actions';
+import { updateWhiteboard, addSelection } from '../actions';
 import { convertObjToArrayForPublish } from '../scripts/functions';
 
 import Pane from './pane';
@@ -81,8 +81,13 @@ class Whiteboard extends Component {
     return null;
   }
 
-  handleModal(model, clickedObj, selected) {
+  handleModal(model, clickedObj, selected, delDialog) {
+
+
     let dialog = clickedObj.dialog;
+
+    this.props.addSelection(model, clickedObj.dialog.widget, selected);
+
     let topic = this.props.clientID + '/' + cellID + '/' + model + '/action/1';
     let objVal = cbor.encode('event');
     let omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
@@ -107,6 +112,7 @@ class Whiteboard extends Component {
         console.info("Publishing -\n Topic: " + topic + "\n Message: " +  cborMsg);
       mqttClient.publish(topic, cborMsg);
     }
+    delDialog();
 
   }
 
@@ -164,6 +170,12 @@ class Whiteboard extends Component {
     }
   }
 
+  delDialog(model) {
+    var forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
+    delete forest[model].dialog; //delete from redux when closing
+    this.props.updateWhiteboard(forest, model);
+  }
+
   render() {
     var arr = null;
     if (this.props.whiteboard) arr = Object.keys(this.props.whiteboard);
@@ -191,12 +203,7 @@ class Whiteboard extends Component {
                         <div className="card-header">
                           <img style={{width: '16px', margin: '-2px 5px 0 5px'}} src='/app/images/favicon.ico'/>
                           <span className="cardLabel">{obj.dialog ? obj.dialog.label : ''}</span>
-                          <i className='pull-right fa fa-window-close' onClick={() => {
-                            var forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
-                            delete forest[model].dialog; //delete from redux when closing
-                            this.props.updateWhiteboard(forest, model);
-                            }}
-                          />
+                          <i className='pull-right fa fa-window-close' onClick={() => this.delDialog(model)} />
                         </div>
                         <div className="card-body">
                           {obj.dialog ?
@@ -204,12 +211,7 @@ class Whiteboard extends Component {
                             <ul>
                               {obj.dialog.contents.map((content, key) => {
                                 return <li
-                                  onClick={() => {
-                                    this.handleModal(model, obj, content);
-                                    var forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
-                                    delete forest[model].dialog; //delete from redux when closing
-                                    this.props.updateWhiteboard(forest, model);
-                                  }}
+                                  onClick={() => this.handleModal(model, obj, content, () => this.delDialog(model))}
                                   key={key}>{content}</li> //no need for content.text
                               })}
                             </ul>
@@ -263,4 +265,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { updateWhiteboard })(Whiteboard);
+export default connect(mapStateToProps, { updateWhiteboard, addSelection })(Whiteboard);

@@ -15,8 +15,7 @@ class Pane extends Component {
     //   return;
     // }
     const { model, clientID, selectedItems, whiteboard } = this.props;
-
-    if (clickedObj.identifier.indexOf("Menu") < 0) { //don't add to selectedItems if context menu (right-click menu) clicked
+    if (!clickedObj.identifier.includes("Menu")) { //don't add to selectedItems if context menu (right-click menu) clicked
       this.props.addSelection(model, clickedObj.identifier, riString);
     }
     var attributes = null;

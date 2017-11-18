@@ -28,13 +28,13 @@ export function updateWhiteboard(msg, model) {
 }
 };
 
-export function addSelection(model, objID, riString, selectionGroup) {
+export function addSelection(model, objID, string, selectionGroup) {
 
   return {
     type: ADD_SELECTION,
     model: model,
     identifier: objID,
-    selected: riString.text ? riString.text : riString,
+    selected: string.text ? string.text : string,
     selectionGroup: selectionGroup //undefined unless a radio button
   }
 }

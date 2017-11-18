@@ -351,6 +351,7 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
     // if(color===0 && indent===0 && font===0) {
     //   return (<li key={key}>{riString.text}</li>); //nothing to format
     // }
+
     return (
       <li onClick={() => handleClick(riString, obj)}
          key={key}
@@ -540,3 +541,87 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
   else return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, omap_end]);
 
 }
+
+
+export function getTreeFor(/*riString[]*/ rsArray) {
+  var len, rootNode, parent, currentParentNode, currentChildNode, currentChildIndent, i, r,
+      indent, newIndent; //local var defs
+
+  if(!rsArray) { return null; } //nothing to do
+  len = rsArray.length;
+  if(len<1) { return null; } //nothing to do
+
+  rootNode = { //the returned value
+    identifier: 'index',
+    label: 'text',
+    items: rsArray //the list of all the entries, irrespective of parentage. To these are added references to the index of children and parents
+  };
+
+  currentParentNode = null; //the current node to which children are being added
+  currentChildNode = null; //most recently added child
+
+  r = rsArray[0]; //riString
+  if(r.text===undefined) { //if is a regular string, need to replace it with an riString (for tree purposes)
+    r = {};
+    r.text = rsArray[0];
+    rsArray[0] = r; //replace it
+  }
+  currentChildIndent = (r.indent===undefined) ? 0 : r.indent; //the indent value of the most recent node added. Start it at the value of the first node.
+
+  for(i=0; i<len; i++) { //to each entry, add references for children and parent
+
+    r = rsArray[i]; //riString
+    if(r.text===undefined) { //if is a regular string, need to replace it with an riString (for tree purposes)
+      r = {};
+      r.text = rsArray[i];
+      rsArray[i] = r; //replace it
+    }
+
+    r.index = i; //give a unique, sequential index to each entry
+    r._reference = i; //amazingly: this was the final thing needed to make it work
+    if(r.indent===undefined) { r.indent = 0; } //ensure have an indent because is used for tree display
+    indent = r.indent;
+
+    if(indent===currentChildIndent) { //keep pushing into same parent node
+      currentChildNode = r; //create new node
+      r.parent = currentParentNode;
+      if(currentParentNode) { //if have a parent
+        if(currentParentNode.kids===undefined) { currentParentNode.kids = []; } //ensure parent has a kids entry if about to push on a kid
+        currentParentNode.kids.push(currentChildNode);
+      }
+    }
+
+    else if(indent > currentChildIndent) { //push into the most recent child
+      currentParentNode = currentChildNode; //push down one
+      currentChildNode = r; //create new node
+      r.parent = currentParentNode;
+      if(currentParentNode.kids===undefined) { currentParentNode.kids = []; } //ensure parent has a kids entry if about to push on a kid
+      currentParentNode.kids.push(currentChildNode);
+      currentChildIndent = indent;
+    }
+
+    else { //i.e. indent < currentLevel: pop until find a node above the level of this node
+      parent = currentParentNode;
+      while(true) {
+        if(!parent) { //just in case something goes horribly wrong
+          parent = rootNode;
+          break; //all done
+        }
+        if(!parent) { newIndent=0; }
+        else { newIndent = parent.indent; }
+        if(newIndent < indent) { //find a node at a level at least 1 smaller than this node
+          break; //all done
+      }
+        currentParentNode = parent;
+        parent = currentParentNode.parent;
+      }
+      currentParentNode = parent;
+      currentChildNode = r; //create new node
+      r.parent = currentParentNode;
+      if(currentParentNode.kids===undefined) { currentParentNode.kids = []; } //ensure parent has a kids entry if about to push on a kid
+      currentParentNode.kids.push(currentChildNode);
+      currentChildIndent=indent;
+    }
+  }
+  return rootNode;
+};
