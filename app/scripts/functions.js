@@ -397,11 +397,7 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
     return (
       <li onClick={() => handleClick(riString, obj)}
          key={key}
-         className={`
-           ${color !==0 ? 'rsColor'+color : ''}
-           ${font !== 0 ? 'rsStyle'+font : '' }
-          ${selectedItemContent === riStringContent ? 'active' : ''}
-        `}>
+         className={`${color !==0 ? 'rsColor '+color : ''}${font !== 0 ? 'rsStyle '+font : '' }${selectedItemContent === riStringContent ? 'active' : ''}`}>
         {nbspaces(indent)}
         {riString.text}
       </li>

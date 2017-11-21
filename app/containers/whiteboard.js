@@ -81,7 +81,8 @@ class Whiteboard extends Component {
     return null;
   }
 
-  handleModal(model, clickedObj, selected, delDialog) {
+  handleModal(model, clickedObj, selected, delDialog) { //don't bother making target active upon click, disappears before it can show (tested)
+    //Note: console logging clickedObj won't show dialog as a key, but know that it exists (can test by consle logging dialog directly)
     let dialog = clickedObj.dialog;
 
     this.props.addSelection(model, clickedObj.dialog.widget, selected);
@@ -209,18 +210,18 @@ class Whiteboard extends Component {
                             <ul>
                               {obj.dialog.contents.map((content, key) => {
                                 return <li
-                                  onClick={() => this.handleModal(model, obj, content, () => this.delDialog(model))}
+                                  onClick={(e) => this.handleModal(model, obj, content, () => this.delDialog(model), e.target)}
                                   key={key}>{content}</li> //no need for content.text
                               })}
                             </ul>
-                            <div className='dialogBottom'>
+                            {/* <div className='dialogBottom'>
                               <div className='btn btn-primary btn-small pull-left momentary'>
                                 {obj.dialog.addButton}
                               </div>
                               <div className='btn btn-primary btn-small pull-right momentary'>
                                 Cancel
                               </div>
-                            </div>
+                            </div> */}
                           </div>
                             : ''
                           }

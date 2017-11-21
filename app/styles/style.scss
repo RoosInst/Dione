@@ -100,7 +100,15 @@ body {
 .rsStyle2  { font-style:italic  } /*italic*/
 .rsStyle3  { font-weight:bold; font-style:italic } /*bold italic*/
 
-.ListPane {font-weight: bold;}
+li {
+	font-weight: bold;
+	line-height: 1.35;
+}
+.dialog {
+	li {
+		line-height: 1.5;
+	}
+}
 
 ul {
 	padding: 0;
@@ -287,25 +295,25 @@ body {
 }
 
 $cardHeaderHeight: 28px;
-$dialogCardHeight: 217px;
-$dialogBottomHeight: 30px;
+$dialogCardHeight: 187px; //if using dialogBottom, add 30px (currently not)
+//$dialogBottomHeight: 30px;
 .dialog {
 	width: 160px;
 	height: $dialogCardHeight;
 	ul {
-		height: ($dialogCardHeight - $cardHeaderHeight - $dialogBottomHeight);
+		height: ($dialogCardHeight - $cardHeaderHeight);
 		overflow: auto;
 	}
-	.dialogBottom {
-		height: $dialogBottomHeight;
-		width: 100%;
-		div {
-			width: 50%;
-		}
-		.btn {
-			width: 50%;
-		}
-	}
+	// .dialogBottom { //for select and cancel buttons
+	// 	height: $dialogBottomHeight;
+	// 	width: 100%;
+	// 	div {
+	// 		width: 50%;
+	// 	}
+	// 	.btn {
+	// 		width: 50%;
+	// 	}
+	// }
 }
 
 span {
