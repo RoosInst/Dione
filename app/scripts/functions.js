@@ -369,13 +369,38 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
     //   return (<li key={key}>{riString.text}</li>); //nothing to format
     // }
 
+
+    let riStringContent;
+    if (riString.text) {
+      if (riString.header) {
+        if (riString.tag) {
+          if (riString.type) riStringContent = riString.type + riString.header + riString.tag + riString.text;
+          else riStringContent = riString.header + riString.tag + riString.text;
+        } else riStringContent = riString.header + riString.text
+      } else riStringContent = riString.text;
+    } else riStringContent = riString;
+
+    let selectedItemContent = null;
+    if (selectedItems && selectedItems[model] && selectedItems[model][obj.identifier] && selectedItems[model][obj.identifier]) {
+      selectedItemContent = selectedItems[model][obj.identifier];
+      if (selectedItemContent.text) {
+        if (selectedItemContent.header) {
+          if (selectedItemContent.tag) {
+            if (selectedItemContent.type) selectedItemContent = selectedItemContent.type + selectedItemContent.header + selectedItemContent.tag + selectedItemContent.text;
+            else selectedItemContent = selectedItemContent.header + selectedItemContent.tag + selectedItemContent.text;
+          } else selectedItemContent = selectedItemContent.header + selectedItemContent.text
+        } else selectedItemContent = selectedItemContent.text;
+      }
+    }
+    console.log('selectedItems[model][obj.identifier]:', selectedItems[model][obj.identifier]);
+    console.log('riStringContent:', riStringContent);
     return (
       <li onClick={() => handleClick(riString, obj)}
          key={key}
          className={`
            ${color !==0 ? 'rsColor'+color : ''}
            ${font !== 0 ? 'rsStyle'+font : '' }
-          ${selectedItems && selectedItems[model] && selectedItems[model][obj.identifier] && selectedItems[model][obj.identifier].text === riString.text ? 'active' : ''}
+          ${selectedItemContent === riStringContent ? 'active' : ''}
         `}>
         {nbspaces(indent)}
         {riString.text}
@@ -438,16 +463,18 @@ RIRISEP = [RIRISEP1, RIRISEP2, RIRISEP3, RIRISEP4] //for array access of RIRI se
           First message missing RIRISEP3 in front of it, so add it.
 */
 function parseSmMsgs(smMsgs) {
-  var arr = [];
-  var obj = {};
-  if (Array.isArray(smMsgs)) {
-    smMsgs.map(msg => {
-      arr.push(parseSingleSmMsg(msg));
-    });
-  } else {
-    arr.push(parseSingleSmMsg(smMsgs));
-  }
-  return arr;
+  if (smMsgs) {
+    var arr = [];
+    var obj = {};
+    if (Array.isArray(smMsgs)) {
+      smMsgs.map(msg => {
+        if (msg) arr.push(parseSingleSmMsg(msg));
+      });
+    } else {
+      arr.push(parseSingleSmMsg(smMsgs));
+    }
+    return arr;
+  } else return;
 }
 
 function parseSingleSmMsg(smMsg) { //returns obj
@@ -533,8 +560,18 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
       var selectionIDKey = cbor.encode('selection' + selectedItemsModelEntries[i][0]); //0 is key. ex. 'selection15'
       var selectionIDVal;
 
-      if (selectedItemsModelEntries[i][1].header && selectedItemsModelEntries[i][1].text) selectionIDVal = cbor.encode(selectedItemsModelEntries[i][1].header + selectedItemsModelEntries[i][1].text); //1 is value
-      else selectionIDVal = cbor.encode(selectedItemsModelEntries[i][1]); //if not a riri string
+      let selectedItem = selectedItemsModelEntries[i][1];
+      if (selectedItem.text) {
+        if (selectedItem.header) {
+          if (selectedItem.tag) {
+            if (selectedItem.type) selectionIDVal = cbor.encode(selectedItem.type + selectedItem.header + selectedItem.tag + selectedItem.text);
+            else selectionIDVal = cbor.encode(selectedItem.header + selectedItem.tag + selectedItem.text);
+          }
+          else selectionIDVal = cbor.encode(selectedItem.header + selectedItem.text);
+        }
+        else selectionIDVal = cbor.encode(selectedItem.text);
+      }
+      else selectionIDVal = cbor.encode(selectedItem); //if not a riri string
 
       if (selectedItemsBuffer) selectedItemsBuffer = Buffer.concat([selectedItemsBuffer, selectionIDKey, selectionIDVal]);
       else selectedItemsBuffer = Buffer.concat([selectionIDKey, selectionIDVal]);

@@ -4,7 +4,7 @@ import { getRiStringAsLi, convertObjToArrayForPublish } from '../scripts/functio
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { addSelection } from '../actions';
 
-import {mqttClient, cellID} from '../containers/mqtt';
+import { mqttClient, cellID } from '../containers/mqtt';
 const cbor = require('cbor');
 
 class Pane extends Component {

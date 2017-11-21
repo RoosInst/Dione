@@ -82,8 +82,6 @@ class Whiteboard extends Component {
   }
 
   handleModal(model, clickedObj, selected, delDialog) {
-
-
     let dialog = clickedObj.dialog;
 
     this.props.addSelection(model, clickedObj.dialog.widget, selected);

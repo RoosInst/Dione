@@ -12,10 +12,8 @@ class Button extends Component {
     if (clickedObj.selectionGroup) {
       this.props.addSelection(this.props.model, clickedObj.identifier, clickedObj.contents, clickedObj.selectionGroup);
     }
-    const clientID = this.props.clientID;
-    const model = this.props.model;
-    const selectedItems = this.props.selectedItems;
-    const whiteboard = this.props.whiteboard;
+    const { clientID, model, selectedItems, whiteboard } = this.props;
+
     var attributes = null;
     if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
     var msg = convertObjToArrayForPublish(model, clickedObj, clientID, null, selectedItems, attributes);
