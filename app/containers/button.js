@@ -9,7 +9,6 @@ import {mqttClient, cellID} from '../containers/mqtt';
 class Button extends Component {
 
   handleClick(clickedObj) {
-    console.log('clickedObj', clickedObj);
     if (clickedObj.selectionGroup) {
       this.props.addSelection(this.props.model, clickedObj.identifier, clickedObj.contents, clickedObj.selectionGroup);
     }

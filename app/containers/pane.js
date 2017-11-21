@@ -34,16 +34,17 @@ class Pane extends Component {
     var menu = null;
 
     for (var key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu. Will be used for right click context menu
-      if (key.indexOf("Menu") >= 0) {
+      if (key.includes("Menu")) {
         menu = key;
       }
     }
      if (obj.identifier && menu && obj[menu].value) { //if right-clicking capabilities
+       console.log('obj.contents:', obj.contents);
        return (
          <div className="contextMenu shell">
            <ContextMenuTrigger id={obj.identifier}>
                  {obj.contents ?
-                   obj.contents[0].highlight ? //if highlight exists, then assuming array will only be length 1 (contents[0])
+                   Array.isArray(obj.contents) && obj.contents[0] && obj.contents[0].highlight ? //if highlight exists, then assuming array will only be length 1 (contents[0]). contents[0] sometimes undefined, so check
                     <span style={{whiteSpace: 'pre'}}>
                       {obj.contents[0].text.substring(0, obj.contents[0].highlight[0] - 1)}
                       <span className='highlight'>
@@ -52,16 +53,21 @@ class Pane extends Component {
                       {obj.contents[0].text.substring(obj.contents[0].highlight[1] - 1)}
                     </span>
                     : //no highlight
-                  obj.contents.length > 1 ?
+                  obj.class === 'ListPane' ?
                       <ul>
                       {
-                        obj.contents.map((arrayVal, key) => {
-                          return(getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems));
-                        })
+                        Array.isArray(obj.contents) ?
+                          obj.contents.map((arrayVal, key) => {
+                            if (!arrayVal) return;
+                            return(getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems));
+                          })
+                        : getRiStringAsLi(model, obj.contents, key, obj, clientID, this.handleClick, selectedItems)
                       }
                     </ul>
-                  : //content length 1
-                   <span style={{whiteSpace: 'pre'}}>{obj.contents[0].text}</span> //if length 1, then just display as text, not as list
+                  : //if not listpane, display as text
+                    Array.isArray(obj.contents) && obj.contents[0] ?
+                    <span style={{whiteSpace: 'pre'}}>{obj.contents[0].text}</span>
+                    : <span style={{whiteSpace: 'pre'}}>{obj.contents.text}</span>
                 : '' // no contents
              }
            </ContextMenuTrigger>
@@ -74,7 +80,7 @@ class Pane extends Component {
                      {menuItem.text}
                  </MenuItem>
                );
-             } else return null;
+             } else return;
             })
              }
            </ContextMenu>
@@ -86,17 +92,17 @@ class Pane extends Component {
         <ul>
           {
             obj.contents.map((arrayVal, key) => {
-              //arrayVal.text may be empty, so must check
-              if (arrayVal.text) return(getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems));
+              if (arrayVal && arrayVal.text) return(getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems));
               else return null;
             })
           }
         </ul>
       );
-     } else if (obj.contents) { //not a ListPane, don't render in a list
+    } else if (obj.contents) { //not a ListPane, don't render in a list
+      console.log('obj contentsz:', obj.contents);
        return (<span style={{whiteSpace: 'pre'}}>{obj.contents[0].text}</span>);
      }
-     else return null;
+     else return null; //else no obj.contents
 		}
 	}
 

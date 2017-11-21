@@ -81,7 +81,6 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
     var obj = unsortedStore[key];
 
     if (Array.isArray(obj)) {
-      console.log("ARR:", obj);
       insertArray(tree, obj);
     }
 
@@ -292,11 +291,11 @@ function riStringCheckAndConvert(s) {
 
     rawHeaderBytes=null; //raw bytes extracted from input string
     //var decodedHeader=null; //base 64 decoded header bytes
-    headerOffset = 0; //starting location after the header (type1 = 5, type2 = 7)
+    headerOffset=5; //location after header, (type1 = 5, type2 = 7)
     actionLength = 0;  //length of the (type 2) action portion
 
     rawHeaderBytes = s.slice(0, 5); //ignore 1st byte, the next 4 is the type 1 header
-    headerOffset=5;
+
     if(isType2) {  //type 2 RiListString
       rawHeaderBytes = rawHeaderBytes+'A'+'A'+s.slice(5, 7); //type 2 header. The two padding bytes allow the 'action' string length to be properly decoded using base 64
       headerOffset = 7; //header offset for type 2 'action' string
@@ -307,15 +306,6 @@ function riStringCheckAndConvert(s) {
       //temp = base64Encode(val, 4); //test the reverse action (debug)
       riString = {};
 
-      temp = ((val >>> 20) & 0xf); //color: 4 bits
-      if(temp!==0) { riString.color  = temp; } //create entry only if actually has a value
-      temp = ((val >>> 16) & 0xf); //indent: 4 bits
-      if(temp!==0) { riString.indent = temp; }
-      temp = ((val >>> 14) & 0x3); //font: 2 bits
-      if(temp!==0) { riString.font   = temp; }
-      temp = (val & 0x3fff);       //tag: 14 bits
-      if(temp!==0) { riString.tag    = temp; }
-
       if(isType2) { //for type 2 decode the 'action' string
         //determine the action command length then extract it
         actionLength = ((rawHeaderBytes[4] & 0xff) << 8) + (rawHeaderBytes[5] & 0xff); //convert to int
@@ -323,14 +313,40 @@ function riStringCheckAndConvert(s) {
           console.error('Error parsing RiString (type 2) action cmd because of length: action cmd length='+actionLength+'. Available string length='+(s.length-headerOffset));
           actionLength = 0; //if so then set action string to zero so that bytes show up in the regular string data (to help in debug)
         }
-        riString.action = s.slice(headerOffset, headerOffset+actionLength);
+        var tempAction =  s.slice(headerOffset, headerOffset+actionLength);
+        if (tempAction) riString.action = tempAction;
       }
+
+      temp = ((val >>> 20) & 0xf); //color: 4 bits
+      if(temp!==0) { riString.color  = temp; } //create entry only if actually has a value
+      temp = ((val >>> 16) & 0xf); //indent: 4 bits
+      if(temp!==0) { riString.indent = temp; }
+      temp = ((val >>> 14) & 0x3); //font: 2 bits
+      if(temp!==0) { riString.font   = temp; }
+      temp = (val & 0x3fff);       //tag: 14 bits
+      if(temp!==0) { riString.tag = s.slice(headerOffset + actionLength, headerOffset + actionLength + temp);}
+
     }
     catch(e) {
       console.error('Unable to convert RiString header because: '+e);
     }
-    riString.text = s.slice(headerOffset+actionLength); //take the remainder as the text. For type1 = 5, for type2 = (7+length of action string)
+
+    //take the remainder as the text. For type1 = 5, for type2 = (7+length of action string)
+
+    if (riString.tag) {
+      var tempText = s.slice(headerOffset+actionLength + riString.tag.length);  //cut off tag
+      if (tempText.length > 0) riString.text = tempText; //if tag != text, set text to tempText
+      else {
+         riString.text = riString.tag; //else if tag === text, make text = tag
+         delete riString.tag;
+      }
+    }
+    else riString.text = s.slice(headerOffset+actionLength);
     riString.header= isType2 ? s.slice(1, 7) : rawHeaderBytes; //the raw header portion
+
+    if (isType2) riString.type = '\u0002';
+    else riString.type = '\u0001';
+
     return riString;
   };
 
@@ -338,6 +354,7 @@ function riStringCheckAndConvert(s) {
 
 /**Given an RiString returns a fomatted JSX list <li>...</li> element*/
 export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick, selectedItems) {
+    if (!riString.text) return; //sometimes an empty txt string gets passed, so don't make an empty <li> with it
     var indent, color, font, a; //local vars
     if(!riString.text) { //if no text field then it's not an RiString
       return (<li key={key}>{riString}</li>);
@@ -418,40 +435,37 @@ RIRISEP = [RIRISEP1, RIRISEP2, RIRISEP3, RIRISEP4] //for array access of RIRI se
 
 /**Given a RIRI2/RIRI3 separated string, parse it into json
 * UPDATE: Structure is '\u001E\u0001', but split on u001e (RIRISEP3).
-          First message missing RIRISEP3 in front of it (only '\u0001'), so add it.
+          First message missing RIRISEP3 in front of it, so add it.
 */
 function parseSmMsgs(smMsgs) {
+  var arr = [];
+  var obj = {};
   if (Array.isArray(smMsgs)) {
-    var arr = [];
-    var obj = {};
-    for (var i = 0; i < smMsgs.length; i++) {
-      if (smMsgs[i].indexOf('\u0001') < 0) { //if no riri inside string
-        obj.text = smMsgs[i];
-        arr.push(obj);
-        obj = {}; //important, otherwise copies last value smMsgs.length - 1 times
-      }
-    }
-    return arr;
+    smMsgs.map(msg => {
+      arr.push(parseSingleSmMsg(msg));
+    });
+  } else {
+    arr.push(parseSingleSmMsg(smMsgs));
   }
-  else if (smMsgs.indexOf('\u0001') < 0) { //if no riri inside string
-    var arr = [];
+  return arr;
+}
+
+function parseSingleSmMsg(smMsg) { //returns obj
+  if (!smMsg) return;
+   if (!smMsg.includes('\u0001') && !smMsg.includes('\u0002')) { //if no riri inside string
     var obj = {};
-    obj['text'] = smMsgs;
-    arr[0] = obj;
-    return arr;
+    obj['text'] = smMsg;
+    return obj;
   }
   var s, ndx, b, item0, p, key;
   var val0, entry, len;
-  var smMsgsJson;
-  smMsgs = RIRISEP3 + smMsgs;
-  var a = smMsgs.split(RIRISEP3); //split on RIRISEP3 (previously on second level riri separator, check UPDATE comments above).
-  smMsgsJson = []; //assemble the results into here
+  smMsg = RIRISEP3 + smMsg; //initial one doesn't have RIRISEP3 on it
+  var a = smMsg.split(RIRISEP3); //split on RIRISEP3 (previously on second level riri separator, check UPDATE comments above).
   if(!a[0] || a[0].length===0) {a.shift();} //remove the first element if empty (implies a leading sep, which gets tossed)
   len = a.length;
   for(ndx=0; ndx<len; ndx++) {
     if(a[ndx].indexOf(RIRISEP3) < 0) { //if no 3rd level seps it just goes in directly
-      s = riStringCheckAndConvert(a[ndx]); //convert to riString if needed
-      smMsgsJson.push(s);
+      return riStringCheckAndConvert(a[ndx]); //convert to riString if needed
     }
     else { //may have a sep after the equals: "key=SEP val1 SEP val2..." -or- may not: "key=val1 SEP val2..."
       b = a[ndx].split(RIRISEP3); //sep by level 3
@@ -476,13 +490,11 @@ function parseSmMsgs(smMsgs) {
         }
         entry = {};
         entry[key] = b;
-        smMsgsJson.push(entry);
+        return entry;
       }
-
-      else { smMsgsJson.push(b); } //no assignment on the first entry so just it take as an array
+      else return b; //no assignment on the first entry so just it take as an array
     }
   }
-  return smMsgsJson;
 };
 
 
@@ -502,7 +514,10 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
 
   var selectionVal;
   if (riString) {
-    if (riString.header) selectionVal = cbor.encode(riString.header + riString.text);
+    if (riString.header) {
+      if (riString.tag) selectionVal = cbor.encode(riString.header + riString.tag + riString.text);
+      else selectionVal = cbor.encode(riString.header + riString.text);
+    }
     else selectionVal = cbor.encode(riString.text);
   }
   else if (Array.isArray(obj.contents)) selectionVal = cbor.encode(obj.contents[0].text);

@@ -34,7 +34,15 @@ export function addSelection(model, objID, string, selectionGroup) {
     type: ADD_SELECTION,
     model: model,
     identifier: objID,
-    selected: string.text ? string.text : string,
+    selected: string.text ?
+      string.header ?
+        string.tag ?
+          string.type ?
+            string.type + string.header + string.tag + string.text
+          : string.header + string.tag + string.text
+        : string.header + string.text
+      : string.text
+    : string,
     selectionGroup: selectionGroup //undefined unless a radio button
   }
 }
