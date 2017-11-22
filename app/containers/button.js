@@ -33,7 +33,7 @@ class Button extends Component {
   render() {
     const obj = this.props.obj;
     const isSelected = (obj.selected === 'true');
-    if (obj.type === 'momentary' || !obj.selectionGroup) {
+    if (!obj.selectionGroup) {
      return (
        <div className="btn btn-primary momentary" onClick={() => this.handleClick(obj)}>
          {Array.isArray(obj.contents) ?  obj.contents.map(content => {return content.text}) : obj.contents}

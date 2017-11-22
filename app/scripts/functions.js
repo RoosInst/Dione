@@ -198,7 +198,6 @@ function insertObject(tree, obj) {
        var tempEntries = Object.entries(newObj);
        for (var i = 0; i < tempEntries.length; i++) {
          if (tempEntries[i][0] !== 'style' && typeof tempEntries[i][1] === 'object' && Object.prototype.toString.call(tempEntries[i][1]) !== '[object Array]') {
-            //console.log('newObj[tempEntries['+i+'][0]]', newObj[tempEntries[i][0]]);
             if (newObj[tempEntries[i][0]]) recursiveCheck(newObj[tempEntries[i][0]]);
             if (found) break;
         }
@@ -354,21 +353,10 @@ function riStringCheckAndConvert(s) {
 
 /**Given an RiString returns a fomatted JSX list <li>...</li> element*/
 export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick, selectedItems) {
-    if (!riString.text) return; //sometimes an empty txt string gets passed, so don't make an empty <li> with it
-    var indent, color, font, a; //local vars
+
     if(!riString.text) { //if no text field then it's not an RiString
       return (<li key={key}>{riString}</li>);
     }
-    indent=0;
-    color=0;
-    font=0;
-    if(riString.indent) { indent = riString.indent; }
-    if(riString.color) { color = riString.color; }
-    if(riString.font) { font = riString.font; }
-    // if(color===0 && indent===0 && font===0) {
-    //   return (<li key={key}>{riString.text}</li>); //nothing to format
-    // }
-
 
     let riStringContent;
     if (riString.text) {
@@ -392,13 +380,11 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
         } else selectedItemContent = selectedItemContent.text;
       }
     }
-    console.log('selectedItems[model][obj.identifier]:', selectedItems[model][obj.identifier]);
-    console.log('riStringContent:', riStringContent);
     return (
       <li onClick={() => handleClick(riString, obj)}
-         key={key}
-         className={`${color !==0 ? 'rsColor '+color : ''}${font !== 0 ? 'rsStyle '+font : '' }${selectedItemContent === riStringContent ? 'active' : ''}`}>
-        {nbspaces(indent)}
+        key={key}
+        className={`${riString.color ? 'rsColor'+riString.color : ''}${riString.font ? 'rsStyle'+riString.font : '' }${selectedItemContent === riStringContent ? 'active' : ''}`}>
+        {riString.indent ? riStringnbspaces(riString.indent) : ''}
         {riString.text}
       </li>
     );

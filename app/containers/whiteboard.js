@@ -38,7 +38,7 @@ class Whiteboard extends Component {
 
             //if type is object but not style, attributes, or Menu obj, null, or array. Menu obj never has objects inside it, so no need to go through
             if (key !== 'style' && key !== 'attributes' && key.indexOf('Menu') < 0 && val !== null && typeof val === 'object' && Object.prototype.toString.call( val ) !== '[object Array]') {
-               return (<div className={val.class} style={val.style} id={model + '_' + val.identifier} key={val.identifier}>{this.renderObj(model, val)}{this.renderApp(model, val)}</div>)
+               return (<div className={val.class} style={val.style} id={model + '_' + val.identifier} key={model + '_' + val.identifier}>{this.renderObj(model, val)}{this.renderApp(model, val)}</div>)
             }
              else return null;
           })
@@ -209,9 +209,13 @@ class Whiteboard extends Component {
                             <div className='shell'>
                             <ul>
                               {obj.dialog.contents.map((content, key) => {
-                                return <li
-                                  onClick={(e) => this.handleModal(model, obj, content, () => this.delDialog(model), e.target)}
-                                  key={key}>{content}</li> //no need for content.text
+                                return (
+                                <li
+                                  onClick={() => this.handleModal(model, obj, content, () => this.delDialog(model))}
+                                  key={key+'_'+content}>
+                                    {content}
+                                </li>
+                              ); //no need for content.text
                               })}
                             </ul>
                             {/* <div className='dialogBottom'>
@@ -253,8 +257,6 @@ class Whiteboard extends Component {
   }
 
 }
-
-
 
 function mapStateToProps(state) {
   return {

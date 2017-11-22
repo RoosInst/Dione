@@ -39,7 +39,6 @@ class Pane extends Component {
       }
     }
      if (obj.identifier && menu && obj[menu].value) { //if right-clicking capabilities
-       console.log('obj.contents:', obj.contents);
        return (
          <div className="contextMenu shell">
            <ContextMenuTrigger id={obj.identifier}>
@@ -99,7 +98,6 @@ class Pane extends Component {
         </ul>
       );
     } else if (obj.contents) { //not a ListPane, don't render in a list
-      console.log('obj contentsz:', obj.contents);
        return (<span style={{whiteSpace: 'pre'}}>{obj.contents[0].text}</span>);
      }
      else return null; //else no obj.contents
