@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { getRiStringAsLi, convertObjToArrayForPublish } from '../scripts/functions';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { addSelection } from '../actions';
+import eol from 'eol'; //some line endings inconsistent (CR with CRLF)
 
 import { mqttClient, cellID } from '../containers/mqtt';
 const cbor = require('cbor');
@@ -23,7 +24,7 @@ class Pane extends Component {
     var msg = convertObjToArrayForPublish(model, clickedObj, clientID, riString, selectedItems, attributes);
     var topic = clientID + '/' + cellID + '/' + model + '/action/1';
     if (mqttClient && cellID) {
-        console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
+      console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
       mqttClient.publish(topic, msg);
     }
   }
@@ -65,8 +66,8 @@ class Pane extends Component {
                     </ul>
                   : //if not listpane, display as text
                     Array.isArray(obj.contents) && obj.contents[0] ?
-                    <span style={{whiteSpace: 'pre'}}>{obj.contents[0].text}</span>
-                    : <span style={{whiteSpace: 'pre'}}>{obj.contents.text}</span>
+                    <span style={{whiteSpace: 'pre'}}>{eol.lf(obj.contents[0].text)}</span>
+                    : <span style={{whiteSpace: 'pre'}}>{eol.lf(obj.contents[0].text)}</span>
                 : '' // no contents
              }
            </ContextMenuTrigger>
@@ -98,7 +99,7 @@ class Pane extends Component {
         </ul>
       );
     } else if (obj.contents) { //not a ListPane, don't render in a list
-       return (<span style={{whiteSpace: 'pre'}}>{obj.contents[0].text}</span>);
+       return (<span style={{whiteSpace: 'pre'}}>{eol.lf(obj.contents[0].text)}</span>);
      }
      else return null; //else no obj.contents
 		}
