@@ -16,9 +16,9 @@ class Pane extends Component {
     //   return;
     // }
     const { model, clientID, selectedItems, whiteboard } = this.props;
-    if (!clickedObj.identifier.includes("Menu")) { //don't add to selectedItems if context menu (right-click menu) clicked
-      this.props.addSelection(model, clickedObj.identifier, riString);
-    }
+
+    //add to selectedItems only if not the context menu (right-click menu) clicked
+    if (!clickedObj.identifier.includes("Menu")) this.props.addSelection(model, clickedObj.identifier, riString);
 
     let attributes;
     if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
@@ -46,16 +46,6 @@ class Pane extends Component {
          <div className="contextMenu shell">
            <ContextMenuTrigger id={obj.identifier}>
                  {obj.contents ?
-                   Array.isArray(obj.contents) && obj.contents[0] && obj.contents[0].highlight ? //if highlight exists, then assuming array will only be length 1 (contents[0]). contents[0] sometimes undefined, so check
-                    <span style={{whiteSpace: 'pre'}}>
-                      {obj.contents[0].text.substring(0, obj.contents[0].highlight[0] - 1)}
-                      <span className='highlight'>
-                        {obj.contents[0].text.substring(obj.contents[0].highlight[0] - 1, obj.contents[0].highlight[1] - 1)}
-                      </span>
-                      {obj.contents[0].text.substring(obj.contents[0].highlight[1] - 1)}
-                    </span>
-                    : //no highlight
-                  obj.class === 'ListPane' ?
                       <ul>
                       {
                         Array.isArray(obj.contents) ?
@@ -66,30 +56,26 @@ class Pane extends Component {
                         : getRiStringAsLi(model, obj.contents, key, obj, clientID, this.handleClick, selectedItems)
                       }
                     </ul>
-                  : //if not listpane, display as text
-                    Array.isArray(obj.contents) && obj.contents[0] ?
-                    <span style={{whiteSpace: 'pre'}}>{eol.lf(obj.contents[0].text)}</span>
-                    : <span style={{whiteSpace: 'pre'}}>{eol.lf(obj.contents[0].text)}</span>
                 : '' // no contents
              }
            </ContextMenuTrigger>
            <ContextMenu id={obj.identifier}>
              {
-             obj[menu].value.map((menuItem, key) => {
-               if (menuItem) { //if not null
-               return(
-                 <MenuItem key={key} onClick={() => this.handleClick(menuItem, obj[menu])}>
-                     {menuItem.text}
-                 </MenuItem>
-               );
-             } else return;
-            })
-             }
-           </ContextMenu>
+               obj[menu].value.map((menuItem, key) => {
+                 if (menuItem) {
+                 return (
+                   <MenuItem key={key} onClick={() => this.handleClick(menuItem, obj[menu])}>
+                       {menuItem.text}
+                   </MenuItem>
+                 );
+               } else return;
+              })
+            }
+          </ContextMenu>
          </div>
        );
      }
-     else if (obj.contents && obj.class === 'ListPane') {
+     else if (obj.contents) {
        return (
         <ul>
           {
@@ -100,9 +86,7 @@ class Pane extends Component {
           }
         </ul>
       );
-    } else if (obj.contents) { //not a ListPane, don't render in a list
-       return (<span style={{whiteSpace: 'pre'}}>{eol.lf(obj.contents[0].text)}</span>);
-     }
+    }
      else return null; //else no obj.contents
 		}
 	}

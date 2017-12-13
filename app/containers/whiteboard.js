@@ -6,7 +6,8 @@ import MQTT, {mqttClient, cellID} from './mqtt';
 import { updateWhiteboard, addSelection } from '../actions';
 import { convertObjToArrayForPublish } from '../scripts/functions';
 
-import Pane from './pane';
+import TextPane from './textPane';
+import ListPane from './listPane';
 import Button from './button';
 
 const cbor = require('cbor');
@@ -16,10 +17,10 @@ class Whiteboard extends Component {
 
   renderApp(model, newObj) {
 
-    var arr = Object.keys(newObj);
-    var objectInside = false;
-    for (var i = 0; i < arr.length; i++) { //if no object inside besides style or *Menu, then don't render (or else empty div appears)
-      var val = newObj[arr[i]];
+    let arr = Object.keys(newObj);
+    let objectInside = false;
+    for (let i = 0; i < arr.length; i++) { //if no object inside besides style or *Menu, then don't render (or else empty div appears)
+      let val = newObj[arr[i]];
       if (arr[i] !== 'style' && arr[i].indexOf('Menu') < 0 &&  val!== null && typeof val === 'object' && Object.prototype.toString.call(val) !== '[object Array]') {
          objectInside = true;
          break;
@@ -32,8 +33,8 @@ class Whiteboard extends Component {
     return (
       <div className="shell">
         {
-          arr.map((key) => {
-            var val = newObj[key];
+          arr.map(key => {
+            let val = newObj[key];
             //console.log("key:", key, " val:", val);
 
             //if type is object but not style, attributes, or Menu obj, null, or array. Menu obj never has objects inside it, so no need to go through
@@ -48,15 +49,14 @@ class Whiteboard extends Component {
   }
 
   renderObj(model, obj) {
-    var menu = null;
-
     if (obj.class) {
       switch(obj.class) {
         case 'Button':
-          return <Button model={model} obj={obj}/>
+          return <Button model={model} obj={obj} />
         case 'TextPane':
+          return <TextPane model={model} obj={obj} />
         case 'ListPane':
-          return <Pane model={model} obj={obj}/>;
+          return <ListPane model={model} obj={obj} />;
 
         default: return null;
       }
@@ -116,7 +116,7 @@ class Whiteboard extends Component {
   }
 
   componentDidMount() {
-    var options = {
+    let options = {
         cellHeight: '29px',
         alwaysShowResizeHandle: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     };
@@ -125,8 +125,8 @@ class Whiteboard extends Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.whiteboard && this.props.whiteboard !== prevProps.whiteboard) {
-      var wbArr = Object.keys(this.props.whiteboard);
-      var prevWbArr = null;
+      let wbArr = Object.keys(this.props.whiteboard);
+      let prevWbArr = null;
 
       if (prevProps.whiteboard) {
         prevWbArr = Object.keys(prevProps.whiteboard);
@@ -148,8 +148,8 @@ class Whiteboard extends Component {
 
   componentWillUpdate(nextProps) { //remove grid widget if about to be deleted
     if (this.props.whiteboard && this.props.whiteboard !== nextProps.whiteboard) {
-      var wbArr = Object.keys(this.props.whiteboard);
-      var nextWbArr = null;
+      let wbArr = Object.keys(this.props.whiteboard);
+      let nextWbArr = null;
 
       if (nextProps.whiteboard) {
         nextWbArr = Object.keys(nextProps.whiteboard);
@@ -157,7 +157,7 @@ class Whiteboard extends Component {
 
       if (wbArr && nextWbArr && wbArr.length > nextWbArr.length) { //added an app
         let difference = wbArr.filter(x => !nextWbArr.includes(x));
-        difference.map((model) => { //difference should only be by 1, but map just in case instead of [0]
+        difference.map(model => { //difference should only be by 1, but map just in case instead of [0]
             $('.grid-stack').data('gridstack').removeWidget($('#'+model), false);
         });
       }
@@ -170,13 +170,13 @@ class Whiteboard extends Component {
   }
 
   delDialog(model) {
-    var forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
+    let forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
     delete forest[model].dialog; //delete from redux when closing
     this.props.updateWhiteboard(forest, model);
   }
 
   render() {
-    var arr = null;
+    let arr = null;
     if (this.props.whiteboard) arr = Object.keys(this.props.whiteboard);
     return (
       <div>
@@ -192,8 +192,8 @@ class Whiteboard extends Component {
         <div className='grid-stack'>
           {
             arr ?
-              arr.map((model) => { //map through each app
-                var obj = this.props.whiteboard[model];
+              arr.map(model => { //map through each app
+                let obj = this.props.whiteboard[model];
                 return (
                   <div id={model} className='grid-stack-item' key={model} data-gs-auto-position data-gs-height='12' data-gs-width='4'>
 
