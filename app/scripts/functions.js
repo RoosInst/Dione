@@ -3,7 +3,7 @@ import React from 'react';
 const cbor = require('cbor');
 const mqtt = require('mqtt');
 
-let
+const
   RIRISEP1 = '\u001c', //RIRI level 1 separator - FS - '^'
   RIRISEP2 = '\u001d', //RIRI level 2 separator - GS - '+'
   RIRISEP3 = '\u001e', //RIRI level 3 separator - RS - '~'
@@ -95,7 +95,7 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
     return -1;
   }
 
-  let i = 0;
+
   for (let key in unsortedStore) {
     // skip loop if the property is from prototype
     if (!unsortedStore.hasOwnProperty(key)) continue;
@@ -112,15 +112,19 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
       if (obj.value) { //obj.value always an array
 
         let arr = [];
-        for (let i, j = 0; j < obj.value.length - 1; j++) {
+
+        //search for pairs (ex. in scope=local, scope will have riri, local won't)
+        for (let j = 0; j < obj.value.length - 1; j++) {
           if (typeof obj.value[j] === 'string' && typeof obj.value[j + 1] === 'string' && obj.value[j].includes('\u0001') && !obj.value[j + 1].includes('\u0001')) { //if array contains pairs
               if (arr.length === 0) console.error('ERR: Both riri and non-riri strings detected in obj.value ', obj.value, 'Detected pairs and combining.'); //only make error message once, so checks arr.length
-              arr[i] = obj.value[j] + '=' + obj.value[j+1];
+
+              arr.push(obj.value[j] + '=' + obj.value[j+1]);
               j++; //increment j twice at end of loop
-              i++;
-          } else if (typeof obj.value[j] !== 'string') console.error('ERR: Unrecognized obj.value:', obj.value[j]);
-            else if (typeof obj.value[j + 1] !== 'string') console.error('ERR: Unrecognized obj.value:', obj.value[j + 1]);
+          }
+          else if (typeof obj.value[j] !== 'string') console.error('ERR: Unrecognized obj.value:', obj.value[j]);
+          else if (typeof obj.value[j + 1] !== 'string') console.error('ERR: Unrecognized obj.value:', obj.value[j + 1]);
         }
+
         if (arr.length > 0) {
           for (let i = 0; i < arr.length; i++) {
             let tempArr = parseSmMsgs(arr[i]); //returns array
@@ -417,7 +421,7 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
     return (
       <li onClick={() => handleClick(riString, obj)}
         key={key}
-        className={`${riString.color ? 'rsColor'+riString.color : ''}${riString.font ? 'rsStyle'+riString.font : '' }${selectedItemContent === riStringContent ? 'active' : ''}`}>
+        className={`${riString.color ? 'rsColor' + riString.color : ''} ${riString.font ? 'rsStyle' + riString.font : '' } ${selectedItemContent === riStringContent ? 'active' : ''}`}>
         {riString.indent ? riStringnbspaces(riString.indent) : ''}
         {riString.text}
       </li>
@@ -453,8 +457,7 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
  */
 function base64Decode(value) {
     let result = 0;
-    let i;
-    for (i in value) {
+    for (let i in value) {
       if(value.hasOwnProperty(i)) {
         result = result * 64 + base64Digits.indexOf(value[i]);
       }
@@ -468,68 +471,21 @@ function base64Decode(value) {
 
 /**Given a RIRI2/RIRI3 separated string, parse it into json
 * UPDATE: Structure is '\u001E\u0001', but split on u001e (RIRISEP3).
-
 */
 function parseSmMsgs(smMsgs) {
   if (smMsgs) {
-    let arr = [];
-    let obj = {};
+    let arr = [],
+    obj = {};
+
     if (Array.isArray(smMsgs)) {
-      smMsgs.map(msg => {
-        if (msg) arr.push(parseSingleSmMsg(msg));
-      });
+      smMsgs.map(msg => arr.push(riStringCheckAndConvert(msg)));
     } else {
-      arr.push(parseSingleSmMsg(smMsgs));
+      let msgsArray = smMsgs.split(RIRISEP3);
+      msgsArray.map(msg => arr.push(riStringCheckAndConvert(msg)));
     }
     return arr;
   } else return;
 }
-
-
-
-
-
-function parseSingleSmMsg(smMsg) { //returns obj
-  if (!smMsg) return;
-   if (!smMsg.includes('\u0001') && !smMsg.includes('\u0002')) { //if no riri inside string
-    let obj = {};
-    obj['text'] = smMsg;
-    return obj;
-  }
-  let s, b, p, key, entry;
-  let a = smMsg.split(RIRISEP3); //split on RIRISEP3 (previously on second level riri separator, check UPDATE comments above).
-  if (!a[0] || a[0].length === 0) a.shift(); //remove the first element if empty (implies a leading sep, which gets tossed)
-
-  for(let i = 0; i < a.length; i++) {
-    if (!a[i].includes(RIRISEP3)) { //if no 3rd level seps it just goes in directly
-      return riStringCheckAndConvert(a[i]); //convert to riString if needed
-    }
-    else { //may have a sep after the equals: "key=SEP val1 SEP val2..." -or- may not: "key=val1 SEP val2..."
-      b = a[i].split(RIRISEP3); //sep by level 3
-      if (b.length === 0) continue; //is this check useful?
-      p = b[0].indexOf('='); //check the first entry for an assignment operator, e.g. "contents=..."
-      if (p < 0) p = b[0].indexOf(':');  //assignment used in turtle graphics
-
-      else { //if 1st item has assignment: split it int key and value portions: key=val1, val2, val3 --> {key:[val1, val2, val3]
-        key = b[0].substring(0, p); //extract the 'key' portion
-        if(p + 1 < b.length) { //if there was anything after the equals that means there was no leading separator before the first value: key=val SEP val...
-          b[0] = b[0].substring(p + 1); //replace first entry with the cleaned up one ('key=' removed)
-        }
-        else { //first entry had nothing after the equals so just remove it
-          b.shift(); //remove first entry from array
-        }
-
-        for(let j = 0; j < b.length; j++) { //check for any riString entries
-          b[j] = riStringCheckAndConvert(b[j]); //convert to riString if needed
-        }
-        
-        entry = {};
-        entry[key] = b;
-        return entry;
-      }
-    }
-  }
-};
 
 
 

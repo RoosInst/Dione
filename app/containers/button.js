@@ -14,10 +14,12 @@ class Button extends Component {
     }
     const { clientID, model, selectedItems, whiteboard } = this.props;
 
-    var attributes = null;
+    let attributes;
     if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
-    var msg = convertObjToArrayForPublish(model, clickedObj, clientID, null, selectedItems, attributes);
-    var topic = clientID + '/' + cellID + '/' + model + '/action/1';
+
+    const msg = convertObjToArrayForPublish(model, clickedObj, clientID, null, selectedItems, attributes),
+      topic = clientID + '/' + cellID + '/' + model + '/action/1';
+
     if (mqttClient && cellID) {
       console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
       mqttClient.publish(topic, msg);

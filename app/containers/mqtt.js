@@ -7,12 +7,13 @@ const mqtt = require('mqtt');
 const cbor = require('cbor');
 const assert  = require('assert');
 
-export var mqttClient = null;
-export var cellID = null;   //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
-var numMsgs = 0;
 
-var ra = null;
-var wb = null;
+export let cellID, //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
+  mqttClient;
+
+let numMsgs = 0,
+  ra,
+  wb;
 
 class MQTT extends Component {
   componentDidUpdate() {
@@ -35,14 +36,14 @@ class MQTT extends Component {
     mqttClient = mqtt.connect(mqttBroker, mqttConnectOptions);
 
     //riri separators
-  //  var riri_1C = Buffer.from('1c', 'hex'); //^ hex 0x1C, first level separator, parameters, ^parameter^parameter
-  //  var riri_1D = Buffer.from('1d', 'hex'); //+ hex 0x1D, second level separator, attributes, +key=value or +value
-  //  var riri_1E = Buffer.from('1e', 'hex'); //~ hex 0x1E, third level, ArrayElements, ~item~item
-  //  var riri_1F = Buffer.from('1f', 'hex'); //# hex 0x1F, fourth level and touples, shown as #item#item
-    var omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
-    var omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
-    var omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
-    var cbor_null = Buffer.from('f6', 'hex'); // hex 0xF6, null (string==null, aka empty omap)
+  //  let riri_1C = Buffer.from('1c', 'hex'); //^ hex 0x1C, first level separator, parameters, ^parameter^parameter
+  //  let riri_1D = Buffer.from('1d', 'hex'); //+ hex 0x1D, second level separator, attributes, +key=value or +value
+  //  let riri_1E = Buffer.from('1e', 'hex'); //~ hex 0x1E, third level, ArrayElements, ~item~item
+  //  let riri_1F = Buffer.from('1f', 'hex'); //# hex 0x1F, fourth level and touples, shown as #item#item
+    const omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
+    const omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
+    const omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
+    const cbor_null = Buffer.from('f6', 'hex'); // hex 0xF6, null (string==null, aka empty omap)
 
       //cbor.encode automatically creates buffer, no need to use Buffer.from(...)
       const classNameSM = cbor.encode('className');
@@ -54,14 +55,14 @@ class MQTT extends Component {
       const browserSM = cbor.encode('Browser');
 
 
-    var cborPubMsg = Buffer.concat([omap_start, omap_cborTag, createSubSM, classNameSM, RiRmtViewGuruSM, omap_end]);
-    var cborPubMsgPt2 = Buffer.concat([omap_start, omap_cborTag, viewDefSM, viewSM, browserSM, omap_end]);
+    let cborPubMsg = Buffer.concat([omap_start, omap_cborTag, createSubSM, classNameSM, RiRmtViewGuruSM, omap_end]);
+    let cborPubMsgPt2 = Buffer.concat([omap_start, omap_cborTag, viewDefSM, viewSM, browserSM, omap_end]);
   //  cborPubMsg = Buffer.concat([cborPubMsg, cborPubMsgPt2]);
 
   	console.info('Client ID: '+ ra); // (currently unique at each run, persist as cookie or guru logon to make apps survive refresh)');
 
   	const adminTopic = 'admin/+/cellinfo/info/#';  //only used to discover cellID
-  	var appSubscribeTopic = 'GURUBROWSER/' + ra + '/createSubscriber/1';  //vars updated after cellID discovered
+  	let appSubscribeTopic = 'GURUBROWSER/' + ra + '/createSubscriber/1';  //vars updated after cellID discovered
 
   //-------------------------------------
   //-----MQTTCLIENT.ON LISTENING OPTIONS-----
@@ -77,7 +78,7 @@ class MQTT extends Component {
   	mqttClient.on('message', function (topic, message) {
       numMsgs++;
       try {
-        var decodedCborMsg = cbor.decodeAllSync(message);
+        var decodedCborMsg = cbor.decodeAllSync(message); //var, not let
         //check if not empty message
         if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', decodedCborMsg);
         else {
@@ -101,10 +102,10 @@ class MQTT extends Component {
   				mqttClient.unsubscribe(adminTopic);
 
           //SUBSCRIBE
-          var channelID = '+';
+          let channelID = '+';
           const domainTopic = '+/' + cellID + '/#';
           const wbCreateSubTopic = '+/' + cellID + '/whiteboard/createSubscriber/1'; //get app ID
-          var GURUBROWSER_App_Topics = [
+          let GURUBROWSER_App_Topics = [
             domainTopic,
             wbCreateSubTopic,
             channelID + '/'+ cellID + '/' + ra + '/+/subscribe/1',
@@ -113,29 +114,29 @@ class MQTT extends Component {
   				console.info('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
   				mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 2});
 
-          var consoleCreateSub = Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
-          var consoleCreateSubTopic = 'console/X1PD0ZR3/whiteboard/createSubscriber/8';
+          let consoleCreateSub = Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
+          let consoleCreateSubTopic = 'console/X1PD0ZR3/whiteboard/createSubscriber/8';
 
-          var selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex');
-          var guruAppTopic = ra + '/X1PD0ZR3/console/action/1';
+          let selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex');
+          let guruAppTopic = ra + '/X1PD0ZR3/console/action/1';
           mqttClient.publish(consoleCreateSubTopic, consoleCreateSub);
           mqttClient.publish(guruAppTopic, selectGuruApp); //launches guru app
 				}
       }
 
       else if (topic.includes(cellID + '/' + ra) && !topic.includes('console')) { //if message for us, but ignoring console instructions
-        var model = topic.split('/')[0];
+        let model = topic.split('/')[0];
         updateWhiteboard(decodedCborMsg, model);
       }
 
       //ENABLE FOR DEBUGGING
       else if (decodedCborMsg[0][0].value === 'toppane') { //if msg not going to our clientID, but is still an app (ex. debugging tool)
-        var model = topic.split('/')[0];
+        let model = topic.split('/')[0];
         updateWhiteboard(decodedCborMsg, model);
       }
 
       else if (topic.includes(cellID + '/GURUBROWSER/subscribe')) { //update to newly received clientID
-          var newClientID = topic.split('/')[0];
+          let newClientID = topic.split('/')[0];
           updateClientID(newClientID);
       }
 

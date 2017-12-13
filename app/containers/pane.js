@@ -19,10 +19,13 @@ class Pane extends Component {
     if (!clickedObj.identifier.includes("Menu")) { //don't add to selectedItems if context menu (right-click menu) clicked
       this.props.addSelection(model, clickedObj.identifier, riString);
     }
-    var attributes = null;
+
+    let attributes;
     if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
-    var msg = convertObjToArrayForPublish(model, clickedObj, clientID, riString, selectedItems, attributes);
-    var topic = clientID + '/' + cellID + '/' + model + '/action/1';
+
+    const msg = convertObjToArrayForPublish(model, clickedObj, clientID, riString, selectedItems, attributes),
+      topic = clientID + '/' + cellID + '/' + model + '/action/1';
+
     if (mqttClient && cellID) {
       console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
       mqttClient.publish(topic, msg);
@@ -32,11 +35,10 @@ class Pane extends Component {
 	render() {
     this.handleClick = this.handleClick.bind(this);
     const {obj, model, clientID, selectedItems } = this.props;
-    var menu = null;
 
-    for (var key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu. Will be used for right click context menu
+    for (let key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu. Will be used for right click context menu
       if (key.includes("Menu")) {
-        menu = key;
+        var menu = key; //var, not let
       }
     }
      if (obj.identifier && menu && obj[menu].value) { //if right-clicking capabilities
