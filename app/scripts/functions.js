@@ -3,20 +3,35 @@ import React from 'react';
 const cbor = require('cbor');
 const mqtt = require('mqtt');
 
+let
+  RIRISEP1 = '\u001c', //RIRI level 1 separator - FS - '^'
+  RIRISEP2 = '\u001d', //RIRI level 2 separator - GS - '+'
+  RIRISEP3 = '\u001e', //RIRI level 3 separator - RS - '~'
+  RIRISEP4 = '\u001f', //RIRI level 4 separator - US - '/'riStringCheckAndConvert
+  RIRISEP = [RIRISEP1, RIRISEP2, RIRISEP3, RIRISEP4], //for array access of RIRI separators
+  omap_start = Buffer.from('9f', 'hex'), // hex x9F, cbor start byte for unbounded arrays
+  omap_cborTag = Buffer.from('d3', 'hex'), // hex xD3, start object map (omap cbor tag)
+  omap_end = Buffer.from('ff', 'hex'), // hex xFF, cbor end byte for unbounded arrays
+  cbor_null = Buffer.from('f6', 'hex'), // hex 0xF6, null (string==null, aka empty omap)
+  base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";  //used for base64 encode/decode
+
+
+
+
+
 function getFrameRatioFor(val) {
-  var frameRatio, doing, p0, i, len; //local vars
-  frameRatio = {};
-  doing=0; //start with 0 (left)
-  p0=0; //index of start of substring
-  len = val.length;
-  for(i=0; i<len; i++) { //walk through the string
+  let frameRatio = {},
+  doing = 0, //start with 0 (left)
+  p0 = 0; //index of start of substring
+
+  for(let i = 0; i < val.length; i++) { //walk through the string
     if(val[i]===';' || val[i]==='@') { //split on separators
       switch(doing) {
         case 0: frameRatio.left  = parseInt(val.substring(p0, i), 10); break; //left
         case 1: frameRatio.top   = parseInt(val.substring(p0, i), 10); break; //top
         case 2: frameRatio.right = parseInt(val.substring(p0, i), 10); break; //right
       }
-      p0 = +i+1; //next
+      p0 = i + 1; //next
       doing++; //next
     }
   }
@@ -25,12 +40,16 @@ function getFrameRatioFor(val) {
 };
 
 
+
+
+
 /**Returns the given frameratio string (i.e. '20@100;50@60' or '20;100;50;60')
  * as a json object: { left:20, top:100, right:50, bottom:60 }
  * */
 function makeStyleFromFrameRatio(val) {
-  var frameRatio = getFrameRatioFor(val);
-  var wd, ht, xpos, ypos;
+  let frameRatio = getFrameRatioFor(val),
+    wd, ht, xpos, ypos;
+
   if(frameRatio) { //frameRatio is percent values for: left, right, top, bottom
     wd = (frameRatio.right-frameRatio.left)+'%';
     ht = (frameRatio.top-frameRatio.bottom)+'%';
@@ -48,14 +67,17 @@ function makeStyleFromFrameRatio(val) {
 
 
 
+
+
 /*unSortedStore is flat obj containing everything after converted from array.
 whiteboard is current existing state of all apps in a hierarchical object.
 Function nests objects into its owners (makes flat obj into hierarchical)
  and creates "style" key with values for positioning for each obj with frameRatio.
  Also decodes riri strings into array of usable objects.*/
 export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
-  var forest = {}; //copy of whiteboard if exists
-  var tree = {};
+  let forest = {},
+    tree = {}; //copy of whiteboard if exists
+
   if (whiteboard) {
     forest = jQuery.extend({}, whiteboard); //deep clone, do not alter redux store (treat as immutable)
     if (whiteboard[model]) { //if app exists in whiteboard
@@ -73,12 +95,12 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
     return -1;
   }
 
-  var i = 0;
-  for (var key in unsortedStore) {
+  let i = 0;
+  for (let key in unsortedStore) {
     // skip loop if the property is from prototype
     if (!unsortedStore.hasOwnProperty(key)) continue;
 
-    var obj = unsortedStore[key];
+    let obj = unsortedStore[key];
 
     if (Array.isArray(obj)) {
       insertArray(tree, obj);
@@ -86,9 +108,11 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
 
     else {
 
+      //value (not contents) for context menus
       if (obj.value) { //obj.value always an array
-        var arr = [];
-        for (var i, j = 0; j < obj.value.length - 1; j++) {
+
+        let arr = [];
+        for (let i, j = 0; j < obj.value.length - 1; j++) {
           if (typeof obj.value[j] === 'string' && typeof obj.value[j + 1] === 'string' && obj.value[j].includes('\u0001') && !obj.value[j + 1].includes('\u0001')) { //if array contains pairs
               if (arr.length === 0) console.error('ERR: Both riri and non-riri strings detected in obj.value ', obj.value, 'Detected pairs and combining.'); //only make error message once, so checks arr.length
               arr[i] = obj.value[j] + '=' + obj.value[j+1];
@@ -98,15 +122,15 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
             else if (typeof obj.value[j + 1] !== 'string') console.error('ERR: Unrecognized obj.value:', obj.value[j + 1]);
         }
         if (arr.length > 0) {
-          for (var i = 0; i < arr.length; i++) {
-            var tempArr = parseSmMsgs(arr[i]); //returns array
+          for (let i = 0; i < arr.length; i++) {
+            let tempArr = parseSmMsgs(arr[i]); //returns array
             arr[i] = tempArr[0]; //because storing each val in an array already, remove inner array by indexing [0]
           }
         }
         else {
-          for (var i = 0; i < obj.value.length; i++) {
+          for (let i = 0; i < obj.value.length; i++) {
             if (typeof obj.value[i] === 'string') {
-              var tempArr = parseSmMsgs(obj.value[i]); //returns array
+              let tempArr = parseSmMsgs(obj.value[i]); //returns array
               arr[i] = tempArr[0]; //because storing each val in an array already, remove inner array by indexing [0]
             } else {console.error('ERR: Unrecognized obj.value:', obj.value[i])}
           }
@@ -114,11 +138,9 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
         obj.value = arr;
       }
 
-
       if (obj.frameRatio) {
         obj.style = makeStyleFromFrameRatio(obj.frameRatio);
       }
-
 
       if (obj.owner) {
         if (obj.owner === 'top') {
@@ -131,11 +153,11 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
       else if (!obj.identifier) { //checks not toppane, because toppane has id but not owner
 
         //if object is to replace portions in top, then this replaces those pieces
-        var entries = Object.entries(obj);
-        for (var i = 0; i < entries.length; i++) {
+        let entries = Object.entries(obj);
+        for (let i = 0; i < entries.length; i++) {
             if (entries[i][0] === 'attributes') {
-              var attributeEntries = Object.entries(entries[i][1]);
-              for (var j = 0; j < attributeEntries.length; j++) {
+              let attributeEntries = Object.entries(entries[i][1]);
+              for (let j = 0; j < attributeEntries.length; j++) {
                 tree['attributes'][attributeEntries[j][0]] = attributeEntries[j][1];
               }
             }
@@ -151,15 +173,19 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
   return forest;
 }
 
+
+
+
+
 function insertArray(tree, arr) { //assuming array of objects
-  var found = false;
-  for (var i = 0; i < arr.length; i++) {
-    var obj = arr[i];
+  let found = false;
+  for (let i = 0; i < arr.length; i++) {
+    var obj = arr[i]; //var, not let
     recursiveCheck(tree);
   }
 
   function recursiveCheck(newObj) { //if called again, found = false
-    var objVal = obj.value; //owner = object's value in array of objects
+    let objVal = obj.value; //owner = object's value in array of objects
     if (newObj[objVal]) {
       newObj[objVal].contents = parseSmMsgs(obj.contents);
       if (obj.highlight) {
@@ -168,8 +194,8 @@ function insertArray(tree, arr) { //assuming array of objects
       found = true;
     }
     else if (!found) { //look for owner (objVal) with recursion
-      var tempEntries = Object.entries(newObj);
-      for (var i = 0; i < tempEntries.length; i++) {
+      let tempEntries = Object.entries(newObj);
+      for (let i = 0; i < tempEntries.length; i++) {
         if (tempEntries[i][0] !== 'style' && typeof tempEntries[i][1] === 'object' && Object.prototype.toString.call(tempEntries[i][1]) !== '[object Array]') {
          if (newObj[tempEntries[i][0]]) recursiveCheck(newObj[tempEntries[i][0]]);
          if (found) break;
@@ -184,19 +210,22 @@ function insertArray(tree, arr) { //assuming array of objects
 }
 
 
+
+
+
 function insertObject(tree, obj) {
-  var found = false;
+  let found = false;
   recursiveCheck(tree);
 
   function recursiveCheck(newObj) { //if called again, found = false
      if (newObj[obj.owner]) {
-       var Owner = newObj[obj.owner];
+       let Owner = newObj[obj.owner];
        Owner[obj.identifier] = obj;
        found = true;
      }
      else if (!found) {
-       var tempEntries = Object.entries(newObj);
-       for (var i = 0; i < tempEntries.length; i++) {
+       let tempEntries = Object.entries(newObj);
+       for (let i = 0; i < tempEntries.length; i++) {
          if (tempEntries[i][0] !== 'style' && typeof tempEntries[i][1] === 'object' && Object.prototype.toString.call(tempEntries[i][1]) !== '[object Array]') {
             if (newObj[tempEntries[i][0]]) recursiveCheck(newObj[tempEntries[i][0]]);
             if (found) break;
@@ -211,27 +240,30 @@ function insertObject(tree, obj) {
 }
 
 
+
+
+
 /*Converts the message of arrays into flat object. Exception: values is array of objs*/
 export function convertArrayToKeyValues(decodedCbor) {
   if (decodedCbor == null) {
    return;
   }
-  var store = {};
-  var msgObj = {};
 
-  for (var array = 0; array < decodedCbor.length; array++) {
+  let store = {};
+
+  for (let array = 0; array < decodedCbor.length; array++) {
+      let msgObj = {};
 
     if (decodedCbor[array][1] === 'contents') {
       msgObj['value'] = decodedCbor[array][0].value;
     };
 
-    for (var i = 1; i < decodedCbor[array].length; i=i+2) {
+    for (let i = 1; i < decodedCbor[array].length; i=i+2) {
       if (decodedCbor[array][i] === 'attribute') { //if multiple attributes, make/add to an obj of attributes instead of replacing each attribute w/ latest
         if (!msgObj['attributes']) msgObj['attributes'] = {};
-        var splitVal = decodedCbor[array][i+1].split('=');
+        let splitVal = decodedCbor[array][i+1].split('=');
         msgObj['attributes'][splitVal[0]] = splitVal[1];
       }
-
       else msgObj[decodedCbor[array][i]] = decodedCbor[array][i+1];
     }
 
@@ -252,15 +284,15 @@ export function convertArrayToKeyValues(decodedCbor) {
     }
 
     if (decodedCbor[0][0].value === 'dialog') { //note: not else if
-      if (!store['top']) store['top'] = {}; //want to staticly place dialogs inside top of model (instead of dynamically with assigning an unnecessary owner)
-      var temp = store['values']; //will be undefined until it reaches next level of array for dialog
+      if (!store['top']) store['top'] = {}; //want to statically place dialogs inside top of model (instead of dynamically with assigning an unnecessary owner)
+      let temp = store['values']; //will be undefined until it reaches next level of array for dialog
       if(temp) store['top']['dialog'] = temp[0];
     }
-
-    msgObj = {};
   }
   return store;
 }
+
+
 
 
 
@@ -274,22 +306,22 @@ export function convertArrayToKeyValues(decodedCbor) {
  * 'header' is the binary header portion used to emit the riString as RIRI.
  * */
 function riStringCheckAndConvert(s) {
-    var val, rawHeaderBytes, headerOffset, actionLength;
-    var temp, riString, isType2;
+    let val, rawHeaderBytes, headerOffset, actionLength;
+    let temp, riString, isType2;
 
-    if(!s || s.length===0) { return s; }
+    if(!s || s.length === 0) return s;
 
     switch(s[0]) {
       case '\u0001': isType2=false; break;
       case '\u0002': isType2=true;  break;
       default:
-        var obj = {};
+        let obj = {};
         obj['text'] = s;
         return obj; //is a regular string (neither type 1 or type 2). Return obj with text key's value as string
     }
 
     rawHeaderBytes=null; //raw bytes extracted from input string
-    //var decodedHeader=null; //base 64 decoded header bytes
+    //let decodedHeader=null; //base 64 decoded header bytes
     headerOffset=5; //location after header, (type1 = 5, type2 = 7)
     actionLength = 0;  //length of the (type 2) action portion
 
@@ -308,39 +340,39 @@ function riStringCheckAndConvert(s) {
       if(isType2) { //for type 2 decode the 'action' string
         //determine the action command length then extract it
         actionLength = ((rawHeaderBytes[4] & 0xff) << 8) + (rawHeaderBytes[5] & 0xff); //convert to int
-        if(headerOffset+actionLength > s.length) { //check that specified action string length is not larger than available bytes.
-          console.error('Error parsing RiString (type 2) action cmd because of length: action cmd length='+actionLength+'. Available string length='+(s.length-headerOffset));
+        if(headerOffset + actionLength > s.length) { //check that specified action string length is not larger than available bytes.
+          console.error('Error parsing RiString (type 2) action cmd because of length: action cmd length=' + actionLength + '. Available string length=' + s.length-headerOffset);
           actionLength = 0; //if so then set action string to zero so that bytes show up in the regular string data (to help in debug)
         }
-        var tempAction =  s.slice(headerOffset, headerOffset+actionLength);
+        let tempAction =  s.slice(headerOffset, headerOffset + actionLength);
         if (tempAction) riString.action = tempAction;
       }
 
       temp = ((val >>> 20) & 0xf); //color: 4 bits
-      if(temp!==0) { riString.color  = temp; } //create entry only if actually has a value
-      temp = ((val >>> 16) & 0xf); //indent: 4 bits
-      if(temp!==0) { riString.indent = temp; }
-      temp = ((val >>> 14) & 0x3); //font: 2 bits
-      if(temp!==0) { riString.font   = temp; }
-      temp = (val & 0x3fff);       //tag: 14 bits
-      if(temp!==0) { riString.tag = s.slice(headerOffset + actionLength, headerOffset + actionLength + temp);}
+      if (temp !== 0) riString.color = temp; //create entry only if actually has a value
 
+      temp = ((val >>> 16) & 0xf); //indent: 4 bits
+      if (temp !== 0) riString.indent = temp;
+
+      temp = ((val >>> 14) & 0x3); //font: 2 bits
+      if (temp !==0) riString.font = temp;
+
+      temp = (val & 0x3fff); //tag: 14 bits
+      if (temp !==0) riString.tag = s.slice(headerOffset + actionLength, headerOffset + actionLength + temp);
     }
     catch(e) {
-      console.error('Unable to convert RiString header because: '+e);
+      console.error('Unable to convert RiString header because: ' + e);
     }
 
-    //take the remainder as the text. For type1 = 5, for type2 = (7+length of action string)
-
     if (riString.tag) {
-      var tempText = s.slice(headerOffset+actionLength + riString.tag.length);  //cut off tag
+      let tempText = s.slice(headerOffset + actionLength + riString.tag.length);  //cut off tag
       if (tempText.length > 0) riString.text = tempText; //if tag != text, set text to tempText
       else {
          riString.text = riString.tag; //else if tag === text, make text = tag
          delete riString.tag;
       }
-    }
-    else riString.text = s.slice(headerOffset+actionLength);
+    } else riString.text = s.slice(headerOffset + actionLength);
+
     riString.header= isType2 ? s.slice(1, 7) : rawHeaderBytes; //the raw header portion
 
     if (isType2) riString.type = '\u0002';
@@ -348,6 +380,8 @@ function riStringCheckAndConvert(s) {
 
     return riString;
   };
+
+
 
 
 
@@ -392,11 +426,11 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
 
 
 
+
+
   /**Returns a string with the indicated number of spaces*/
   function nbspaces(len) {
-    var i, a, len10; //local vars
-
-    if(len<=0) { return ''; }
+    if(len <= 0) return '';
     switch(len) {
       case  1: return '&nbsp '; case 10: return '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp '; //note: added an extra regular space because it helps the old firefox browser
       case  2: return '&nbsp&nbsp '; case  9: return '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp ';
@@ -404,25 +438,25 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
       case  4: return '&nbsp&nbsp&nbsp&nbsp '; case  7: return '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp ';
       case  5: return '&nbsp&nbsp&nbsp&nbsp&nbsp '; case  6: return '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp ';
     }
-    a='';
-    len10 = Math.floor(len/10);
-    for(i=0; i<len10; i++) { a+='&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp'; } //the big chunks
-    return a+nbspaces(len-(len10*10))+' '; //the remainder.  note: added an extra regular space because it helps the old firefox browser
+    let a = '';
+    let len10 = Math.floor(len/10);
+    for(let i = 0; i < len10; i++) { a += '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp'; } //the big chunks
+    return a + nbspaces(len - len10 * 10) + ' '; //the remainder.  note: added an extra regular space because it helps the old firefox browser
   };
+
+
 
 
 
 /**Base64 decode: Converts to integer from base 64 string (or array).
  * Note: this one derived from the smalltalk method 'riBase64Integer'
  */
-var base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";  //used for base64 encode/decode
-
 function base64Decode(value) {
-    var ndx;
-    var result = 0;
-    for(ndx in value) {
-      if(value.hasOwnProperty(ndx)) {
-        result = result * 64 + base64Digits.indexOf(value[ndx]);
+    let result = 0;
+    let i;
+    for (i in value) {
+      if(value.hasOwnProperty(i)) {
+        result = result * 64 + base64Digits.indexOf(value[i]);
       }
     }
     return result;
@@ -431,23 +465,15 @@ function base64Decode(value) {
 
 
 
-//RIRI Separators:
-var
-RIRISEP1 = '\u001c', //RIRI level 1 separator - FS - '^'
-RIRISEP2 = '\u001d', //RIRI level 2 separator - GS - '+'
-RIRISEP3 = '\u001e', //RIRI level 3 separator - RS - '~'
-RIRISEP4 = '\u001f', //RIRI level 4 separator - US - '/'riStringCheckAndConvert
-RIRISEP = [RIRISEP1, RIRISEP2, RIRISEP3, RIRISEP4] //for array access of RIRI separators
-;
 
 /**Given a RIRI2/RIRI3 separated string, parse it into json
 * UPDATE: Structure is '\u001E\u0001', but split on u001e (RIRISEP3).
-          First message missing RIRISEP3 in front of it, so add it.
+
 */
 function parseSmMsgs(smMsgs) {
   if (smMsgs) {
-    var arr = [];
-    var obj = {};
+    let arr = [];
+    let obj = {};
     if (Array.isArray(smMsgs)) {
       smMsgs.map(msg => {
         if (msg) arr.push(parseSingleSmMsg(msg));
@@ -459,69 +485,65 @@ function parseSmMsgs(smMsgs) {
   } else return;
 }
 
+
+
+
+
 function parseSingleSmMsg(smMsg) { //returns obj
   if (!smMsg) return;
    if (!smMsg.includes('\u0001') && !smMsg.includes('\u0002')) { //if no riri inside string
-    var obj = {};
+    let obj = {};
     obj['text'] = smMsg;
     return obj;
   }
-  var s, ndx, b, item0, p, key;
-  var val0, entry, len;
-  smMsg = RIRISEP3 + smMsg; //initial one doesn't have RIRISEP3 on it
-  var a = smMsg.split(RIRISEP3); //split on RIRISEP3 (previously on second level riri separator, check UPDATE comments above).
-  if(!a[0] || a[0].length===0) {a.shift();} //remove the first element if empty (implies a leading sep, which gets tossed)
-  len = a.length;
-  for(ndx=0; ndx<len; ndx++) {
-    if(a[ndx].indexOf(RIRISEP3) < 0) { //if no 3rd level seps it just goes in directly
-      return riStringCheckAndConvert(a[ndx]); //convert to riString if needed
+  let s, b, p, key, entry;
+  let a = smMsg.split(RIRISEP3); //split on RIRISEP3 (previously on second level riri separator, check UPDATE comments above).
+  if (!a[0] || a[0].length === 0) a.shift(); //remove the first element if empty (implies a leading sep, which gets tossed)
+
+  for(let i = 0; i < a.length; i++) {
+    if (!a[i].includes(RIRISEP3)) { //if no 3rd level seps it just goes in directly
+      return riStringCheckAndConvert(a[i]); //convert to riString if needed
     }
     else { //may have a sep after the equals: "key=SEP val1 SEP val2..." -or- may not: "key=val1 SEP val2..."
-      b = a[ndx].split(RIRISEP3); //sep by level 3
-      if(b.length===0) { continue; } //is this check useful?
-      item0 = b[0];
-      p=item0.indexOf('='); //check the first entry for an assignment operator, e.g. "contents=..."
-      if(p<0) {p=item0.indexOf(':'); } //assignment used in turtle graphics
+      b = a[i].split(RIRISEP3); //sep by level 3
+      if (b.length === 0) continue; //is this check useful?
+      p = b[0].indexOf('='); //check the first entry for an assignment operator, e.g. "contents=..."
+      if (p < 0) p = b[0].indexOf(':');  //assignment used in turtle graphics
 
-      if(p>=0) { //if 1st item has assignment: split it int key and value portions: key=val1, val2, val3 --> {key:[val1, val2, val3]
-        key=item0.substring(0, p); //extract the 'key' portion
-        if(p+1 < b.length) { //if there was anything after the equals that means there was no leading separator before the first value: key=val SEP val...
-          val0 = item0.substring(p+1);
-          b[0] = val0; //replace first entry with the cleaned up one ('key=' removed)
+      else { //if 1st item has assignment: split it int key and value portions: key=val1, val2, val3 --> {key:[val1, val2, val3]
+        key = b[0].substring(0, p); //extract the 'key' portion
+        if(p + 1 < b.length) { //if there was anything after the equals that means there was no leading separator before the first value: key=val SEP val...
+          b[0] = b[0].substring(p + 1); //replace first entry with the cleaned up one ('key=' removed)
         }
         else { //first entry had nothing after the equals so just remove it
           b.shift(); //remove first entry from array
         }
 
-        var len2 = b.length;
-        for(var ndx2=0; ndx2<len2; ndx2++) { //check for any riString entries
-          b[ndx2] = riStringCheckAndConvert(b[ndx2]); //convert to riString if needed
+        for(let j = 0; j < b.length; j++) { //check for any riString entries
+          b[j] = riStringCheckAndConvert(b[j]); //convert to riString if needed
         }
+        
         entry = {};
         entry[key] = b;
         return entry;
       }
-      else return b; //no assignment on the first entry so just it take as an array
     }
   }
 };
 
 
 
-var omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
-var omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
-var omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
-var cbor_null = Buffer.from('f6', 'hex'); // hex 0xF6, null (string==null, aka empty omap)
+
 
 export function convertObjToArrayForPublish(model, obj, clientID, riString, selectedItems, attributes) {
-  var objVal = cbor.encode('event');
-  var widgetKey = cbor.encode('widget');
-  var widgetVal = cbor.encode(obj.identifier);
-  var channelKey = cbor.encode('channel');
-  var channelVal = cbor.encode(clientID);
-  var selectionKey = cbor.encode('selection');
+  let objVal = cbor.encode('event');
+  let widgetKey = cbor.encode('widget');
+  let widgetVal = cbor.encode(obj.identifier);
+  let channelKey = cbor.encode('channel');
+  let channelVal = cbor.encode(clientID);
+  let selectionKey = cbor.encode('selection');
 
-  var selectionVal;
+  let selectionVal;
   if (riString) {
     if (riString.header) {
       if (riString.tag) selectionVal = cbor.encode(riString.header + riString.tag + riString.text);
@@ -532,15 +554,15 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
   else if (Array.isArray(obj.contents)) selectionVal = cbor.encode(obj.contents[0].text);
   else selectionVal = cbor.encode(obj.contents);
 
-  var selectorKey = cbor.encode('selector');
-  var selectorVal = cbor.encode(obj.selector);
+  let selectorKey = cbor.encode('selector');
+  let selectorVal = cbor.encode(obj.selector);
 
-  var selectedItemsBuffer = null;
+  let selectedItemsBuffer = null;
   if (selectedItems && selectedItems[model]) {
-    var selectedItemsModelEntries = Object.entries(selectedItems[model]);
-    for (var i = 0; i < selectedItemsModelEntries.length; i++) {
-      var selectionIDKey = cbor.encode('selection' + selectedItemsModelEntries[i][0]); //0 is key. ex. 'selection15'
-      var selectionIDVal;
+    let selectedItemsModelEntries = Object.entries(selectedItems[model]);
+    for (let i = 0; i < selectedItemsModelEntries.length; i++) {
+      let selectionIDKey = cbor.encode('selection' + selectedItemsModelEntries[i][0]); //0 is key. ex. 'selection15'
+      let selectionIDVal;
 
       let selectedItem = selectedItemsModelEntries[i][1];
       if (selectedItem.text) {
@@ -560,10 +582,10 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
     }
   }
 
-  var attributesBuffer = null;
+  let attributesBuffer = null;
   if (attributes) {
-    var attributesEntries = Object.entries(attributes);
-    for (var i = 0; i < attributesEntries.length; i++) {
+    let attributesEntries = Object.entries(attributes);
+    for (let i = 0; i < attributesEntries.length; i++) {
       if (attributesBuffer) attributesBuffer = Buffer.concat([attributesBuffer, cbor.encode(attributesEntries[i][0]), cbor.encode(attributesEntries[i][1])]);
       else attributesBuffer = Buffer.concat([cbor.encode(attributesEntries[i][0]), cbor.encode(attributesEntries[i][1])]);
     }
@@ -577,9 +599,12 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
 }
 
 
+
+
+
 export function getTreeFor(/*riString[]*/ rsArray) {
-  var len, rootNode, parent, currentParentNode, currentChildNode, currentChildIndent, i, r,
-      indent, newIndent; //local var defs
+  let len, rootNode, parent, currentParentNode, currentChildNode, currentChildIndent, i, r,
+      indent, newIndent; //local let defs
 
   if(!rsArray) { return null; } //nothing to do
   len = rsArray.length;
