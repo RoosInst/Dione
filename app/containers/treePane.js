@@ -1,19 +1,22 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import {Treebeard} from 'react-treebeard';
+import { Treebeard } from 'react-treebeard';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
-import { addSelection } from '../actions';
 
+import { addSelection } from '../actions';
+import * as filters from '../scripts/filter';
+import TreeStyle from '../styles/treePane_style';
 import { mqttClient, cellID } from '../containers/mqtt';
 
 class TreePane extends Component {
 
   constructor(props){
       super(props);
-      this.state = {};
-      this.onToggle = this.onToggle.bind(this);
       this.data = this.props.obj.contents ? this.formTree()
       : null;
+      this.state = {data: this.data};
+      this.onToggle = this.onToggle.bind(this);
+
   }
 
 
@@ -23,6 +26,22 @@ class TreePane extends Component {
       node.active = true;
       if (node.children) node.toggled = toggled;
       this.setState({ cursor: node });
+  }
+
+
+
+  onFilterMouseUp(e) {
+      const filter = e.target.value.trim();
+      if (!filter) {
+          return this.setState({data: this.data});
+      }
+
+      let filteredArray = [];
+      this.data.map(root => { //this.data is array, may contain multiple roots (in jsonTrees)
+        let filtered = filters.filterTree(root, filter);
+        filteredArray.push(filters.expandFilteredNodes(filtered, filter));
+      });
+      this.setState({data: filteredArray});
   }
 
 
@@ -121,7 +140,13 @@ class TreePane extends Component {
          <div className="contextMenu shell">
            <ContextMenuTrigger id={obj.identifier}>
              {obj.contents ? //assume array, no need to check
-              <Treebeard data={this.data} onToggle={this.onToggle} />
+               <div className='shell'>
+                   <input
+                     onKeyUp={this.onFilterMouseUp.bind(this)}
+                     placeholder="Search..."
+                     type="text"/>
+                  <Treebeard data={this.state.data} style={TreeStyle} onToggle={this.onToggle} />
+               </div>
               : ''
              }
            </ContextMenuTrigger>
@@ -142,7 +167,7 @@ class TreePane extends Component {
        );
      }
      else if (obj.contents) {
-        <Treebeard data={this.data} onToggle={this.onToggle} />
+        <Treebeard data={this.state.data} style={TreeStyle} onToggle={this.onToggle} />  //can also set animations={false}, but without it arrows don't change
 	   }
      else return null; //else no obj.contents
 	}

@@ -57,6 +57,10 @@ body {
 	}
 }
 
+.TreePane div {
+	outline: none !important;
+}
+
 .shell {
 	outline: none !important;
 	overflow: auto;
@@ -324,4 +328,11 @@ span {
 
 .react-contextmenu-wrapper {
 	overflow: auto;
+}
+
+input[type='text'] {
+	border: 0;
+	border-bottom: 1px solid $outlineColor;
+	width: 100%;
+	padding: 5px;
 }
