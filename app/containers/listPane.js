@@ -3,18 +3,13 @@ import { connect } from 'react-redux';
 import { getRiStringAsLi, convertObjToArrayForPublish } from '../scripts/functions';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { addSelection } from '../actions';
-import eol from 'eol'; //some line endings inconsistent (CR with CRLF)
 
 import { mqttClient, cellID } from '../containers/mqtt';
-const cbor = require('cbor');
 
 class Pane extends Component {
 
   handleClick(riString, clickedObj) {
-    // if (riString.text === 'Copy') {
-    //   document.execCommand("copy");
-    //   return;
-    // }
+
     const { model, clientID, selectedItems, whiteboard } = this.props;
 
     //add to selectedItems only if not the context menu (right-click menu) clicked
@@ -32,6 +27,8 @@ class Pane extends Component {
     }
   }
 
+
+
 	render() {
     this.handleClick = this.handleClick.bind(this);
     const {obj, model, clientID, selectedItems } = this.props;
@@ -41,9 +38,9 @@ class Pane extends Component {
         var menu = key; //var, not let
       }
     }
-     if (obj.identifier && menu && obj[menu].value) { //if right-clicking capabilities
-       return (
-         <div className="contextMenu shell">
+    if (obj.identifier && menu && obj[menu].value) { //if right-clicking capabilities
+      return (
+        <div className="contextMenu shell">
            <ContextMenuTrigger id={obj.identifier}>
                  {obj.contents ?
                       <ul>
@@ -58,7 +55,7 @@ class Pane extends Component {
                     </ul>
                 : '' // no contents
              }
-           </ContextMenuTrigger>
+             </ContextMenuTrigger>
            <ContextMenu id={obj.identifier}>
              {
                obj[menu].value.map((menuItem, key) => {
@@ -72,11 +69,11 @@ class Pane extends Component {
               })
             }
           </ContextMenu>
-         </div>
-       );
-     }
-     else if (obj.contents) {
-       return (
+        </div>
+      );
+    }
+    else if (obj.contents) {
+      return (
         <ul>
           {
             obj.contents.map((arrayVal, key) => {
@@ -87,15 +84,14 @@ class Pane extends Component {
         </ul>
       );
     }
-     else return null; //else no obj.contents
-		}
-	}
+    else return null; //else no obj.contents
+  }
+}
 
 function mapStateToProps(state) {
   return {
 		clientID: state.clientID,
 		whiteboard: state.whiteboard,
-	  mqttConnection: state.mqttConnection,
     selectedItems: state.selectedItems
   };
 }

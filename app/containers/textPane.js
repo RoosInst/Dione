@@ -1,18 +1,17 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { getRiStringAsLi, convertObjToArrayForPublish } from '../scripts/functions';
+import { convertObjToArrayForPublish } from '../scripts/functions';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { addSelection } from '../actions';
 import eol from 'eol'; //some line endings inconsistent (CR with CRLF)
 
 import { mqttClient, cellID } from '../containers/mqtt';
-const cbor = require('cbor');
 
 class Pane extends Component {
 
   handleClick(riString, clickedObj) {
 
-    const { model, clientID, selectedItems, whiteboard } = this.props;
+    const { model, clientID, whiteboard } = this.props;
 
     let attributes;
     if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
@@ -28,7 +27,7 @@ class Pane extends Component {
 
 	render() {
     this.handleClick = this.handleClick.bind(this);
-    const {obj, model, clientID, selectedItems } = this.props;
+    const { obj, model, clientID } = this.props;
 
     for (let key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu. Will be used for right click context menu
       if (key.includes("Menu")) {
@@ -49,10 +48,7 @@ class Pane extends Component {
                       {obj.contents[0].text.substring(obj.contents[0].highlight[1] - 1)}
                     </span>
                     : //no highlight
-
-                    Array.isArray(obj.contents) && obj.contents[0] ?
                     <span style={{whiteSpace: 'pre'}}>{eol.lf(obj.contents[0].text)}</span>
-                    : <span style={{whiteSpace: 'pre'}}>{eol.lf(obj.contents[0].text)}</span>
                 : '' // no contents
              }
            </ContextMenuTrigger>
@@ -83,9 +79,7 @@ class Pane extends Component {
 function mapStateToProps(state) {
   return {
 		clientID: state.clientID,
-		whiteboard: state.whiteboard,
-	  mqttConnection: state.mqttConnection,
-    selectedItems: state.selectedItems
+		whiteboard: state.whiteboard
   };
 }
 

@@ -6,12 +6,12 @@ import MQTT, {mqttClient, cellID} from './mqtt';
 import { updateWhiteboard, addSelection } from '../actions';
 import { convertObjToArrayForPublish } from '../scripts/functions';
 
-import TextPane from './textPane';
-import ListPane from './listPane';
 import Button from './button';
+import ListPane from './listPane';
+import TextPane from './textPane';
+import TreePane from './treePane';
 
 const cbor = require('cbor');
-const mqtt = require('mqtt');
 
 class Whiteboard extends Component {
 
@@ -52,11 +52,16 @@ class Whiteboard extends Component {
     if (obj.class) {
       switch(obj.class) {
         case 'Button':
-          return <Button model={model} obj={obj} />
-        case 'TextPane':
-          return <TextPane model={model} obj={obj} />
+          return <Button model={model} obj={obj} />;
+
         case 'ListPane':
           return <ListPane model={model} obj={obj} />;
+
+        case 'TextPane':
+          return <TextPane model={model} obj={obj} />;
+
+        case 'TreePane':
+          return <TreePane model={model} obj={obj} />;
 
         default: return null;
       }
