@@ -492,6 +492,7 @@ function parseSmMsgs(smMsgs) {
 
 
 export function convertObjToArrayForPublish(model, obj, clientID, riString, selectedItems, attributes) {
+  console.log('obj publish:', obj);
   let objVal = cbor.encode('event');
   let widgetKey = cbor.encode('widget');
   let widgetVal = cbor.encode(obj.identifier);
@@ -501,11 +502,12 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
 
   let selectionVal;
   if (riString) {
+    let riStringText = riString.text ? riString.text : riString.name; //name exists in TreePane instead of text (needed for react-treebeard)
     if (riString.header) {
-      if (riString.tag) selectionVal = cbor.encode(riString.header + riString.tag + riString.text);
-      else selectionVal = cbor.encode(riString.header + riString.text);
+      if (riString.tag) selectionVal = cbor.encode(riString.header + riString.tag + riStringText);
+      else selectionVal = cbor.encode(riString.header + riStringText);
     }
-    else selectionVal = cbor.encode(riString.text);
+    else selectionVal = cbor.encode(riStringText);
   }
   else if (Array.isArray(obj.contents)) selectionVal = cbor.encode(obj.contents[0].text);
   else selectionVal = cbor.encode(obj.contents);
@@ -521,15 +523,16 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
       let selectionIDVal;
 
       let selectedItem = selectedItemsModelEntries[i][1];
-      if (selectedItem.text) {
+      if (selectedItemText || selectedItem.name) {
+        var selectedItemText = selectedItemText ? selectedItemText : selectedItem.name; //name exists in TreePane instead of text (needed for react-treebeard)
         if (selectedItem.header) {
           if (selectedItem.tag) {
-            if (selectedItem.type) selectionIDVal = cbor.encode(selectedItem.type + selectedItem.header + selectedItem.tag + selectedItem.text);
-            else selectionIDVal = cbor.encode(selectedItem.header + selectedItem.tag + selectedItem.text);
+            if (selectedItem.type) selectionIDVal = cbor.encode(selectedItem.type + selectedItem.header + selectedItem.tag + selectedItemText);
+            else selectionIDVal = cbor.encode(selectedItem.header + selectedItem.tag + selectedItemText);
           }
-          else selectionIDVal = cbor.encode(selectedItem.header + selectedItem.text);
+          else selectionIDVal = cbor.encode(selectedItem.header + selectedItemText);
         }
-        else selectionIDVal = cbor.encode(selectedItem.text);
+        else selectionIDVal = cbor.encode(selectedItemText);
       }
       else selectionIDVal = cbor.encode(selectedItem); //if not a riri string
 

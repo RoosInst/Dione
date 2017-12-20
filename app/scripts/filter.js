@@ -1,3 +1,5 @@
+//pulled this from react-treebeard example page, keeping local copy if example page changes
+
 'use strict';
 
 // Helper functions for filtering

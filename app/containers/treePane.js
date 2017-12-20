@@ -4,6 +4,7 @@ import { Treebeard } from 'react-treebeard';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 
 import { addSelection } from '../actions';
+import { convertObjToArrayForPublish } from '../scripts/functions';
 import * as filters from '../scripts/filter';
 import TreeStyle from '../styles/treePane_style';
 import { mqttClient, cellID } from '../containers/mqtt';
@@ -21,20 +22,33 @@ class TreePane extends Component {
 
 
 
-  onToggle(node, toggled) {
+  onToggle(node, toggled) { //node = modified riString
+      const { whiteboard, obj, model, clientID, selectedItems, addSelection } = this.props;
+
+      addSelection(model, obj.identifier, node);
+
       if (this.state.cursor) this.state.cursor.active = false;
       node.active = true;
       if (node.children) node.toggled = toggled;
       this.setState({ cursor: node });
+
+      let attributes;
+      if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
+
+      const msg = convertObjToArrayForPublish(model, obj, clientID, node, selectedItems, attributes),
+        topic = clientID + '/' + cellID + '/' + model + '/action/1';
+
+      if (mqttClient && cellID) {
+        console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
+        mqttClient.publish(topic, msg);
+      }
   }
 
 
 
   onFilterMouseUp(e) {
       const filter = e.target.value.trim();
-      if (!filter) {
-          return this.setState({data: this.data});
-      }
+      if (!filter) return this.setState({data: this.data});
 
       let filteredArray = [];
       this.data.map(root => { //this.data is array, may contain multiple roots (in jsonTrees)
@@ -106,7 +120,7 @@ class TreePane extends Component {
 
 
 
-  handleClick(riString, clickedObj) {
+  handleClick(riString, clickedObj) { //no need for addSelection
 
     const { model, clientID, selectedItems, whiteboard } = this.props;
 
@@ -173,4 +187,12 @@ class TreePane extends Component {
 	}
 }
 
-export default connect(null, { addSelection } )(TreePane);
+function mapStateToProps(state) {
+  return {
+		clientID: state.clientID,
+		whiteboard: state.whiteboard,
+    selectedItems: state.selectedItems
+  };
+}
+
+export default connect(mapStateToProps, { addSelection } )(TreePane);

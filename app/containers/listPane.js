@@ -10,10 +10,10 @@ class Pane extends Component {
 
   handleClick(riString, clickedObj) {
 
-    const { model, clientID, selectedItems, whiteboard } = this.props;
+    const { model, clientID, selectedItems, whiteboard, addSelection } = this.props;
 
     //add to selectedItems only if not the context menu (right-click menu) clicked
-    if (!clickedObj.identifier.includes("Menu")) this.props.addSelection(model, clickedObj.identifier, riString);
+    if (!clickedObj.identifier.includes("Menu")) addSelection(model, clickedObj.identifier, riString);
 
     let attributes;
     if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;

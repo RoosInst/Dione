@@ -11,7 +11,7 @@ class Pane extends Component {
 
   handleClick(riString, clickedObj) {
 
-    const { model, clientID, whiteboard } = this.props;
+    const { model, clientID, selectedItems, whiteboard } = this.props;
 
     let attributes;
     if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
@@ -79,7 +79,8 @@ class Pane extends Component {
 function mapStateToProps(state) {
   return {
 		clientID: state.clientID,
-		whiteboard: state.whiteboard
+		whiteboard: state.whiteboard,
+    selectedItems: state.selectedItems
   };
 }
 
