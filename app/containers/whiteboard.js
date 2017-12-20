@@ -21,7 +21,7 @@ class Whiteboard extends Component {
     let objectInside = false;
     for (let i = 0; i < arr.length; i++) { //if no object inside besides style or *Menu, then don't render (or else empty div appears)
       let val = newObj[arr[i]];
-      if (arr[i] !== 'style' && arr[i].indexOf('Menu') < 0 &&  val!== null && typeof val === 'object' && Object.prototype.toString.call(val) !== '[object Array]') {
+      if (arr[i] !== 'style' && !arr[i].includes('Menu') && val !== null && typeof val === 'object' && Object.prototype.toString.call(val) !== '[object Array]') {
          objectInside = true;
          break;
       }
@@ -38,8 +38,13 @@ class Whiteboard extends Component {
             //console.log("key:", key, " val:", val);
 
             //if type is object but not style, attributes, or Menu obj, null, or array. Menu obj never has objects inside it, so no need to go through
-            if (key !== 'style' && key !== 'attributes' && key.indexOf('Menu') < 0 && val !== null && typeof val === 'object' && Object.prototype.toString.call( val ) !== '[object Array]') {
-               return (<div className={val.class} style={val.style} id={model + '_' + val.identifier} key={model + '_' + val.identifier}>{this.renderObj(model, val)}{this.renderApp(model, val)}</div>)
+            if (key !== 'style' && key !== 'attributes' && !key.includes('Menu') && val !== null && typeof val === 'object' && Object.prototype.toString.call( val ) !== '[object Array]') {
+               return (
+                 <div className={val.class} style={val.style} id={model + '_' + val.identifier} key={model + '_' + val.identifier}>
+                   {this.renderObj(model, val)}
+                   {this.renderApp(model, val)}
+                 </div>
+               );
             }
              else return null;
           })

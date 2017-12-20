@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { Treebeard } from 'react-treebeard';
+import { Treebeard, decorators } from 'react-treebeard';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 
 import { addSelection } from '../actions';
@@ -8,6 +8,21 @@ import { convertObjToArrayForPublish } from '../scripts/functions';
 import * as filters from '../scripts/filter';
 import TreeStyle from '../styles/treePane_style';
 import { mqttClient, cellID } from '../containers/mqtt';
+
+
+
+//Customize Header to show riString color
+decorators.Header = ({style, node}) => {
+  return (
+      <div style={style.base} className={node.color ? 'rsColor' + node.color : ''}>
+          <div style={style.title}>
+              {node.name}
+          </div>
+      </div>
+  );
+};
+
+
 
 class TreePane extends Component {
 
@@ -17,7 +32,6 @@ class TreePane extends Component {
       : null;
       this.state = {data: this.data};
       this.onToggle = this.onToggle.bind(this);
-
   }
 
 
@@ -68,7 +82,6 @@ class TreePane extends Component {
     let treePointer = jsonTrees;
 
     obj.contents.map(item => {
-
       if (item.indent) { //if not root (root given no indent)
         if (item.indent > lastItem.indent) { //if child
           currentParents.push(lastItem); //last sibling was a parent
@@ -78,13 +91,15 @@ class TreePane extends Component {
                 treePointer = treePointer[i];
                 treePointer.children = [];
                 treePointer = treePointer.children;
-                treePointer.push({name: item.text, header: item.header});
+                if (item.color) treePointer.push({name: item.text, header: item.header, color: item.color})
+                else treePointer.push({name: item.text, header: item.header});
                 break;
               }
             };
         }
         else if (item.indent == lastItem.indent) { //if sibling
-          treePointer.push({name: item.text, header: item.header});
+          if (item.color) treePointer.push({name: item.text, header: item.header, color: item.color})
+          else treePointer.push({name: item.text, header: item.header});
         }
         else { //if parent of other children, update currentParentsList (remove expired parents)
           let newParentsList = [];
@@ -104,7 +119,8 @@ class TreePane extends Component {
               }
             }
           });
-          treePointer.push({name: item.text, header: item.header});
+          if (item.color) treePointer.push({name: item.text, header: item.header, color: item.color})
+          else treePointer.push({name: item.text, header: item.header});
         }
       }
       else { //root
@@ -112,7 +128,7 @@ class TreePane extends Component {
 
         //treePointer pointing to root obj still
       };
-      lastItem = {name: item.text, indent: item.indent ? item.indent : 0, header: item.header};
+      lastItem = {name: item.text, indent: item.indent ? item.indent : 0};
     });
 
     return jsonTrees;

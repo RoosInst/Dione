@@ -4,7 +4,7 @@
 export default {
     tree: {
         base: {
-            color: 'gray'
+            color: 'black'
         },
         node: {
             base: {
@@ -46,7 +46,7 @@ export default {
                 base: {
                     display: 'inline-block',
                     verticalAlign: 'top',
-                    color: 'gray'
+                    color: 'black'
                 },
                 connector: {
                     width: '2px',

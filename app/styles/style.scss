@@ -83,26 +83,26 @@ body {
 /* CSS style sheet to support use of ristrings (RiListString) */
 
 /*Colors used by RiStrings (i.e. RiListStrings):*/
-.rsColor1  { color:#000000; } /*Black*/
-.rsColor2  { color:#404040; } /*DarkGray*/
-.rsColor3  { color:#808080; } /*LightGray*/
-.rsColor4  { color:#ffffff; } /*White*/
-.rsColor5  { color:#dc0000; } /*LightRed*/
-.rsColor6  { color:#00dc00; } /*LightGreen*/
-.rsColor7  { color:#0000dc; } /*LightBlue*/
-.rsColor8  { color:#dcdc00; } /*LightYellow*/
-.rsColor9  { color:#dc00dc; } /*LightMagenta*/
-.rsColor10 { color:#00dcdc; } /*LightCyan*/
-.rsColor11 { color:#800000; } /*DarkRed*/
-.rsColor12 { color:#008000; } /*DarkGreen*/
-.rsColor13 { color:#000080; } /*DarkBlue*/
-.rsColor14 { color:#808000; } /*DarkYellow*/
-.rsColor15 { color:#800080; } /*DarkMagenta*/
+.rsColor1  { color:#000000 !important; } /*Black*/
+.rsColor2  { color:#404040 !important; } /*DarkGray*/
+.rsColor3  { color:#808080 !important; } /*LightGray*/
+.rsColor4  { color:#ffffff !important; } /*White*/
+.rsColor5  { color:#dc0000 !important; } /*LightRed*/
+.rsColor6  { color:#00dc00 !important; } /*LightGreen*/
+.rsColor7  { color:#0000dc !important; } /*LightBlue*/
+.rsColor8  { color:#dcdc00 !important; } /*LightYellow*/
+.rsColor9  { color:#dc00dc !important; } /*LightMagenta*/
+.rsColor10 { color:#00dcdc !important; } /*LightCyan*/
+.rsColor11 { color:#800000 !important; } /*DarkRed*/
+.rsColor12 { color:#008000 !important; } /*DarkGreen*/
+.rsColor13 { color:#000080 !important; } /*DarkBlue*/
+.rsColor14 { color:#808000 !important; } /*DarkYellow*/
+.rsColor15 { color:#800080 !important; } /*DarkMagenta*/
 
 /*Font styles used by RiStrings (i.e. RiListStrings):*/
-.rsStyle1  { font-weight:bold   } /*bold*/
-.rsStyle2  { font-style:italic  } /*italic*/
-.rsStyle3  { font-weight:bold; font-style:italic } /*bold italic*/
+.rsStyle1  { font-weight:bold !important; } /*bold*/
+.rsStyle2  { font-style:italic !important; } /*italic*/
+.rsStyle3  { font-weight:bold; font-style:italic !important; } /*bold italic*/
 
 li {
 	font-weight: bold;
