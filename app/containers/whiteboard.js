@@ -74,13 +74,13 @@ class Whiteboard extends Component {
   }
 
   handleClose(model) { //delete app, clicking on close 'X' button
-    let omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
-    let omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
-    let omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
-    let unsub = cbor.encode('unsubscribe');
-    let cborModel = cbor.encode(model);
+    let topic = this.props.clientID + '/' + cellID + '/' + model + '/unsubscribe/1',
+      omap_start = Buffer.from('9f', 'hex'), // hex x9F, cbor start byte for unbounded arrays
+      omap_cborTag = Buffer.from('d3', 'hex'), // hex xD3, start object map (omap cbor tag)
+      omap_end = Buffer.from('ff', 'hex'), // hex xFF, cbor end byte for unbounded arrays
+      unsub = cbor.encode('unsubscribe'),
+      cborModel = cbor.encode(model);
 
-    let topic = this.props.clientID + '/' + cellID + '/' + model + '/unsubscribe/1';
     let cborPubMsg = Buffer.concat([omap_start, omap_cborTag, unsub, omap_end, omap_start, omap_cborTag, cborModel, omap_end]);
 
     let forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
@@ -91,38 +91,36 @@ class Whiteboard extends Component {
     return null;
   }
 
+//handle selecting (and thus closing/deleting) modal
   handleModal(model, clickedObj, selected, delDialog) { //don't bother making target active upon click, disappears before it can show (tested)
-    //Note: console logging clickedObj won't show dialog as a key, but know that it exists (can test by consle logging dialog directly)
-    let dialog = clickedObj.dialog;
 
+    let dialog = clickedObj.dialog;
     this.props.addSelection(model, clickedObj.dialog.widget, selected);
 
-    let topic = this.props.clientID + '/' + cellID + '/' + model + '/action/1';
-    let objVal = cbor.encode('event');
-    let omap_start = Buffer.from('9f', 'hex'); // hex x9F, cbor start byte for unbounded arrays
-    let omap_cborTag = Buffer.from('d3', 'hex'); // hex xD3, start object map (omap cbor tag)
-    let omap_end = Buffer.from('ff', 'hex'); // hex xFF, cbor end byte for unbounded arrays
-
-    let selectorKey = cbor.encode('selector');
-    let selectorVal = cbor.encode(dialog.selector);
-    let channelKey = cbor.encode('channel');
-    let channelVal = cbor.encode(this.props.clientID);
-    let selectionKey = cbor.encode('selection');
-    let selectionVal = cbor.encode(selected);
-    let cookieKey = cbor.encode('cookie');
-    let cookieVal = cbor.encode(dialog.cookie);
-    let scopeKey = cbor.encode('scope');
-    let scopeVal = cbor.encode(clickedObj.attributes.scope);
-    let rangeKey = cbor.encode('range');
-    let rangeVal = cbor.encode(clickedObj.attributes.range);
+    let topic = this.props.clientID + '/' + cellID + '/' + model + '/action/1',
+      objVal = cbor.encode('event'),
+      omap_start = Buffer.from('9f', 'hex'), // hex x9F, cbor start byte for unbounded arrays
+      omap_cborTag = Buffer.from('d3', 'hex'), // hex xD3, start object map (omap cbor tag)
+      omap_end = Buffer.from('ff', 'hex'), // hex xFF, cbor end byte for unbounded arrays
+      selectorKey = cbor.encode('selector'),
+      selectorVal = cbor.encode(dialog.selector),
+      channelKey = cbor.encode('channel'),
+      channelVal = cbor.encode(this.props.clientID),
+      selectionKey = cbor.encode('selection'),
+      selectionVal = cbor.encode(selected),
+      cookieKey = cbor.encode('cookie'),
+      cookieVal = cbor.encode(dialog.cookie),
+      scopeKey = cbor.encode('scope'),
+      scopeVal = cbor.encode(clickedObj.attributes.scope),
+      rangeKey = cbor.encode('range'),
+      rangeVal = cbor.encode(clickedObj.attributes.range);
 
     let cborMsg = Buffer.concat([omap_start, omap_cborTag, objVal, selectorKey, selectorVal, channelKey, channelVal, selectionKey, selectionVal, cookieKey, cookieVal, scopeKey, scopeVal, rangeKey, rangeVal, omap_end]);
     if (mqttClient && cellID) {
-        console.info("Publishing -\n Topic: " + topic + "\n Message: " +  cborMsg);
+      console.info("Publishing -\n Topic: " + topic + "\n Message: " +  cborMsg);
       mqttClient.publish(topic, cborMsg);
     }
     delDialog();
-
   }
 
   componentDidMount() {

@@ -95,19 +95,14 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
     return -1;
   }
 
-
   for (let key in unsortedStore) {
     // skip loop if the property is from prototype
     if (!unsortedStore.hasOwnProperty(key)) continue;
 
     let obj = unsortedStore[key];
 
-    if (Array.isArray(obj)) {
-      insertArray(tree, obj);
-    }
-
+    if (Array.isArray(obj)) insertArray(tree, obj);
     else {
-
       //value (not contents) for context menus
       if (obj.value) { //obj.value always an array
 
@@ -275,11 +270,13 @@ export function convertArrayToKeyValues(decodedCbor) {
       store[msgObj.identifier] = msgObj;
     }
 
-    if (msgObj.contents != null) { //not null, but can be empty string
+    //values (not to be confused with value, stores all contents when something changes)
+    if (msgObj.value && msgObj.contents != null) { //not null, but can be empty string
       if (store['values']) {
       store['values'].push(msgObj);
       } else {
       store['values'] = [msgObj];
+
       }
     }
 
@@ -287,10 +284,11 @@ export function convertArrayToKeyValues(decodedCbor) {
       store['top'] = msgObj;
     }
 
-    if (decodedCbor[0][0].value === 'dialog') { //note: not else if
-      if (!store['top']) store['top'] = {}; //want to statically place dialogs inside top of model (instead of dynamically with assigning an unnecessary owner)
-      let temp = store['values']; //will be undefined until it reaches next level of array for dialog
-      if(temp) store['top']['dialog'] = temp[0];
+    else if (decodedCbor[0][0].value === 'dialog') {
+      if (msgObj.contents) { //will contain three msgObjs, but only one with contents. Use only one with contents (other 2 are empty objs)
+        if (!store['top']) store['top'] = {}; //want to statically place dialogs inside top of model (instead of dynamically with assigning an unnecessary owner)
+        store['top']['dialog'] = msgObj;
+      }
     }
   }
   return store;
@@ -310,10 +308,10 @@ export function convertArrayToKeyValues(decodedCbor) {
  * 'header' is the binary header portion used to emit the riString as RIRI.
  * */
 function riStringCheckAndConvert(s) {
-    let val, rawHeaderBytes, headerOffset, actionLength;
-    let temp, riString, isType2;
 
     if(!s || s.length === 0) return s;
+
+    let isType2;
 
     switch(s[0]) {
       case '\u0001': isType2=false; break;
@@ -324,22 +322,18 @@ function riStringCheckAndConvert(s) {
         return obj; //is a regular string (neither type 1 or type 2). Return obj with text key's value as string
     }
 
-    rawHeaderBytes=null; //raw bytes extracted from input string
-    //let decodedHeader=null; //base 64 decoded header bytes
-    headerOffset=5; //location after header, (type1 = 5, type2 = 7)
-    actionLength = 0;  //length of the (type 2) action portion
+    let val,
+     rawHeaderBytes = s.slice(0, 5), //ignore 1st byte, the next 4 is the type 1 header
+     headerOffset = isType2 ? 7 : 5, //location after header, (type1 = 5, type2 = 7)
+     actionLength = 0,  //length of the (type 2) action portion
+     temp,
+     riString = {};
 
-    rawHeaderBytes = s.slice(0, 5); //ignore 1st byte, the next 4 is the type 1 header
-
-    if(isType2) {  //type 2 RiListString
-      rawHeaderBytes = rawHeaderBytes+'A'+'A'+s.slice(5, 7); //type 2 header. The two padding bytes allow the 'action' string length to be properly decoded using base 64
-      headerOffset = 7; //header offset for type 2 'action' string
-    }
+    if (isType2) rawHeaderBytes = rawHeaderBytes + 'AA' + s.slice(5, 7); //type 2 header. The two padding bytes allow the 'action' string length to be properly decoded using base 64
 
     try {
       val = base64Decode(rawHeaderBytes);  //extract the, base 64 encoded, type1 header portion
       //temp = base64Encode(val, 4); //test the reverse action (debug)
-      riString = {};
 
       if(isType2) { //for type 2 decode the 'action' string
         //determine the action command length then extract it
@@ -379,6 +373,7 @@ function riStringCheckAndConvert(s) {
 
     riString.header= isType2 ? s.slice(1, 7) : rawHeaderBytes; //the raw header portion
 
+    //must know types for publishing later
     if (isType2) riString.type = '\u0002';
     else riString.type = '\u0001';
 
@@ -392,21 +387,20 @@ function riStringCheckAndConvert(s) {
 /**Given an RiString returns a fomatted JSX list <li>...</li> element*/
 export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick, selectedItems) {
 
-    if(!riString.text) { //if no text field then it's not an RiString
-      return (<li key={key}>{riString}</li>);
-    }
+    //if no text field then it's not an RiString
+    if(!riString.text) return (<li key={key}>{riString}</li>);
 
     let riStringContent;
-    if (riString.text) {
       if (riString.header) {
         if (riString.tag) {
           if (riString.type) riStringContent = riString.type + riString.header + riString.tag + riString.text;
           else riStringContent = riString.header + riString.tag + riString.text;
-        } else riStringContent = riString.header + riString.text
-      } else riStringContent = riString.text;
-    } else riStringContent = riString;
+        }
+        else riStringContent = riString.header + riString.text
+      }
+      else riStringContent = riString.text;
 
-    let selectedItemContent = null;
+    let selectedItemContent;
     if (selectedItems && selectedItems[model] && selectedItems[model][obj.identifier] && selectedItems[model][obj.identifier]) {
       selectedItemContent = selectedItems[model][obj.identifier];
       if (selectedItemContent.text) {
@@ -418,6 +412,7 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
         } else selectedItemContent = selectedItemContent.text;
       }
     }
+
     return (
       <li onClick={() => handleClick(riString, obj)}
         key={key}
@@ -492,15 +487,17 @@ function parseSmMsgs(smMsgs) {
 
 
 export function convertObjToArrayForPublish(model, obj, clientID, riString, selectedItems, attributes) {
-  console.log('obj publish:', obj);
-  let objVal = cbor.encode('event');
-  let widgetKey = cbor.encode('widget');
-  let widgetVal = cbor.encode(obj.identifier);
-  let channelKey = cbor.encode('channel');
-  let channelVal = cbor.encode(clientID);
-  let selectionKey = cbor.encode('selection');
 
-  let selectionVal;
+  let objVal = cbor.encode('event'),
+    widgetKey = cbor.encode('widget'),
+    widgetVal = cbor.encode(obj.identifier),
+    channelKey = cbor.encode('channel'),
+    channelVal = cbor.encode(clientID),
+    selectionKey = cbor.encode('selection'),
+    selectionVal,
+    selectorKey = cbor.encode('selector'),
+    selectorVal = cbor.encode(obj.selector);
+
   if (riString) {
     let riStringText = riString.text ? riString.text : riString.name; //name exists in TreePane instead of text (needed for react-treebeard)
     if (riString.header) {
@@ -510,21 +507,18 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
     else selectionVal = cbor.encode(riStringText);
   }
   else if (Array.isArray(obj.contents)) selectionVal = cbor.encode(obj.contents[0].text);
-  else selectionVal = cbor.encode(obj.contents);
+  else selectionVal = cbor.encode(obj.contents.text ? obj.contents.text : obj.contents);
 
-  let selectorKey = cbor.encode('selector');
-  let selectorVal = cbor.encode(obj.selector);
-
-  let selectedItemsBuffer = null;
+  let selectedItemsBuffer;
   if (selectedItems && selectedItems[model]) {
     let selectedItemsModelEntries = Object.entries(selectedItems[model]);
     for (let i = 0; i < selectedItemsModelEntries.length; i++) {
       let selectionIDKey = cbor.encode('selection' + selectedItemsModelEntries[i][0]); //0 is key. ex. 'selection15'
       let selectionIDVal;
 
-      let selectedItem = selectedItemsModelEntries[i][1];
-      if (selectedItemText || selectedItem.name) {
-        var selectedItemText = selectedItemText ? selectedItemText : selectedItem.name; //name exists in TreePane instead of text (needed for react-treebeard)
+      let selectedItem = selectedItemsModelEntries[i][1],
+        selectedItemText = selectedItem.text ? selectedItem.text : selectedItem.name; //name exists in TreePane instead of text (needed for react-treebeard). Will be undefined if neither exist, which is fine
+      if (selectedItemText) {
         if (selectedItem.header) {
           if (selectedItem.tag) {
             if (selectedItem.type) selectionIDVal = cbor.encode(selectedItem.type + selectedItem.header + selectedItem.tag + selectedItemText);
@@ -541,7 +535,7 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
     }
   }
 
-  let attributesBuffer = null;
+  let attributesBuffer;
   if (attributes) {
     let attributesEntries = Object.entries(attributes);
     for (let i = 0; i < attributesEntries.length; i++) {
