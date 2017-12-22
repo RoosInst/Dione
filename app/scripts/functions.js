@@ -101,7 +101,7 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
 
     let obj = unsortedStore[key];
 
-    if (Array.isArray(obj)) insertArray(tree, obj);
+    if (Array.isArray(obj)) insertObject(tree, obj);
     else {
       //value (not contents) for context menus
       if (obj.value) { //obj.value always an array
@@ -135,6 +135,11 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
           }
         }
         obj.value = arr;
+      }
+
+      if (obj.contents) {
+        obj.contents = parseSmMsgs(obj.contents);
+        if (obj.contents.length === 1) obj.contents = obj.contents[0]; //no need for array if only 1. Button.js assumes this, so keep line or else change how Button reads contents
       }
 
       if (obj.frameRatio) {
@@ -174,71 +179,48 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
 
 
 
-
-
-function insertArray(tree, arr) { //assuming array of objects
+function insertObject(tree, passedObj) { //handles both "real" objects and arrays (arrays === objects)
   let found = false;
-  for (let i = 0; i < arr.length; i++) {
-    var obj = arr[i]; //var, not let
-    recursiveCheck(tree);
-  }
+  if (Array.isArray(passedObj)) {
+    passedObj.map(objFromArr => recursiveCheck(tree, objFromArr));
+  } else recursiveCheck(tree, passedObj);
 
-  function recursiveCheck(newObj) { //if called again, found = false
-    let objVal = obj.value; //owner = object's value in array of objects
-    if (newObj[objVal]) {
-      newObj[objVal].contents = parseSmMsgs(obj.contents);
-      if (obj.highlight) {
-        newObj[objVal].contents[i].highlight = obj.highlight;
-      }
+  function recursiveCheck(newObj, obj) { //if called again, found = false
+    if (!obj) return; //sometimes undefined, so just ignore and return nothing
+
+    if (newObj[obj.value]) { //if arr, will be true, else obj, will be false
       found = true;
+      newObj[obj.value].contents = parseSmMsgs(obj.contents);
+      if (obj.highlight) {
+        newObj[obj.value].contents[i].highlight = obj.highlight;
+      }
+      return; //no need to continue with pointless checking
     }
-    else if (!found) { //look for owner (objVal) with recursion
+
+    else if (newObj[obj.owner]) { //if obj, will be true, else arr, will be false
+
+      newObj[obj.owner][obj.identifier] = obj;
+      found = true;
+      return; //no need to continue with pointless checking
+    }
+
+    else { //else found=false, look for owner (objVal) with recursion
       let tempEntries = Object.entries(newObj);
       for (let i = 0; i < tempEntries.length; i++) {
         if (tempEntries[i][0] !== 'style' && typeof tempEntries[i][1] === 'object' && Object.prototype.toString.call(tempEntries[i][1]) !== '[object Array]') {
-         if (newObj[tempEntries[i][0]]) recursiveCheck(newObj[tempEntries[i][0]]);
-         if (found) break;
+         if (newObj[tempEntries[i][0]]) recursiveCheck(newObj[tempEntries[i][0]]); //no need to re-pass passedObj in parameter
        }
      }
     }
+    //if still not found after searching everything
     if (!found) { //if still not found after recursion executed above
-      console.error('ERR: Object "' + obj + '"\'s owner "'+ objVal +'" not found!');
+      let owner = obj.owner || obj.value; //owner = object's value in array of objects
+      let objID = obj.identifier ? obj.identifier : obj;
+      console.error('ERR:', objID, 'object\'s owner', owner, 'not found!');
       found = true; //set found to true so message doesn't repeat in console
     }
   }
 }
-
-
-
-
-
-function insertObject(tree, obj) {
-  let found = false;
-  recursiveCheck(tree);
-
-  function recursiveCheck(newObj) { //if called again, found = false
-     if (newObj[obj.owner]) {
-       let Owner = newObj[obj.owner];
-       Owner[obj.identifier] = obj;
-       found = true;
-     }
-     else if (!found) {
-       let tempEntries = Object.entries(newObj);
-       for (let i = 0; i < tempEntries.length; i++) {
-         if (tempEntries[i][0] !== 'style' && typeof tempEntries[i][1] === 'object' && Object.prototype.toString.call(tempEntries[i][1]) !== '[object Array]') {
-            if (newObj[tempEntries[i][0]]) recursiveCheck(newObj[tempEntries[i][0]]);
-            if (found) break;
-        }
-      }
-    }
-    if (!found) { //if still not found after recursion executed above
-      console.error('ERR: Object "'+ obj.identifier +'"\'s owner "'+ obj.owner +'" not found!');
-      found = true; //set found to true so message doesn't repeat in console
-    }
-  }
-}
-
-
 
 
 
@@ -468,6 +450,7 @@ function base64Decode(value) {
 * UPDATE: Structure is '\u001E\u0001', but split on u001e (RIRISEP3).
 */
 function parseSmMsgs(smMsgs) {
+
   if (smMsgs) {
     let arr = [],
     obj = {};

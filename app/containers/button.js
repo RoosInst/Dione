@@ -33,21 +33,22 @@ class Button extends Component {
   }
 
   render() {
-    const obj = this.props.obj;
+    const { obj } = this.props;
     const isSelected = (obj.selected === 'true');
-    if (!obj.selectionGroup) {
+
+    if (obj.selectionGroup) {
      return (
-       <div className="btn btn-primary momentary" onClick={() => this.handleClick(obj)}>
-         {Array.isArray(obj.contents) ?  obj.contents.map(content => {return content.text}) : obj.contents}
-       </div>
+       <label>
+         <input type='radio' defaultChecked={isSelected} onClick={() => this.handleClick(obj)} value={obj.contents.text} name={obj.owner} />
+         <span>{obj.contents.text}</span>
+       </label>
      );
     }
     else {
       return (
-        <label>
-          <input type='radio' defaultChecked={isSelected} onClick={() => this.handleClick(obj)} value={obj.contents} name={obj.owner} />
-          <span>{obj.contents}</span>
-        </label>
+        <div className="btn btn-primary momentary" onClick={() => this.handleClick(obj)}>
+          {obj.contents.text}
+        </div>
       );
     }
   }
