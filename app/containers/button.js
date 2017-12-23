@@ -9,7 +9,7 @@ import {mqttClient, cellID} from '../containers/mqtt';
 class Button extends Component {
 
   handleClick(clickedObj) {
-    if (clickedObj.selectionGroup) {
+    if (clickedObj.selectionGroup || clickedObj.checkForModified === 'true') { //selectionGroup in radios, checkForModified from history buttons from rtalk code app
       this.props.addSelection(this.props.model, clickedObj.identifier, clickedObj.contents, clickedObj.selectionGroup);
     }
     const { clientID, model, selectedItems, whiteboard } = this.props;
@@ -34,20 +34,21 @@ class Button extends Component {
 
   render() {
     const { obj } = this.props;
+    const contents = obj.contents[0].text;
     const isSelected = (obj.selected === 'true');
 
     if (obj.selectionGroup) {
      return (
        <label>
-         <input type='radio' defaultChecked={isSelected} onClick={() => this.handleClick(obj)} value={obj.contents.text} name={obj.owner} />
-         <span>{obj.contents.text}</span>
+         <input type='radio' defaultChecked={isSelected} onClick={() => this.handleClick(obj)} value={contents} name={obj.owner} />
+         <span>{contents}</span>
        </label>
      );
     }
     else {
       return (
         <div className="btn btn-primary momentary" onClick={() => this.handleClick(obj)}>
-          {obj.contents.text}
+          {contents}
         </div>
       );
     }

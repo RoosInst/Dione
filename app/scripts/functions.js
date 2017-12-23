@@ -139,7 +139,6 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
 
       if (obj.contents) {
         obj.contents = parseSmMsgs(obj.contents);
-        if (obj.contents.length === 1) obj.contents = obj.contents[0]; //no need for array if only 1. Button.js assumes this, so keep line or else change how Button reads contents
       }
 
       if (obj.frameRatio) {
@@ -194,21 +193,20 @@ function insertObject(tree, passedObj) { //handles both "real" objects and array
       if (obj.highlight) {
         newObj[obj.value].contents[i].highlight = obj.highlight;
       }
-      return; //no need to continue with pointless checking
+      return; //no need to continue with checking
     }
 
     else if (newObj[obj.owner]) { //if obj, will be true, else arr, will be false
-
       newObj[obj.owner][obj.identifier] = obj;
       found = true;
-      return; //no need to continue with pointless checking
+      return; //no need to continue with checking
     }
 
     else { //else found=false, look for owner (objVal) with recursion
       let tempEntries = Object.entries(newObj);
       for (let i = 0; i < tempEntries.length; i++) {
         if (tempEntries[i][0] !== 'style' && typeof tempEntries[i][1] === 'object' && Object.prototype.toString.call(tempEntries[i][1]) !== '[object Array]') {
-         if (newObj[tempEntries[i][0]]) recursiveCheck(newObj[tempEntries[i][0]]); //no need to re-pass passedObj in parameter
+         if (newObj[tempEntries[i][0]]) recursiveCheck(newObj[tempEntries[i][0]], passedObj);
        }
      }
     }
@@ -296,8 +294,8 @@ function riStringCheckAndConvert(s) {
     let isType2;
 
     switch(s[0]) {
-      case '\u0001': isType2=false; break;
-      case '\u0002': isType2=true;  break;
+      case '\u0001': isType2 = false; break;
+      case '\u0002': isType2 = true; break;
       default:
         let obj = {};
         obj['text'] = s;
@@ -305,13 +303,12 @@ function riStringCheckAndConvert(s) {
     }
 
     let val,
-     rawHeaderBytes = s.slice(0, 5), //ignore 1st byte, the next 4 is the type 1 header
+     rawHeaderBytes = isType2 ? s.slice(1, 5) + 'A' + s.slice(5, 7)  //type 2 header. The two padding bytes allow the 'action' string length to be properly decoded using base 64
+      : s.slice(1, 5), //ignore 1st byte, the next 4 is the type 1 header
      headerOffset = isType2 ? 7 : 5, //location after header, (type1 = 5, type2 = 7)
      actionLength = 0,  //length of the (type 2) action portion
      temp,
      riString = {};
-
-    if (isType2) rawHeaderBytes = rawHeaderBytes + 'AA' + s.slice(5, 7); //type 2 header. The two padding bytes allow the 'action' string length to be properly decoded using base 64
 
     try {
       val = base64Decode(rawHeaderBytes);  //extract the, base 64 encoded, type1 header portion
@@ -342,9 +339,10 @@ function riStringCheckAndConvert(s) {
     }
     catch(e) {
       console.error('Unable to convert RiString header because: ' + e);
+      return -1;
     }
 
-    if (riString.tag) {
+    if (riString.tag !== undefined) { //may be empty string
       let tempText = s.slice(headerOffset + actionLength + riString.tag.length);  //cut off tag
       if (tempText.length > 0) riString.text = tempText; //if tag != text, set text to tempText
       else {
@@ -353,11 +351,7 @@ function riStringCheckAndConvert(s) {
       }
     } else riString.text = s.slice(headerOffset + actionLength);
 
-    riString.header= isType2 ? s.slice(1, 7) : rawHeaderBytes; //the raw header portion
-
-    //must know types for publishing later
-    if (isType2) riString.type = '\u0002';
-    else riString.type = '\u0001';
+    riString.header = isType2 ? s.slice(0, 7) : s.slice(0, 5); //the raw header portion
 
     return riString;
   };
@@ -375,8 +369,7 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
     let riStringContent;
       if (riString.header) {
         if (riString.tag) {
-          if (riString.type) riStringContent = riString.type + riString.header + riString.tag + riString.text;
-          else riStringContent = riString.header + riString.tag + riString.text;
+          riStringContent = riString.header + riString.tag + riString.text;
         }
         else riStringContent = riString.header + riString.text
       }
@@ -388,8 +381,7 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
       if (selectedItemContent.text) {
         if (selectedItemContent.header) {
           if (selectedItemContent.tag) {
-            if (selectedItemContent.type) selectedItemContent = selectedItemContent.type + selectedItemContent.header + selectedItemContent.tag + selectedItemContent.text;
-            else selectedItemContent = selectedItemContent.header + selectedItemContent.tag + selectedItemContent.text;
+            selectedItemContent = selectedItemContent.header + selectedItemContent.tag + selectedItemContent.text;
           } else selectedItemContent = selectedItemContent.header + selectedItemContent.text
         } else selectedItemContent = selectedItemContent.text;
       }
@@ -504,8 +496,7 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
       if (selectedItemText) {
         if (selectedItem.header) {
           if (selectedItem.tag) {
-            if (selectedItem.type) selectionIDVal = cbor.encode(selectedItem.type + selectedItem.header + selectedItem.tag + selectedItemText);
-            else selectionIDVal = cbor.encode(selectedItem.header + selectedItem.tag + selectedItemText);
+            selectionIDVal = cbor.encode(selectedItem.header + selectedItem.tag + selectedItemText);
           }
           else selectionIDVal = cbor.encode(selectedItem.header + selectedItemText);
         }
