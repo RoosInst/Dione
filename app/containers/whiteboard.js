@@ -184,8 +184,9 @@ class Whiteboard extends Component {
   }
 
   render() {
-    let arr = null;
-    if (this.props.whiteboard) arr = Object.keys(this.props.whiteboard);
+    const { whiteboard, clientID, selectedItems } = this.props;
+    let arr;
+    if (whiteboard) arr = Object.keys(whiteboard);
     return (
       <div>
         <MQTT />
@@ -201,7 +202,13 @@ class Whiteboard extends Component {
           {
             arr ?
               arr.map(model => { //map through each app
-                let obj = this.props.whiteboard[model];
+                const obj = whiteboard[model];
+
+                const objMenus = []; //if toppane has dropdown menus, keys to menus will be in here
+                Object.keys(obj).map(key => {
+                  if (key.includes('Menu')) objMenus.push(key);
+                });
+
                 return (
                   <div id={model} className='grid-stack-item' key={model} data-gs-auto-position data-gs-height='12' data-gs-width='4'>
 
@@ -235,7 +242,7 @@ class Whiteboard extends Component {
                               </div>
                             </div> */}
                           </div>
-                            : ''
+                            : '' //no dialog
                           }
                         </div>
                       </div>
@@ -248,6 +255,40 @@ class Whiteboard extends Component {
                           <span className="cardLabel">{obj.label}</span>
                           <i onClick={() => this.handleClose(model)} className="pull-right fa fa-window-close" />
                         </div>
+                        {objMenus.length > 0 ?
+                          <div className='topMenuBar'>
+                            {objMenus.map(menuKey => {
+                              let menuObj = obj[menuKey];
+                              return (
+                                <div className='topMenuItem'>
+                                  <button className="dropdown-toggle" type="button" id={model + '_' + menuObj.identifier} data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    {menuObj.title}
+                                  </button>
+                                  <ul className="dropdown-menu" aria-labelledby={model + '_' + menuObj.identifier}>
+                                    {menuObj.value.map((riString, key) => { //add react-contextmenu-item to inherit same style as contextmenus
+                                      return <li  className='react-contextmenu-item'
+                                                  tabIndex='0'
+                                                  onMouseDown={e => e.preventDefault()}
+                                                  key={key}
+                                                  onClick={() => {
+                                                    let attributes;
+                                                    if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
+                                                    const msg = convertObjToArrayForPublish(model, menuObj, clientID, riString, selectedItems, attributes),
+                                                      topic = clientID + '/' + cellID + '/' + model + '/action/1';
+
+                                                    if (mqttClient && cellID) {
+                                                      console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
+                                                      mqttClient.publish(topic, msg);
+                                                    }}}
+                                                  >{riString.text}</li>
+                                    })}
+                                  </ul>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          : ''
+                        }
                         <div className="card-body">
                           {this.renderApp(model, obj)}
                         </div>
@@ -256,7 +297,7 @@ class Whiteboard extends Component {
                   </div>
                 );
               })
-            : ''
+            : '' //no apps exist in store
           }
         </div>
 
@@ -270,7 +311,8 @@ function mapStateToProps(state) {
   return {
     whiteboard: state.whiteboard,
     clientID: state.clientID,
-    mqttConnection: state.mqttConnection
+    mqttConnection: state.mqttConnection,
+    selectedItems: state.selectedItems
   };
 }
 

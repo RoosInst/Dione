@@ -1,13 +1,13 @@
 //colors
 $menuBackground: #2e353d;
 $menuText: #e1ffff;
-$logoBackground: #23282e;
-$subMenuActive: #d19b3d;
 $menuHover: #4f5b69;
 $background: #f0f0f0;
 $highlightColor: yellow;
 $activeBackgroundColor: lightblue;
 $outlineColor: #dfdfdf;
+$cardHeaderColor: #f7f7f7;
+$liHoverColor: #20a0ff;
 
 body {
 	overflow: auto;
@@ -24,8 +24,18 @@ body {
 	height: 100%;
 
 	.card-header {
-		font-size: 14px;
-		min-height: 28px;
+		background-color: $cardHeaderColor;
+			height: 28px;
+			padding: 3px 29px 0 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			border-bottom: none;
+
+		span {
+			font-size: 14px;
+
+		}
 		> i {
 			font-size: 31px;
 			cursor: pointer;
@@ -40,13 +50,37 @@ body {
 			}
 		}
 	}
-	.card-header {
-	 padding: 3px 29px 0 0;
-	 overflow: hidden;
-	 text-overflow: ellipsis;
-	 white-space: nowrap;
 
+	.topMenuBar {
+		background-color: $cardHeaderColor;
+		font-weight: bold;
+
+		.topMenuItem {
+			display: inline-block;
+
+			button {
+				padding: 5px;
+				position: relative;
+				background: none;
+				border: none;
+
+				&.dropdown-toggle::after {
+					border: none;
+				}
+
+				+ ul {
+					min-width: initial;
+					margin-top: 0;
+					
+					li:hover {
+						background: $liHoverColor;
+						color: white;
+					}
+				}
+			}
+		}
 	}
+
 	.card-body {
 		margin: 0;
 		padding: 0;
@@ -59,6 +93,7 @@ body {
 
 .TreePane div {
 	outline: none !important;
+	font-weight: normal;
 }
 
 .shell {
@@ -74,7 +109,7 @@ body {
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		outline-color: #0275d8;
+		outline-color: $liHoverColor;
 		line-height: 0;
 		border-radius: 0;
 	}
@@ -305,7 +340,7 @@ $dialogCardHeight: 187px; //if using dialogBottom, add 30px (currently not)
 	width: 160px;
 	height: $dialogCardHeight;
 	ul {
-		height: ($dialogCardHeight - $cardHeaderHeight);
+		height: ($dialogCardHeight - $cardHeaderHeight - 1px);
 		overflow: auto;
 	}
 	// .dialogBottom { //for select and cancel buttons
@@ -335,4 +370,12 @@ input[type='text'] {
 	border-bottom: 1px solid $outlineColor;
 	width: 100%;
 	padding: 5px;
+}
+
+label {
+	font-weight: bold;
+}
+
+.dropdown-menu {
+	font-size: 12px;
 }

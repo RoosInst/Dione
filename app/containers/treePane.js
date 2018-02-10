@@ -7,7 +7,7 @@ import { addSelection } from '../actions';
 import { convertObjToArrayForPublish } from '../scripts/functions';
 import * as filters from '../scripts/filter';
 import TreeStyle from '../styles/treePane_style';
-import { mqttClient, cellID } from '../containers/mqtt';
+import { mqttClient, cellID } from './mqtt';
 
 
 
