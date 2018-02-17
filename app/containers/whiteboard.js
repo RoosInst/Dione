@@ -107,15 +107,19 @@ class Whiteboard extends Component {
       channelKey = cbor.encode('channel'),
       channelVal = cbor.encode(this.props.clientID),
       selectionKey = cbor.encode('selection'),
-      selectionVal = cbor.encode(selected),
+      selectionVal = cbor.encode(selected.header ? selected.tag ?  selected.header + selected.tag + selected.text : selected.header + selected.text : selected.text),
       cookieKey = cbor.encode('cookie'),
       cookieVal = cbor.encode(dialog.cookie),
-      scopeKey = cbor.encode('scope'),
-      scopeVal = cbor.encode(clickedObj.attributes.scope),
-      rangeKey = cbor.encode('range'),
-      rangeVal = cbor.encode(clickedObj.attributes.range);
-
-    let cborMsg = Buffer.concat([omap_start, omap_cborTag, objVal, selectorKey, selectorVal, channelKey, channelVal, selectionKey, selectionVal, cookieKey, cookieVal, scopeKey, scopeVal, rangeKey, rangeVal, omap_end]);
+      scopeKey, scopeVal, rangeKey, rangeVal;
+      if (clickedObj.attributes) {
+        scopeKey = cbor.encode('scope'),
+        scopeVal = cbor.encode(clickedObj.attributes.scope),
+        rangeKey = cbor.encode('range'),
+        rangeVal = cbor.encode(clickedObj.attributes.range);
+      }
+    let cborMsg;
+    if (clickedObj.attributes) cborMsg = Buffer.concat([omap_start, omap_cborTag, objVal, selectorKey, selectorVal, channelKey, channelVal, selectionKey, selectionVal, cookieKey, cookieVal, scopeKey, scopeVal, rangeKey, rangeVal, omap_end]);
+    else cborMsg = Buffer.concat([omap_start, omap_cborTag, objVal, selectorKey, selectorVal, channelKey, channelVal, selectionKey, selectionVal, cookieKey, cookieVal, omap_end]);
     if (mqttClient && cellID) {
       console.info("Publishing -\n Topic: " + topic + "\n Message: " +  cborMsg);
       mqttClient.publish(topic, cborMsg);
@@ -227,8 +231,8 @@ class Whiteboard extends Component {
                                 return (
                                 <li
                                   onClick={() => this.handleModal(model, obj, content, () => this.delDialog(model))}
-                                  key={key+'_'+content}>
-                                    {content}
+                                  key={key+'_'+content.text}>
+                                    {content.text}
                                 </li>
                               ); //no need for content.text
                               })}

@@ -267,6 +267,7 @@ export function convertArrayToKeyValues(decodedCbor) {
     else if (decodedCbor[0][0].value === 'dialog') {
       if (msgObj.contents) { //will contain three msgObjs, but only one with contents. Use only one with contents (other 2 are empty objs)
         if (!store['top']) store['top'] = {}; //want to statically place dialogs inside top of model (instead of dynamically with assigning an unnecessary owner)
+        msgObj.contents = parseSmMsgs(msgObj.contents);
         store['top']['dialog'] = msgObj;
       }
     }
@@ -279,7 +280,7 @@ export function convertArrayToKeyValues(decodedCbor) {
 
 
  /**Given a string, checks if the String is a RIRI encoded RiString.
- * If so converts it, otherwise returns the given string unmodified
+ * If so converts it, otherwise returns obj with object.text = string
  * The returned riString object will have the following properties:
  *   text, indent, color, font, tag, action, header
  * All are optional except for 'text'.
