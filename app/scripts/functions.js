@@ -105,9 +105,7 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
     else {
       //value (not contents) for context menus
       if (obj.value) { //obj.value always an array
-
         let arr = [];
-
         //search for pairs (ex. in scope=local, scope will have riri, local won't)
         for (let j = 0; j < obj.value.length - 1; j++) {
           if (typeof obj.value[j] === 'string' && typeof obj.value[j + 1] === 'string' && obj.value[j].includes('\u0001') && !obj.value[j + 1].includes('\u0001')) { //if array contains pairs
@@ -160,15 +158,13 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
         for (let i = 0; i < entries.length; i++) {
             if (entries[i][0] === 'attributes') {
               let attributeEntries = Object.entries(entries[i][1]);
+              if (!tree['attributes']) tree['attributes'] = {};
               for (let j = 0; j < attributeEntries.length; j++) {
                 tree['attributes'][attributeEntries[j][0]] = attributeEntries[j][1];
               }
             }
             else tree[entries[i][0]] = entries[i][1];
         }
-        // tree['_msg' + i] = obj;
-        // tree['_msg' + i].identifier = '_msg' + i;
-        // i++;
       }
     }
   }
@@ -260,11 +256,11 @@ export function convertArrayToKeyValues(decodedCbor) {
       }
     }
 
-    if (decodedCbor[0][0].value === 'top') {
+    if (decodedCbor[array][0].value === 'top') {
       store['top'] = msgObj;
     }
 
-    else if (decodedCbor[0][0].value === 'dialog') {
+    else if (decodedCbor[0][0].value === 'dialog') { //note: [0][0] not [array][0] because contents are received in different array index
       if (msgObj.contents) { //will contain three msgObjs, but only one with contents. Use only one with contents (other 2 are empty objs)
         if (!store['top']) store['top'] = {}; //want to statically place dialogs inside top of model (instead of dynamically with assigning an unnecessary owner)
         msgObj.contents = parseSmMsgs(msgObj.contents);
