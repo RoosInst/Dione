@@ -14,8 +14,8 @@ import { mqttClient, cellID } from './mqtt';
 //Customize Header to show riString color
 decorators.Header = ({style, node}) => {
   return (
-      <div style={style.base} className={node.color ? 'rsColor' + node.color : ''}>
-          <div style={style.title}>
+      <div style={style.base}>
+          <div className={Number.isInteger(node.color) ? 'rsColor' + node.color : undefined} style={style.title}>
               {node.name}
           </div>
       </div>
@@ -26,12 +26,24 @@ decorators.Header = ({style, node}) => {
 
 class TreePane extends Component {
 
-  constructor(props){
+  constructor(props) {
       super(props);
-      this.data = this.props.obj.contents ? this.formTree()
-      : null;
+      this.contents = this.props.obj.contents;
+      this.data = this.formTree(); //initial data, needs to be here for filtering (don't make data: this.formTree() in initial data state)
       this.state = {data: this.data};
       this.onToggle = this.onToggle.bind(this);
+  }
+
+
+  componentDidUpdate(prevProps) {
+    console.log('prevProps:', prevProps);
+    console.log('this props:', this.props);
+    if (this.contents !== this.props.obj.contents) {
+      this.contents = this.props.obj.contents;
+      let tree = this.formTree();
+      this.data = tree;
+      this.setState({data: tree});
+    }
   }
 
 
@@ -75,13 +87,14 @@ class TreePane extends Component {
 
 
   formTree() {
-    const { obj } = this.props;
+    const { contents } = this.props.obj;
+    if (!contents) return null;
     let jsonTrees = [], //support multiple trees (multiple root levels)
       currentParents = [],
       lastItem = {};
     let treePointer = jsonTrees;
 
-    obj.contents.map(item => {
+    contents.map(item => {
       if (item.indent) { //if not root (root given no indent)
         if (item.indent > lastItem.indent) { //if child
           currentParents.push(lastItem); //last sibling was a parent
@@ -155,7 +168,6 @@ class TreePane extends Component {
 
 
 	render() {
-
     this.handleClick = this.handleClick.bind(this);
     const {obj, model, clientID, selectedItems } = this.props;
 
@@ -197,7 +209,7 @@ class TreePane extends Component {
        );
      }
      else if (obj.contents) {
-        <Treebeard data={this.state.data} style={TreeStyle} onToggle={this.onToggle} />  //can also set animations={false}, but without it arrows don't change
+      return <Treebeard data={this.state.data} style={TreeStyle} onToggle={this.onToggle} />  //can also set animations={false}, but without it arrows don't change
 	   }
      else return null; //else no obj.contents
 	}

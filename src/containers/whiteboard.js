@@ -54,7 +54,7 @@ class Whiteboard extends Component {
   }
 
   renderObj(model, obj) {
-    if (obj.class) {
+    if (obj.class && model !== 'console') {
       switch(obj.class) {
         case 'Button':
           return <Button model={model} obj={obj} />;
@@ -66,6 +66,7 @@ class Whiteboard extends Component {
           return <TextPane model={model} obj={obj} />;
 
         case 'TreePane':
+          console.log('tree:', obj);
           return <TreePane model={model} obj={obj} />;
 
         default: return null;

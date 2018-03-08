@@ -2,7 +2,7 @@ import { ADD_SELECTION, UPDATE_WHITEBOARD } from '../actions';
 
 export default function(state = {}, action) {
 
-  var forest = jQuery.extend({}, state);
+  var forest = $.extend({}, state);
 
   switch(action.type) {
 

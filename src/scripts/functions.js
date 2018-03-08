@@ -268,6 +268,7 @@ export function convertArrayToKeyValues(decodedCbor) {
       }
     }
   }
+  console.log('store:', store);
   return store;
 }
 
