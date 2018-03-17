@@ -181,7 +181,7 @@ class TreePane extends Component {
        return (
          <div className="contextMenu shell">
            <ContextMenuTrigger id={obj.identifier}>
-             {obj.contents ? //assume array, no need to check
+             {obj.contents && ( //assume array, no need to check
                <div className='shell'>
                    <input
                      onKeyUp={this.onFilterMouseUp.bind(this)}
@@ -189,19 +189,16 @@ class TreePane extends Component {
                      type="text"/>
                   <Treebeard data={this.state.data} style={TreeStyle} onToggle={this.onToggle} />
                </div>
-              : ''
-             }
+             )}
            </ContextMenuTrigger>
            <ContextMenu id={obj.identifier}>
              {
                obj[menu].value.map((menuItem, key) => {
-                 if (menuItem) {
-                 return(
+                 menuItem && (
                    <MenuItem key={key} onClick={() => this.handleClick(menuItem, obj[menu])}>
                        {menuItem.text}
                    </MenuItem>
                  );
-               } else return;
              })
             }
           </ContextMenu>

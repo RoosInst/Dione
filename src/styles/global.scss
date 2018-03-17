@@ -1,13 +1,4 @@
-//colors
-$menuBackground: #2e353d;
-$menuText: #e1ffff;
-$menuHover: #4f5b69;
-$background: #f0f0f0;
-$highlightColor: yellow;
-$activeBackgroundColor: lightblue;
-$outlineColor: #dfdfdf;
-$cardHeaderColor: #f7f7f7;
-$liHoverColor: #20a0ff;
+@import "theme";
 
 body {
 	overflow: auto;
@@ -17,6 +8,10 @@ body {
 	background-color: $background;
 	font-family: Source Sans Pro, HelveticaNeue-Light, Helvetica Neue Light, Helvetica Neue, Arial, Helvetica, sans-serif;
 	word-wrap: break-word;
+}
+
+.loadingWrapper {
+	@include fixedCenter;
 }
 
 .card {
@@ -71,7 +66,7 @@ body {
 				+ ul {
 					min-width: initial;
 					margin-top: 0;
-					
+
 					li:hover {
 						background: $liHoverColor;
 						color: white;
@@ -292,7 +287,7 @@ ul {
 }
 
 body {
-	background: #f0f0f0 url('/app/images/RILogoWeb.png');
+	background: #f0f0f0 url('../images/RILogoWeb.png');
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-attachment: fixed;
@@ -334,8 +329,7 @@ body {
 }
 
 $cardHeaderHeight: 28px;
-$dialogCardHeight: 187px; //if using dialogBottom, add 30px (currently not)
-//$dialogBottomHeight: 30px;
+$dialogCardHeight: 187px;
 .dialog {
 	width: 160px;
 	height: $dialogCardHeight;
@@ -343,16 +337,6 @@ $dialogCardHeight: 187px; //if using dialogBottom, add 30px (currently not)
 		height: ($dialogCardHeight - $cardHeaderHeight - 1px);
 		overflow: auto;
 	}
-	// .dialogBottom { //for select and cancel buttons
-	// 	height: $dialogBottomHeight;
-	// 	width: 100%;
-	// 	div {
-	// 		width: 50%;
-	// 	}
-	// 	.btn {
-	// 		width: 50%;
-	// 	}
-	// }
 }
 
 span {

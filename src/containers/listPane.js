@@ -40,32 +40,30 @@ class Pane extends Component {
     }
     if (obj.identifier && menu && obj[menu].value) { //if right-clicking capabilities
       return (
-        <div className="contextMenu shell">
+        <div className='contextMenu shell'>
            <ContextMenuTrigger id={obj.identifier}>
-                 {obj.contents ?
-                      <ul>
-                      {
-                        Array.isArray(obj.contents) ?
-                          obj.contents.map((arrayVal, key) => {
-                            if (!arrayVal) return;
-                            return(getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems));
-                          })
-                        : getRiStringAsLi(model, obj.contents, key, obj, clientID, this.handleClick, selectedItems)
-                      }
-                    </ul>
-                : '' // no contents
-             }
-             </ContextMenuTrigger>
+             {obj.contents && (
+                  <ul>
+                  {
+                    Array.isArray(obj.contents) ?
+                      obj.contents.map((arrayVal, key) => {
+                        return arrayVal && (
+                          getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems)
+                        )
+                      })
+                    : getRiStringAsLi(model, obj.contents, key, obj, clientID, this.handleClick, selectedItems)
+                  }
+                </ul>
+             )}
+           </ContextMenuTrigger>
            <ContextMenu id={obj.identifier}>
              {
                obj[menu].value.map((menuItem, key) => {
-                 if (menuItem) {
-                 return (
+                 return menuItem && (
                    <MenuItem key={key} onClick={() => this.handleClick(menuItem, obj[menu])}>
                        {menuItem.text}
                    </MenuItem>
                  );
-               } else return;
               })
             }
           </ContextMenu>
@@ -77,8 +75,9 @@ class Pane extends Component {
         <ul>
           {
             obj.contents.map((arrayVal, key) => {
-              if (arrayVal && arrayVal.text) return(getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems));
-              else return null;
+              return (arrayVal && arrayVal.text) && (
+                getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems)
+              )
             })
           }
         </ul>

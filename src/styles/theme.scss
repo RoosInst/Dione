@@ -1,0 +1,16 @@
+$menuBackground: #2e353d;
+$menuText: #e1ffff;
+$menuHover: #4f5b69;
+$background: #f0f0f0;
+$highlightColor: yellow;
+$activeBackgroundColor: lightblue;
+$outlineColor: #dfdfdf;
+$cardHeaderColor: #f7f7f7;
+$liHoverColor: #20a0ff;
+
+@mixin fixedCenter {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}

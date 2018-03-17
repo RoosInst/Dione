@@ -15,10 +15,18 @@ module.exports = merge(baseConfig, {
 
   devtool: 'source-map',
   // plugins: [styleLintPluginConfig],
-
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: ['eslint-loader']
+      }
+    ]
+  },
   devServer: {
     historyApiFallback: true,
-    contentBase: [path.join(prjRoot, 'public'), path.join(prjRoot, 'node_modules')],
+    contentBase: path.join(prjRoot, 'public'),
     compress: true
   },
 });

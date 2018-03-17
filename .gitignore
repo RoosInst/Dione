@@ -1,3 +1,4 @@
+dist/
 rtalkDistribution/moquette/bin/moquette_store.mapdb*
 rtalkDistribution/guru/guruKeys.sqlite
 desktop.ini

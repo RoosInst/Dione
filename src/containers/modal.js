@@ -1,11 +1,14 @@
 import React, {Component} from 'react';
-import * as ReactModal from 'react-modal';
+import ReactModal from 'react-modal';
 import { connect } from 'react-redux';
 
 import MQTT, {mqttClient, cellID} from './mqtt';
 import { updateWhiteboard, addSelection } from '../actions';
+import FavIcon from '../../public/images/favicon.png';
 
 const cbor = require('cbor');
+
+ReactModal.setAppElement('#app');
 
 class Modal extends Component {
 
@@ -58,35 +61,24 @@ class Modal extends Component {
       <ReactModal className='reactModal' isOpen={obj.dialog ? true : false}>
         <div className="card dialog">
           <div className="card-header">
-            <img style={{width: '16px', margin: '-2px 5px 0 5px'}} src='/app/images/favicon.ico'/>
+            <img style={{width: '16px', margin: '-2px 5px 0 5px'}} src={FavIcon} />
             <span className="cardLabel">{obj.dialog ? obj.dialog.label : ''}</span>
             <i className='pull-right fa fa-window-close' onClick={() => this.delDialog(model)} />
           </div>
           <div className="card-body">
-            {obj.dialog ?
-              <div className='shell'>
+            {obj.dialog && (
               <ul>
                 {obj.dialog.contents.map((content, key) => {
                   return (
-                  <li
-                    onClick={() => this.handleModal(model, obj, content, () => this.delDialog(model))}
-                    key={key+'_'+content.text}>
-                      {content.text}
-                  </li>
-                ); //no need for content.text
+                    <li
+                      onClick={() => this.handleModal(model, obj, content, () => this.delDialog(model))}
+                      key={key+'_'+content.text}>
+                        {content.text}
+                    </li>
+                  );
                 })}
               </ul>
-              {/* <div className='dialogBottom'>
-                <div className='btn btn-primary btn-small pull-left momentary'>
-                  {obj.dialog.addButton}
-                </div>
-                <div className='btn btn-primary btn-small pull-right momentary'>
-                  Cancel
-                </div>
-              </div> */}
-            </div>
-              : '' //no dialog
-            }
+            )}
           </div>
         </div>
       </ReactModal>
