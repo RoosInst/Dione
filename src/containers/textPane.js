@@ -4,10 +4,19 @@ import { convertObjToArrayForPublish } from '../scripts/functions';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { addSelection } from '../actions';
 import eol from 'eol'; //some line endings inconsistent (CR with CRLF)
+import PropTypes from 'prop-types';
 
 import { mqttClient, cellID } from '../containers/mqtt';
 
 class Pane extends Component {
+
+  static propTypes = {
+    clientID: PropTypes.string.isRequired,
+    model: PropTypes.string.isRequired,
+    selectedItems: PropTypes.object.isRequired,
+    obj: PropTypes.object.isRequired,
+    whiteboard: PropTypes.object.isRequired
+  }
 
   handleClick(riString, clickedObj) {
 
@@ -27,7 +36,7 @@ class Pane extends Component {
 
 	render() {
     this.handleClick = this.handleClick.bind(this);
-    const { obj, model, clientID } = this.props;
+    const { obj } = this.props;
 
     for (let key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu. Will be used for right click context menu
       if (key.includes("Menu")) {

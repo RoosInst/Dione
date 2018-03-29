@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
 import ReactModal from 'react-modal';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
-import MQTT, {mqttClient, cellID} from './mqtt';
+import {mqttClient, cellID} from './mqtt';
 import { updateWhiteboard, addSelection } from '../actions';
 import FavIcon from '../../public/images/favicon.png';
 
@@ -11,6 +12,15 @@ const cbor = require('cbor');
 ReactModal.setAppElement('#app');
 
 class Modal extends Component {
+
+  static propTypes = {
+    addSelection: PropTypes.func.isRequired,
+    clientID: PropTypes.string.isRequired,
+    model: PropTypes.string.isRequired,
+    obj: PropTypes.object.isRequired,
+    whiteboard: PropTypes.object.isRequired,
+    updateWhiteboard: PropTypes.func.isRequired
+  }
 
   //handle selecting (and thus closing/deleting) modal
   handleModal(model, clickedObj, selected, delDialog) { //don't bother making target active upon click, disappears before it can show (tested)

@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { Treebeard, decorators } from 'react-treebeard';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import PropTypes from 'prop-types';
 
 import { addSelection } from '../actions';
 import { convertObjToArrayForPublish } from '../scripts/functions';
@@ -12,7 +13,7 @@ import { mqttClient, cellID } from './mqtt';
 
 
 //Customize Header to show riString color
-decorators.Header = ({style, node}) => {
+decorators.Header = ({style, node}) => { // eslint-disable-line react/display-name, react/prop-types
   return (
       <div style={style.base}>
           <div className={Number.isInteger(node.color) ? 'rsColor' + node.color : undefined} style={style.title}>
@@ -26,18 +27,30 @@ decorators.Header = ({style, node}) => {
 
 class TreePane extends Component {
 
+  static propTypes = {
+    clientID: PropTypes.string.isRequired,
+    model: PropTypes.string.isRequired,
+    selectedItems: PropTypes.object.isRequired,
+    addSelection: PropTypes.func.isRequired,
+    obj: PropTypes.object.isRequired,
+    whiteboard: PropTypes.object.isRequired
+  }
+
   constructor(props) {
       super(props);
       this.contents = this.props.obj.contents;
       this.data = this.formTree(); //initial data, needs to be here for filtering (don't make data: this.formTree() in initial data state)
-      this.state = {data: this.data};
+      this.state = {
+        data: this.data,
+        cursor: null
+      };
       this.onToggle = this.onToggle.bind(this);
   }
 
+   /* Need to fix, state being altered somewhere improperly so added this.contents temporarily to compare.
+   Should be able to compare prevProps.obj.contents with this.props.obj.contents, but currently not working. */
+  componentDidUpdate(prevProps) { // eslint-disable-line no-unused-vars
 
-  componentDidUpdate(prevProps) {
-    console.log('prevProps:', prevProps);
-    console.log('this props:', this.props);
     if (this.contents !== this.props.obj.contents) {
       this.contents = this.props.obj.contents;
       let tree = this.formTree();
@@ -53,10 +66,11 @@ class TreePane extends Component {
 
       addSelection(model, obj.identifier, node);
 
-      if (this.state.cursor) this.state.cursor.active = false;
       node.active = true;
       if (node.children) node.toggled = toggled;
+      const cursorPointer = this.state.cursor;
       this.setState({ cursor: node });
+      if (cursorPointer && cursorPointer !== node) cursorPointer.active = false;
 
       let attributes;
       if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
@@ -108,7 +122,7 @@ class TreePane extends Component {
                 else treePointer.push({name: item.text, header: item.header});
                 break;
               }
-            };
+            }
         }
         else if (item.indent == lastItem.indent) { //if sibling
           if (item.color) treePointer.push({name: item.text, header: item.header, color: item.color})
@@ -140,7 +154,7 @@ class TreePane extends Component {
         jsonTrees.push({name: item.text, toggled: true});
 
         //treePointer pointing to root obj still
-      };
+      }
       lastItem = {name: item.text, indent: item.indent ? item.indent : 0};
     });
 
@@ -169,7 +183,7 @@ class TreePane extends Component {
 
 	render() {
     this.handleClick = this.handleClick.bind(this);
-    const {obj, model, clientID, selectedItems } = this.props;
+    const {obj } = this.props;
 
     for (let key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu. Will be used for right click context menu
       if (key.includes("Menu")) {
@@ -207,8 +221,8 @@ class TreePane extends Component {
      }
      else if (obj.contents) {
       return <Treebeard data={this.state.data} style={TreeStyle} onToggle={this.onToggle} />  //can also set animations={false}, but without it arrows don't change
-	   }
-     else return null; //else no obj.contents
+    }
+    else return null; //else no obj.contents
 	}
 }
 

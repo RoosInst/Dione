@@ -3,10 +3,20 @@ import { connect } from 'react-redux';
 import { getRiStringAsLi, convertObjToArrayForPublish } from '../scripts/functions';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { addSelection } from '../actions';
+import PropTypes from 'prop-types';
 
 import { mqttClient, cellID } from '../containers/mqtt';
 
 class Pane extends Component {
+
+  static propTypes = {
+    clientID: PropTypes.string.isRequired,
+    model: PropTypes.string.isRequired,
+    selectedItems: PropTypes.object.isRequired,
+    obj: PropTypes.object.isRequired,
+    whiteboard: PropTypes.object.isRequired,
+    addSelection: PropTypes.func.isRequired
+  }
 
   handleClick(riString, clickedObj) {
 
@@ -51,7 +61,7 @@ class Pane extends Component {
                           getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems)
                         )
                       })
-                    : getRiStringAsLi(model, obj.contents, key, obj, clientID, this.handleClick, selectedItems)
+                    : getRiStringAsLi(model, obj.contents, undefined, obj, clientID, this.handleClick, selectedItems)
                   }
                 </ul>
              )}

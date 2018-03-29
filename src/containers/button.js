@@ -2,11 +2,20 @@ import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { convertObjToArrayForPublish } from '../scripts/functions';
 import { addSelection } from '../actions';
+import PropTypes from 'prop-types';
 
-const cbor = require('cbor');
 import {mqttClient, cellID} from '../containers/mqtt';
 
 class Button extends Component {
+
+  static propTypes = {
+    clientID: PropTypes.string.isRequired,
+    model: PropTypes.string.isRequired,
+    selectedItems: PropTypes.object.isRequired,
+    addSelection: PropTypes.func.isRequired,
+    obj: PropTypes.object.isRequired,
+    whiteboard: PropTypes.object.isRequired
+  }
 
   handleClick(clickedObj) {
     if (clickedObj.selectionGroup || clickedObj.checkForModified === 'true') { //selectionGroup in radios, checkForModified from history buttons from rtalk code app
@@ -57,8 +66,8 @@ class Button extends Component {
 
   function mapStateToProps(state) {
     return {
-  		clientID: state.clientID,
-  		whiteboard: state.whiteboard,
+      clientID: state.clientID,
+      whiteboard: state.whiteboard,
       selectedItems: state.selectedItems
     };
   }

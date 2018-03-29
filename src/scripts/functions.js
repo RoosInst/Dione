@@ -1,22 +1,23 @@
 /*Here exists functions essential to building the app.*/
 import React from 'react';
 const cbor = require('cbor');
-const mqtt = require('mqtt');
 
 const
-  RIRISEP1 = '\u001c', //RIRI level 1 separator - FS - '^'
-  RIRISEP2 = '\u001d', //RIRI level 2 separator - GS - '+'
+
   RIRISEP3 = '\u001e', //RIRI level 3 separator - RS - '~'
-  RIRISEP4 = '\u001f', //RIRI level 4 separator - US - '/'riStringCheckAndConvert
-  RIRISEP = [RIRISEP1, RIRISEP2, RIRISEP3, RIRISEP4], //for array access of RIRI separators
+
   omap_start = Buffer.from('9f', 'hex'), // hex x9F, cbor start byte for unbounded arrays
   omap_cborTag = Buffer.from('d3', 'hex'), // hex xD3, start object map (omap cbor tag)
   omap_end = Buffer.from('ff', 'hex'), // hex xFF, cbor end byte for unbounded arrays
-  cbor_null = Buffer.from('f6', 'hex'), // hex 0xF6, null (string==null, aka empty omap)
+
   base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";  //used for base64 encode/decode
 
-
-
+/* Not currently used, but might be useful later
+cbor_null = Buffer.from('f6', 'hex'), // hex 0xF6, null (string==null, aka empty omap)
+RIRISEP1 = '\u001c', //RIRI level 1 separator - FS - '^'
+RIRISEP2 = '\u001d', //RIRI level 2 separator - GS - '+'
+RIRISEP4 = '\u001f', //RIRI level 4 separator - US - '/'riStringCheckAndConvert
+*/
 
 
 function getFrameRatioFor(val) {
@@ -37,7 +38,7 @@ function getFrameRatioFor(val) {
   }
   frameRatio.bottom = parseInt(val.substring(p0, val.length), 10); //bottom
   return frameRatio;
-};
+}
 
 
 
@@ -63,7 +64,7 @@ function makeStyleFromFrameRatio(val) {
     ypos = 0;
   }
   return ({position: "absolute", left: xpos+"%", top: ypos+"%", width: wd, height: ht});
-};
+}
 
 
 
@@ -79,7 +80,7 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
     tree = {}; //copy of whiteboard if exists
 
   if (whiteboard) {
-    forest = jQuery.extend({}, whiteboard); //deep clone, do not alter redux store (treat as immutable)
+    forest = $.extend({}, whiteboard); //deep clone, do not alter redux store (treat as immutable)
     if (whiteboard[model]) { //if app exists in whiteboard
       tree = forest[model];
     }
@@ -109,7 +110,7 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
         //search for pairs (ex. in scope=local, scope will have riri, local won't)
         for (let j = 0; j < obj.value.length - 1; j++) {
           if (typeof obj.value[j] === 'string' && typeof obj.value[j + 1] === 'string' && obj.value[j].includes('\u0001') && !obj.value[j + 1].includes('\u0001')) { //if array contains pairs
-              if (arr.length === 0) console.error('ERR: Both riri and non-riri strings detected in obj.value ', obj.value, 'Detected pairs and combining.'); //only make error message once, so checks arr.length
+              if (arr.length === 0) console.warn('WARNING: Both riri and non-riri strings detected in obj.value ', obj.value, 'Detected pairs and combining.'); //only make error message once, so checks arr.length
 
               arr.push(obj.value[j] + '=' + obj.value[j+1]);
               j++; //increment j twice at end of loop
@@ -186,9 +187,13 @@ function insertObject(tree, passedObj) { //handles both "real" objects and array
     if (newObj[obj.value]) { //if arr, will be true, else obj, will be false
       found = true;
       newObj[obj.value].contents = parseSmMsgs(obj.contents);
+
+      /* Must fix to regain support for highlight attribute, but no app supported currently uses this so leaving commented out for now (must find correct index of content with highlight)
       if (obj.highlight) {
         newObj[obj.value].contents[i].highlight = obj.highlight;
       }
+      */
+
       return; //no need to continue with checking
     }
 
@@ -231,7 +236,7 @@ export function convertArrayToKeyValues(decodedCbor) {
 
     if (decodedCbor[array][1] === 'contents') {
       msgObj['value'] = decodedCbor[array][0].value;
-    };
+    }
 
     for (let i = 1; i < decodedCbor[array].length; i=i+2) {
       if (decodedCbor[array][i] === 'attribute') { //if multiple attributes, make/add to an obj of attributes instead of replacing each attribute w/ latest
@@ -268,9 +273,9 @@ export function convertArrayToKeyValues(decodedCbor) {
       }
     }
   }
-  console.log('store:', store);
   return store;
 }
+
 
 
 
@@ -294,10 +299,11 @@ function riStringCheckAndConvert(s) {
     switch(s[0]) {
       case '\u0001': isType2 = false; break;
       case '\u0002': isType2 = true; break;
-      default:
+      default: {
         let obj = {};
         obj['text'] = s;
         return obj; //is a regular string (neither type 1 or type 2). Return obj with text key's value as string
+      }
     }
 
     let val,
@@ -352,7 +358,7 @@ function riStringCheckAndConvert(s) {
     riString.header = isType2 ? s.slice(0, 7) : s.slice(0, 5); //the raw header portion
 
     return riString;
-  };
+  }
 
 
 
@@ -362,7 +368,7 @@ function riStringCheckAndConvert(s) {
 export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick, selectedItems) {
 
     //if no text field then it's not an RiString
-    if(!riString.text) return (<li key={key}>{riString}</li>);
+    if(!riString.text) return <li key={key}>{riString}</li>;
 
     let riStringContent;
       if (riString.header) {
@@ -388,19 +394,20 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
     return (
       <li onClick={() => handleClick(riString, obj)}
         key={key}
-        className={`${riString.color ? 'rsColor' + riString.color : ''} ${riString.font ? 'rsStyle' + riString.font : '' } ${selectedItemContent === riStringContent ? 'active' : ''}`}>
-        {riString.indent ? riStringnbspaces(riString.indent) : ''}
+        className={`${riString.color ? 'rsColor' + riString.color : ''} ${riString.font ? 'rsStyle' + riString.font : '' } ${selectedItemContent === riStringContent ? 'active' : ''}`}
+      >
+        {riString.indent && riStringNbsp(riString.indent)}
         {riString.text}
       </li>
     );
-  };
+  }
 
 
 
 
 
   /**Returns a string with the indicated number of spaces*/
-  function nbspaces(len) {
+  function riStringNbsp (len) {
     if(len <= 0) return '';
     switch(len) {
       case  1: return '&nbsp '; case 10: return '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp '; //note: added an extra regular space because it helps the old firefox browser
@@ -412,8 +419,8 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
     let a = '';
     let len10 = Math.floor(len/10);
     for(let i = 0; i < len10; i++) { a += '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp'; } //the big chunks
-    return a + nbspaces(len - len10 * 10) + ' '; //the remainder.  note: added an extra regular space because it helps the old firefox browser
-  };
+    return a + riStringNbsp(len - len10 * 10) + ' '; //the remainder.  note: added an extra regular space because it helps the old firefox browser
+  }
 
 
 
@@ -430,7 +437,7 @@ function base64Decode(value) {
       }
     }
     return result;
-};
+}
 
 
 
@@ -442,8 +449,7 @@ function base64Decode(value) {
 function parseSmMsgs(smMsgs) {
 
   if (smMsgs) {
-    let arr = [],
-    obj = {};
+    let arr = [];
 
     if (Array.isArray(smMsgs)) {
       smMsgs.map(msg => arr.push(riStringCheckAndConvert(msg)));

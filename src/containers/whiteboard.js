@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
 import MQTT, {mqttClient, cellID} from './mqtt';
 import { updateWhiteboard } from '../actions';
@@ -15,6 +16,14 @@ import FavIcon from '../../public/images/favicon.png';
 const cbor = require('cbor');
 
 class Whiteboard extends Component {
+
+ static propTypes = {
+   clientID: PropTypes.string.isRequired,
+   whiteboard: PropTypes.object,
+   selectedItems: PropTypes.object.isRequired,
+   mqttConnection: PropTypes.string.isRequired,
+   updateWhiteboard: PropTypes.func.isRequired
+ }
 
   renderApp(model, newObj) {
 
@@ -65,7 +74,6 @@ class Whiteboard extends Component {
           return <TextPane model={model} obj={obj} />;
 
         case 'TreePane':
-          console.log('tree:', obj);
           return <TreePane model={model} obj={obj} />;
 
         default: return null;
@@ -206,8 +214,9 @@ class Whiteboard extends Component {
                                                   if (mqttClient && cellID) {
                                                     console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
                                                     mqttClient.publish(topic, msg);
-                                                  }}}
-                                                >{riString.text}</li>
+                                                  }
+                                                }}
+                                           >{riString.text}</li>
                                   })}
                                 </ul>
                               </div>
