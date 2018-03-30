@@ -60,6 +60,11 @@ ul {
 .react-contextmenu-wrapper, .contextMenu {
 	height: 100%;
 	width: 100%;
+	outline: none !important;
+}
+
+.contextMenu {
+	overflow: auto;
 }
 
 
@@ -219,7 +224,7 @@ label {
 			}
 		}
 	}
-	
+
 	.card-body {
 		margin: 0;
 		padding: 0;

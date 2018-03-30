@@ -23,7 +23,7 @@ class Pane extends Component {
     const { model, clientID, selectedItems, whiteboard, addSelection } = this.props;
 
     //add to selectedItems only if not the context menu (right-click menu) clicked
-    if (!clickedObj.identifier.includes("Menu")) addSelection(model, clickedObj.identifier, riString);
+    if (!clickedObj.identifier.includes('Menu')) addSelection(model, clickedObj.identifier, riString);
 
     let attributes;
     if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
@@ -32,7 +32,7 @@ class Pane extends Component {
       topic = clientID + '/' + cellID + '/' + model + '/action/1';
 
     if (mqttClient && cellID) {
-      console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
+      console.info('Publishing -\n Topic: ' + topic + '\n Message: ' +  msg);
       mqttClient.publish(topic, msg);
     }
   }
@@ -43,28 +43,28 @@ class Pane extends Component {
     this.handleClick = this.handleClick.bind(this);
     const {obj, model, clientID, selectedItems } = this.props;
 
-    for (let key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu. Will be used for right click context menu
-      if (key.includes("Menu")) {
+    for (const key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu. Will be used for right click context menu
+      if (key.includes('Menu')) {
         var menu = key; //var, not let
       }
     }
     if (obj.identifier && menu && obj[menu].value) { //if right-clicking capabilities
+
+
       return (
-        <div className='contextMenu shell'>
+        <div className='contextMenu'>
            <ContextMenuTrigger id={obj.identifier}>
-             {obj.contents && (
-                  <ul>
-                  {
-                    Array.isArray(obj.contents) ?
-                      obj.contents.map((arrayVal, key) => {
-                        return arrayVal && (
-                          getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems)
-                        )
-                      })
-                    : getRiStringAsLi(model, obj.contents, undefined, obj, clientID, this.handleClick, selectedItems)
-                  }
-                </ul>
-             )}
+             <ul>
+               {obj.contents && (
+                  Array.isArray(obj.contents) ?
+                    obj.contents.map((arrayVal, key) => {
+                      return arrayVal && (
+                        getRiStringAsLi(model, arrayVal, key, obj, clientID, this.handleClick, selectedItems)
+                      )
+                    })
+                  : getRiStringAsLi(model, obj.contents, undefined, obj, clientID, this.handleClick, selectedItems)
+                )}
+              </ul>
            </ContextMenuTrigger>
            <ContextMenu id={obj.identifier}>
              {

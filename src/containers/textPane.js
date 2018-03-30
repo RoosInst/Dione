@@ -47,8 +47,9 @@ class Pane extends Component {
        return (
          <div className="contextMenu shell">
            <ContextMenuTrigger id={obj.identifier}>
-                 {obj.contents ?
-                   Array.isArray(obj.contents) && obj.contents[0] && obj.contents[0].highlight ? //if highlight exists, then assuming array will only be length 1 (contents[0]). contents[0] sometimes undefined, so check
+
+                {obj.contents && obj.contents[0] ?
+                   Array.isArray(obj.contents) && obj.contents[0].highlight ? //if highlight exists, then assuming array will only be length 1 (contents[0]). contents[0] sometimes undefined, so check
                     <span style={{whiteSpace: 'pre'}}>
                       {obj.contents[0].text.substring(0, obj.contents[0].highlight[0] - 1)}
                       <span className='highlight'>
@@ -56,10 +57,11 @@ class Pane extends Component {
                       </span>
                       {obj.contents[0].text.substring(obj.contents[0].highlight[1] - 1)}
                     </span>
-                    : //no highlight
-                    <span style={{whiteSpace: 'pre'}}>{eol.lf(obj.contents[0].text)}</span>
-                : '' // no contents
-             }
+                  : //no highlight
+                    eol.lf(obj.contents[0].text)
+                : <span style={{whiteSpace: 'pre'}} />
+                //ContextMenuTrigger needs child, so render empty span
+              }
            </ContextMenuTrigger>
            <ContextMenu id={obj.identifier}>
              {

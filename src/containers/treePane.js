@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { Treebeard, decorators } from 'react-treebeard';
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu';
 import PropTypes from 'prop-types';
 
 import { addSelection } from '../actions';
@@ -80,7 +80,7 @@ class TreePane extends Component {
         topic = clientID + '/' + cellID + '/' + model + '/action/1';
 
       if (mqttClient && cellID) {
-        console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
+        console.info('Publishing -\n Topic: ' + topic + '\n Message: ' +  msg);
         mqttClient.publish(topic, msg);
       }
   }
@@ -175,7 +175,7 @@ class TreePane extends Component {
       topic = clientID + '/' + cellID + '/' + model + '/action/1';
 
     if (mqttClient && cellID) {
-      console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
+      console.info('Publishing -\n Topic: ' + topic + '\n Message: ' +  msg);
       mqttClient.publish(topic, msg);
     }
   }
@@ -186,25 +186,27 @@ class TreePane extends Component {
     this.handleClick = this.handleClick.bind(this);
     const {obj } = this.props;
 
-    for (let key in obj) { //Check for "*Menu" obj inside current obj, ex. wbMenu, textMenu. Will be used for right click context menu
-      if (key.includes("Menu")) {
+    for (const key in obj) { //Check for '*Menu' obj inside current obj, ex. wbMenu, textMenu. Will be used for right click context menu
+      if (key.includes('Menu')) {
         var menu = key; //var, not let
       }
     }
 
      if (obj.identifier && menu && obj[menu].value) { //if right-clicking capabilities
        return (
-         <div styleName='ri-treePane' className="contextMenu shell">
+         <div styleName='ri-treePane' className='contextMenu'>
            <ContextMenuTrigger id={obj.identifier}>
-             {obj.contents && ( //assume array, no need to check
+             {obj.contents ? //assume array, no need to check
                <div className='shell'>
                    <input
                      onKeyUp={this.onFilterMouseUp.bind(this)}
-                     placeholder="Search..."
-                     type="text"/>
+                     placeholder='Search...'
+                     type='text'/>
                   <Treebeard data={this.state.data} style={TreeStyle} onToggle={this.onToggle} />
                </div>
-             )}
+             : <div className='shell' />
+             //ContextMenuTrigger needs child, so render empty div
+           }
            </ContextMenuTrigger>
            <ContextMenu id={obj.identifier}>
              {
