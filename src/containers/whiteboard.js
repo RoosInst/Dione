@@ -12,6 +12,7 @@ import TextPane from './textPane';
 import TreePane from './treePane';
 import Modal from './modal';
 import FavIcon from '../../public/images/favicon.png';
+import '../styles/whiteboard.scss';
 
 const cbor = require('cbor');
 
@@ -158,7 +159,7 @@ class Whiteboard extends Component {
     if (whiteboard) arr = Object.keys(whiteboard);
     return [
         <MQTT key='mqtt' />,
-        <div key='whiteboard' className='grid-stack'>
+        <div key='whiteboard' styleName='ri-whiteboard' className='grid-stack'>
           {arr && (
             arr.map(model => { //map through each app
               const obj = whiteboard[model];
@@ -181,11 +182,11 @@ class Whiteboard extends Component {
                         <i onClick={() => this.handleClose(model)} className="pull-right fa fa-window-close" />
                       </div>
                       {objMenus.length > 0  && (
-                        <div className='topMenuBar'>
+                        <div styleName='topMenuBar'>
                           {objMenus.map(menuKey => {
                             let menuObj = obj[menuKey];
                             return (
-                              <div key={model + '_' + menuObj.identifier} className='topMenuItem'>
+                              <div key={model + '_' + menuObj.identifier} styleName='topMenuItem'>
                                 <button className="dropdown-toggle" type="button" id={model + '_' + menuObj.identifier} data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                   {menuObj.title}
                                 </button>

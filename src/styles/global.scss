@@ -5,85 +5,16 @@ body {
 	margin: 0;
 	padding: 0;
 	height: 100vh;
-	background-color: $background;
 	font-family: Source Sans Pro, HelveticaNeue-Light, Helvetica Neue Light, Helvetica Neue, Arial, Helvetica, sans-serif;
 	word-wrap: break-word;
+	background: $background url('../images/RILogoWeb.png');
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-attachment: fixed;
 }
 
 .loadingWrapper {
 	@include fixedCenter;
-}
-
-.card {
-	font-size: 12px;
-	height: 100%;
-
-	.card-header {
-		background-color: $cardHeaderColor;
-			height: 28px;
-			padding: 3px 29px 0 0;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			border-bottom: none;
-
-		span {
-			font-size: 14px;
-
-		}
-		> i {
-			font-size: 31px;
-			cursor: pointer;
-			position: absolute;
-			right: 0;
-			top: 0;
-			color: gray;
-			margin-top: -2px;
-			&:hover {
-				cursor: pointer;
-				color: #b70000;
-			}
-		}
-	}
-
-	.topMenuBar {
-		background-color: $cardHeaderColor;
-		font-weight: bold;
-
-		.topMenuItem {
-			display: inline-block;
-
-			button {
-				padding: 5px;
-				position: relative;
-				background: none;
-				border: none;
-
-				&.dropdown-toggle::after {
-					border: none;
-				}
-
-				+ ul {
-					min-width: initial;
-					margin-top: 0;
-
-					li:hover {
-						background: $liHoverColor;
-						color: white;
-					}
-				}
-			}
-		}
-	}
-
-	.card-body {
-		margin: 0;
-		padding: 0;
-		position: relative;
-		div {
-			outline: 1px solid $outlineColor;
-		}
-	}
 }
 
 .shell {
@@ -220,30 +151,8 @@ ul {
 
 .active {background-color: $activeBackgroundColor};
 
-.card-body li {
-	cursor: pointer;
-}
-
-.card-header, .card-body li {
-	user-select: none;
-}
-
-.cardLabel {
-	text-overflow: ellipsis;
-	 overflow: hidden;
-	 white-space: nowrap;
-	  width: 92%;
-}
-
 .GroupPane {
 	background-color: $outlineColor;
-}
-
-body {
-	background: #f0f0f0 url('../images/RILogoWeb.png');
-	background-repeat: no-repeat;
-	background-position: center center;
-	background-attachment: fixed;
 }
 
 span {
@@ -265,4 +174,63 @@ label {
 
 .dropdown-menu {
 	font-size: 12px;
+}
+
+.card {
+	font-size: 12px;
+	height: 100%;
+
+	.card-header,
+	.card-body li {
+		user-select: none;
+	}
+
+	.card-header {
+		background-color: $cardHeaderColor;
+			height: 28px;
+			padding: 3px 29px 0 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			border-bottom: none;
+
+			.cardLabel {
+				text-overflow: ellipsis;
+				overflow: hidden;
+				white-space: nowrap;
+				width: 92%;
+			}
+
+		span {
+			font-size: 14px;
+
+		}
+		> i {
+			font-size: 31px;
+			cursor: pointer;
+			position: absolute;
+			right: 0;
+			top: 0;
+			color: gray;
+			margin-top: -2px;
+			&:hover {
+				cursor: pointer;
+				color: #b70000;
+			}
+		}
+	}
+	
+	.card-body {
+		margin: 0;
+		padding: 0;
+		position: relative;
+
+		li {
+			cursor: pointer;
+		}
+
+		div {
+			outline: 1px solid $outlineColor;
+		}
+	}
 }
