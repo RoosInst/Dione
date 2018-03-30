@@ -120,12 +120,6 @@ li {
 	line-height: 1.35;
 }
 
-.dialog {
-	li {
-		line-height: 1.5;
-	}
-}
-
 ul {
 	padding: 0;
 	white-space: nowrap;
@@ -250,25 +244,6 @@ body {
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-attachment: fixed;
-}
-
-.reactModal {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	height: 100%;
-	width: 100%;
-}
-
-$cardHeaderHeight: 28px;
-$dialogCardHeight: 187px;
-.dialog {
-	width: 160px;
-	height: $dialogCardHeight;
-	ul {
-		height: ($dialogCardHeight - $cardHeaderHeight - 1px);
-		overflow: auto;
-	}
 }
 
 span {

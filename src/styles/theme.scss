@@ -14,3 +14,11 @@ $liHoverColor: #20a0ff;
   top: 50%;
   transform: translate(-50%, -50%);
 }
+
+@mixin flexCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}

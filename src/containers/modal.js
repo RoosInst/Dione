@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {mqttClient, cellID} from './mqtt';
 import { updateWhiteboard, addSelection } from '../actions';
 import FavIcon from '../../public/images/favicon.png';
+import '../styles/modal.scss';
 
 const cbor = require('cbor');
 
@@ -68,9 +69,9 @@ class Modal extends Component {
   render() {
     const { obj, model } = this.props;
     return (
-      <ReactModal className='reactModal' isOpen={obj.dialog ? true : false}>
-        <div className="card dialog">
-          <div className="card-header">
+      <ReactModal styleName='ri-modal' isOpen={obj.dialog ? true : false}>
+        <div className='card' styleName='dialog'>
+          <div className='card-header'>
             <img style={{width: '16px', margin: '-2px 5px 0 5px'}} src={FavIcon} />
             <span className="cardLabel">{obj.dialog ? obj.dialog.label : ''}</span>
             <i className='pull-right fa fa-window-close' onClick={() => this.delDialog(model)} />

@@ -1,0 +1,21 @@
+@import 'theme';
+
+$cardHeaderHeight: 28px;
+$dialogCardHeight: 187px;
+
+.ri-modal {
+  @include flexCenter;
+
+  .dialog {
+  	width: 160px;
+  	height: $dialogCardHeight;
+  	ul {
+  		height: ($dialogCardHeight - $cardHeaderHeight - 1px);
+  		overflow: auto;
+
+      li {
+        line-height: 1.5;
+      }
+  	}
+  }
+}
