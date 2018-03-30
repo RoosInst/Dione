@@ -9,6 +9,7 @@ import { convertObjToArrayForPublish } from '../scripts/functions';
 import * as filters from '../scripts/filter';
 import TreeStyle from '../styles/treePane_style';
 import { mqttClient, cellID } from './mqtt';
+import '../styles/treePane.scss';
 
 
 
@@ -193,7 +194,7 @@ class TreePane extends Component {
 
      if (obj.identifier && menu && obj[menu].value) { //if right-clicking capabilities
        return (
-         <div className="contextMenu shell">
+         <div styleName='ri-treePane' className="contextMenu shell">
            <ContextMenuTrigger id={obj.identifier}>
              {obj.contents && ( //assume array, no need to check
                <div className='shell'>
@@ -220,7 +221,7 @@ class TreePane extends Component {
        );
      }
      else if (obj.contents) {
-      return <Treebeard data={this.state.data} style={TreeStyle} onToggle={this.onToggle} />  //can also set animations={false}, but without it arrows don't change
+      return <Treebeard styleName='ri-treePane' data={this.state.data} style={TreeStyle} onToggle={this.onToggle} />  //can also set animations={false}, but without it arrows don't change
     }
     else return null; //else no obj.contents
 	}

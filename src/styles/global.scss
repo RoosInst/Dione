@@ -86,28 +86,9 @@ body {
 	}
 }
 
-.TreePane div {
-	outline: none !important;
-	font-weight: normal;
-}
-
 .shell {
 	outline: none !important;
 	overflow: auto;
-}
-
-.card-body :not(.shell) {
-	.btn {
-		width: 100%;
-		height: 100%;
-		border: none;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		outline-color: $liHoverColor;
-		line-height: 0;
-		border-radius: 0;
-	}
 }
 
 /* CSS style sheet to support use of ristrings (RiListString) */
@@ -138,6 +119,7 @@ li {
 	font-weight: bold;
 	line-height: 1.35;
 }
+
 .dialog {
 	li {
 		line-height: 1.5;
@@ -148,30 +130,6 @@ ul {
 	padding: 0;
 	white-space: nowrap;
 	margin: 0;
-}
-
-.ListPane, .TextPane, .GroupPane {
-	overflow: auto;
-}
-
-.Button {
-	display: flex;
-	max-width: 100%;
-	justify-content: center;
-	align-items: center;
-	input {
-		margin: 0 3px;
-	}
-	 div, label {
-		display: flex;
-		padding: 0;
-		font-size: .8rem;
-		white-space: nowrap;
-		//max-width: 0; //because display is table-cell, this is needed for text-overflow to work. Span needs to be inside to work (display: inline)
-		text-overflow: ellipsis;
-		overflow: hidden;
-		margin: 0;
-	}
 }
 
 .react-contextmenu-wrapper, .contextMenu {
@@ -193,6 +151,7 @@ ul {
     background-clip: padding-box;
     border: 1px solid rgba(0,0,0,.15);
     border-radius: .25rem;
+
     outline: none !important;
     opacity: 0;
     pointer-events: none;
@@ -291,35 +250,8 @@ body {
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-attachment: fixed;
-//margin: 0 10px;
-
 }
 
-#mqttInfo {
-	background-color: $menuBackground;
-	padding: 3px 10px;
-	color: $menuText;
-	height: 29px;
-	margin-bottom: 10px;
-
-	.connectionIcon {
-		border-radius: 50%;
-		width: 12px;
-		height: 12px;
-		margin-left: 6px;
-		margin-top: 6px;
-		&.disconnected {
-			background-color: red;
-		}
-		&.connected {
-			background-color: green;
-		}
-		&.reconnecting {
-			background-color: yellow;
-		}
-	}
-
-}
 .reactModal {
 	display: flex;
 	justify-content: center;
@@ -343,10 +275,6 @@ span {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-}
-
-.react-contextmenu-wrapper {
-	overflow: auto;
 }
 
 input[type='text'] {

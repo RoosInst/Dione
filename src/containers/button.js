@@ -5,6 +5,7 @@ import { addSelection } from '../actions';
 import PropTypes from 'prop-types';
 
 import {mqttClient, cellID} from '../containers/mqtt';
+import '../styles/button.scss';
 
 class Button extends Component {
 
@@ -14,7 +15,7 @@ class Button extends Component {
     selectedItems: PropTypes.object.isRequired,
     addSelection: PropTypes.func.isRequired,
     obj: PropTypes.object.isRequired,
-    whiteboard: PropTypes.object.isRequired
+    whiteboard: PropTypes.object.isRequired,
   }
 
   handleClick(clickedObj) {
@@ -48,7 +49,7 @@ class Button extends Component {
 
     if (obj.selectionGroup) {
      return (
-       <label>
+       <label styleName='ri-button'>
          <input type='radio' defaultChecked={isSelected} onClick={() => this.handleClick(obj)} value={contents} name={obj.owner} />
          <span>{contents}</span>
        </label>
@@ -56,7 +57,7 @@ class Button extends Component {
     }
     else {
       return (
-        <div className="btn btn-primary momentary" onClick={() => this.handleClick(obj)}>
+        <div styleName='ri-button' className="btn btn-primary momentary" onClick={() => this.handleClick(obj)}>
           {contents}
         </div>
       );

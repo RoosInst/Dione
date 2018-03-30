@@ -1,0 +1,30 @@
+@import 'theme';
+
+.ri-mqtt {
+	background-color: $menuBackground;
+	padding: 3px 10px;
+	color: $menuText;
+	height: 29px;
+	margin-bottom: 10px;
+
+	.connectionIcon {
+		border-radius: 50%;
+		width: 12px;
+		height: 12px;
+		margin-left: 6px;
+		margin-top: 6px;
+		float: right;
+
+		&.disconnected {
+			background-color: red;
+		}
+
+		&.connected {
+			background-color: green;
+		}
+
+		&.reconnecting {
+			background-color: yellow;
+		}
+	}
+}

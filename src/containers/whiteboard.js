@@ -21,7 +21,6 @@ class Whiteboard extends Component {
    clientID: PropTypes.string.isRequired,
    whiteboard: PropTypes.object,
    selectedItems: PropTypes.object.isRequired,
-   mqttConnection: PropTypes.string.isRequired,
    updateWhiteboard: PropTypes.func.isRequired
  }
 
@@ -48,7 +47,7 @@ class Whiteboard extends Component {
             //if type is object but not style, attributes, or Menu obj, null, or array. Menu obj never has objects inside it, so no need to go through
             if (key !== 'style' && key !== 'attributes' && !key.includes('Menu') && val !== null && typeof val === 'object' && Object.prototype.toString.call( val ) !== '[object Array]') {
                return (
-                 <div className={val.class} style={val.style} id={model + '_' + val.identifier} key={model + '_' + val.identifier}>
+                 <div style={val.style} id={model + '_' + val.identifier} key={model + '_' + val.identifier}>
                    {this.renderObj(model, val)}
                    {this.renderApp(model, val)}
                  </div>
@@ -157,18 +156,9 @@ class Whiteboard extends Component {
     const { whiteboard, clientID, selectedItems } = this.props;
     let arr;
     if (whiteboard) arr = Object.keys(whiteboard);
-    return (
-      <div>
-        <MQTT />
-        <div id='mqttInfo'>
-          <div className="pull-left">Client ID: {this.props.clientID}</div>
-          <div className="pull-right">
-            Connection
-            <div className={`pull-right connectionIcon ${this.props.mqttConnection}`} />
-          </div>
-        </div>
-
-        <div className='grid-stack'>
+    return [
+        <MQTT key='mqtt' />,
+        <div key='whiteboard' className='grid-stack'>
           {arr && (
             arr.map(model => { //map through each app
               const obj = whiteboard[model];
@@ -234,9 +224,7 @@ class Whiteboard extends Component {
             })
           )}
         </div>
-
-      </div>
-    );
+    ];
   }
 
 }
@@ -245,7 +233,6 @@ function mapStateToProps(state) {
   return {
     whiteboard: state.whiteboard,
     clientID: state.clientID,
-    mqttConnection: state.mqttConnection,
     selectedItems: state.selectedItems
   };
 }
