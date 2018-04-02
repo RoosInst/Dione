@@ -5,16 +5,14 @@ const StyleLintPlugin = require('stylelint-webpack-plugin');
 
 const prjRoot = path.join(__dirname, '..');
 
-// const styleLintPluginConfig = new StyleLintPlugin({
-//   failOnError: false,
-//   syntax: 'scss',
-//   quiet: false
-// });
+const styleLintPluginConfig = new StyleLintPlugin({
+  syntax: 'scss',
+  emitErrors: false
+});
 
 module.exports = merge(baseConfig, {
-
   devtool: 'source-map',
-  // plugins: [styleLintPluginConfig],
+
   module: {
     rules: [
       {
@@ -29,9 +27,13 @@ module.exports = merge(baseConfig, {
       }
     ]
   },
+
   devServer: {
     historyApiFallback: true,
     contentBase: path.join(prjRoot, 'public'),
-    compress: true
+    compress: true,
+    stats: 'minimal'
   },
+
+  plugins: [styleLintPluginConfig]
 });

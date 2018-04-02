@@ -7,15 +7,16 @@ $dialogCardHeight: 187px;
   @include flexCenter;
 
   .dialog {
-  	width: 160px;
-  	height: $dialogCardHeight;
-  	ul {
-  		height: ($dialogCardHeight - $cardHeaderHeight - 1px);
-  		overflow: auto;
+    width: 160px;
+    height: $dialogCardHeight;
+    
+    ul {
+      height: ($dialogCardHeight - $cardHeaderHeight - 1px);
+      overflow: auto;
 
       li {
         line-height: 1.5;
       }
-  	}
+    }
   }
 }

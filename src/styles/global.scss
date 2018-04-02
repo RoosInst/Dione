@@ -1,241 +1,243 @@
 @import "theme";
 
 body {
-	overflow: auto;
-	margin: 0;
-	padding: 0;
-	height: 100vh;
-	font-family: Source Sans Pro, HelveticaNeue-Light, Helvetica Neue Light, Helvetica Neue, Arial, Helvetica, sans-serif;
-	word-wrap: break-word;
-	background: $background url('../images/RILogoWeb.png');
-	background-repeat: no-repeat;
-	background-position: center center;
-	background-attachment: fixed;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  font-family: Source Sans Pro, HelveticaNeue-Light, Helvetica Neue Light, Helvetica Neue, Arial, Helvetica, sans-serif;
+  word-wrap: break-word;
+  background: $background url('../images/RILogoWeb.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
 }
 
 .loadingWrapper {
-	@include fixedCenter;
+  @include fixedCenter;
 }
 
 .shell {
-	outline: none !important;
-	overflow: auto;
+  outline: none !important;
+  overflow: auto;
 }
 
-/* CSS style sheet to support use of ristrings (RiListString) */
+// Colors used by RiStrings (i.e. RiListStrings):
+.rsColor1 { color: #000 !important; }     // Black
+.rsColor2 { color: #404040 !important; }  // DarkGray
+.rsColor3 { color: #808080 !important; }  // LightGray
+.rsColor4 { color: #fff !important; }     // White
+.rsColor5 { color: #dc0000 !important; }  // LightRed
+.rsColor6 { color: #00dc00 !important; }  // LightGreen
+.rsColor7 { color: #0000dc !important; }  // LightBlue
+.rsColor8 { color: #dcdc00 !important; }  // LightYellow
+.rsColor9 { color: #dc00dc !important; }  // LightMagenta
+.rsColor10 { color: #00dcdc !important; } // LightCyan
+.rsColor11 { color: #800000 !important; } // DarkRed
+.rsColor12 { color: #008000 !important; } // DarkGreen
+.rsColor13 { color: #000080 !important; } // DarkBlue
+.rsColor14 { color: #808000 !important; } // DarkYellow
+.rsColor15 { color: #800080 !important; } // DarkMagenta
 
-/*Colors used by RiStrings (i.e. RiListStrings):*/
-.rsColor1  { color:#000000 !important; } /*Black*/
-.rsColor2  { color:#404040 !important; } /*DarkGray*/
-.rsColor3  { color:#808080 !important; } /*LightGray*/
-.rsColor4  { color:#ffffff !important; } /*White*/
-.rsColor5  { color:#dc0000 !important; } /*LightRed*/
-.rsColor6  { color:#00dc00 !important; } /*LightGreen*/
-.rsColor7  { color:#0000dc !important; } /*LightBlue*/
-.rsColor8  { color:#dcdc00 !important; } /*LightYellow*/
-.rsColor9  { color:#dc00dc !important; } /*LightMagenta*/
-.rsColor10 { color:#00dcdc !important; } /*LightCyan*/
-.rsColor11 { color:#800000 !important; } /*DarkRed*/
-.rsColor12 { color:#008000 !important; } /*DarkGreen*/
-.rsColor13 { color:#000080 !important; } /*DarkBlue*/
-.rsColor14 { color:#808000 !important; } /*DarkYellow*/
-.rsColor15 { color:#800080 !important; } /*DarkMagenta*/
-
-/*Font styles used by RiStrings (i.e. RiListStrings):*/
-.rsStyle1  { font-weight:bold !important; } /*bold*/
-.rsStyle2  { font-style:italic !important; } /*italic*/
-.rsStyle3  { font-weight:bold; font-style:italic !important; } /*bold italic*/
+//Font styles used by RiStrings (i.e. RiListStrings):
+.rsStyle1 { font-weight: bold !important; } // bold
+.rsStyle2 { font-style: italic !important; } // italic
+.rsStyle3 {  // bold italic
+  font-weight: bold;
+  font-style: italic !important;
+}
 
 li {
-	font-weight: bold;
-	line-height: 1.35;
+  font-weight: bold;
+  line-height: 1.35;
 }
 
 ul {
-	padding: 0;
-	white-space: nowrap;
-	margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  margin: 0;
 }
 
-.react-contextmenu-wrapper, .contextMenu {
-	height: 100%;
-	width: 100%;
-	outline: none !important;
+.react-contextmenu-wrapper,
+.contextMenu {
+  height: 100%;
+  width: 100%;
+  outline: none !important;
 }
 
 .contextMenu {
-	overflow: auto;
+  overflow: auto;
 }
 
-
-/*START REACT-CONTEXTMENU ALTERED CSS*/
+//START REACT-CONTEXTMENU ALTERED CSS
 .react-contextmenu {
-		z-index: 2;
-    //min-width: 160px;
-    padding: 5px 0;
-    margin: 2px 0 0;
-    font-size: .8rem;
-    color: #373a3c;
-    text-align: left;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid rgba(0,0,0,.15);
-    border-radius: .25rem;
-
-    outline: none !important;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 250ms ease !important;
+  z-index: 2;
+  padding: 5px 0;
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: #373a3c;
+  text-align: left;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0.25rem;
+  outline: none !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms ease !important;
 }
 
 .react-contextmenu.react-contextmenu--visible {
-    opacity: 1;
-    pointer-events: auto;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .react-contextmenu-item {
-	outline: none !important;
-    padding: 3px 20px;
-    font-weight: 400;
-    line-height: 1.5;
-    color: #373a3c;
-    text-align: inherit;
-    white-space: nowrap;
-    background: 0 0;
-    border: 0;
-	cursor: pointer;
+  outline: none !important;
+  padding: 3px 20px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #373a3c;
+  text-align: inherit;
+  white-space: nowrap;
+  background: 0 0;
+  border: 0;
+  cursor: pointer;
 }
 
 .react-contextmenu-item.react-contextmenu-item--active,
 .react-contextmenu-item.react-contextmenu-item--selected {
-    color: #fff;
-    background-color: #20a0ff;
-    border-color: #20a0ff;
-    text-decoration: none;
+  color: #fff;
+  background-color: #20a0ff;
+  border-color: #20a0ff;
+  text-decoration: none;
 }
 
 .react-contextmenu-item.react-contextmenu-item--disabled,
 .react-contextmenu-item.react-contextmenu-item--disabled:hover {
-    color: #878a8c;
-    background-color: transparent;
-    border-color: rgba(0,0,0,.15);
+  color: #878a8c;
+  background-color: transparent;
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 .react-contextmenu-item--divider {
-    margin-bottom: 3px;
-    padding: 2px 0;
-    border-bottom: 1px solid rgba(0,0,0,.15);
-    cursor: inherit;
+  margin-bottom: 3px;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  cursor: inherit;
 }
+
 .react-contextmenu-item--divider:hover {
-    background-color: transparent;
-    border-color: rgba(0,0,0,.15);
+  background-color: transparent;
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 .react-contextmenu-item.react-contextmenu-submenu {
-	padding: 0;
+  padding: 0;
 }
 
-.react-contextmenu-item.react-contextmenu-submenu > .react-contextmenu-item {
-}
-
-.react-contextmenu-item.react-contextmenu-submenu > .react-contextmenu-item:after {
-    content: "\25B6";
-    display: inline-block;
-    position: absolute;
-    right: 7px;
+.react-contextmenu-item.react-contextmenu-submenu > .react-contextmenu-item::after {
+  content: "\25B6";
+  display: inline-block;
+  position: absolute;
+  right: 7px;
 }
 
 .example-multiple-targets::after {
-    content: attr(data-count);
-    display: block;
+  content: attr(data-count);
+  display: block;
 }
-/*END REACT-CONTEXTMENU ALTERED CSS*/
+//END REACT-CONTEXTMENU ALTERED CSS
 
-.highlight {background-color: $highlightColor};
+.highlight {
+  background-color: $highlightColor;
+}
 
-.active {background-color: $activeBackgroundColor};
+.active {
+  background-color: $activeBackgroundColor;
+}
 
 .GroupPane {
-	background-color: $outlineColor;
+  background-color: $outlineColor;
 }
 
 span {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 input[type='text'] {
-	border: 0;
-	border-bottom: 1px solid $outlineColor;
-	width: 100%;
-	padding: 5px;
+  border: 0;
+  border-bottom: 1px solid $outlineColor;
+  width: 100%;
+  padding: 5px;
 }
 
 label {
-	font-weight: bold;
+  font-weight: bold;
 }
 
 .dropdown-menu {
-	font-size: 12px;
+  font-size: 12px;
 }
 
 .card {
-	font-size: 12px;
-	height: 100%;
+  font-size: 12px;
+  height: 100%;
 
-	.card-header,
-	.card-body li {
-		user-select: none;
-	}
+  .card-header,
+  .card-body li {
+    user-select: none;
+  }
 
-	.card-header {
-		background-color: $cardHeaderColor;
-			height: 28px;
-			padding: 3px 29px 0 0;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			border-bottom: none;
+  .card-header {
+    background-color: $cardHeaderColor;
+    height: 28px;
+    padding: 3px 29px 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-bottom: none;
 
-			.cardLabel {
-				text-overflow: ellipsis;
-				overflow: hidden;
-				white-space: nowrap;
-				width: 92%;
-			}
+    .cardLabel {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      width: 92%;
+    }
 
-		span {
-			font-size: 14px;
+    span {
+      font-size: 14px;
+    }
 
-		}
-		> i {
-			font-size: 31px;
-			cursor: pointer;
-			position: absolute;
-			right: 0;
-			top: 0;
-			color: gray;
-			margin-top: -2px;
-			&:hover {
-				cursor: pointer;
-				color: #b70000;
-			}
-		}
-	}
+    > i {
+      font-size: 31px;
+      cursor: pointer;
+      position: absolute;
+      right: 0;
+      top: 0;
+      color: gray;
+      margin-top: -2px;
 
-	.card-body {
-		margin: 0;
-		padding: 0;
-		position: relative;
+      &:hover {
+        cursor: pointer;
+        color: #b70000;
+      }
+    }
+  }
 
-		li {
-			cursor: pointer;
-		}
+  .card-body {
+    margin: 0;
+    padding: 0;
+    position: relative;
 
-		div {
-			outline: 1px solid $outlineColor;
-		}
-	}
+    li {
+      cursor: pointer;
+    }
+
+    div {
+      outline: 1px solid $outlineColor;
+    }
+  }
 }

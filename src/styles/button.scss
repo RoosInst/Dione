@@ -1,14 +1,14 @@
 @import "theme";
 
 .ri-button {
-	@include flexCenter;
+  @include flexCenter;
 
-	padding: 0;
-	font-size: .8rem;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
-	margin: 0;
+  padding: 0;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  margin: 0;
   border: none;
   border-radius: 0;
 
