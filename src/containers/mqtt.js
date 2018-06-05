@@ -145,7 +145,7 @@ class MQTT extends Component {
   render() {
     return (
       <div styleName='ri-mqtt'>
-        <div className="pull-left">Client ID: {this.props.localClientID}</div>
+        <div className="pull-left">Client ID: {localClientID}</div>
         <div className="pull-right">
           Connection
           <div styleName={`connectionIcon ${this.props.mqttConnection}`} />
