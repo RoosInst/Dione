@@ -10,6 +10,7 @@ This README documents the steps necessary to get this development environment an
 ### How do I get set up? ###
 
 * Requires Git and Node.js
+* Dev mode uses React ESLint plugin (install globally with "npm install -g eslit eslint-plugin-react")
 * Default Config
     - Moquette on WS port 8081  (moquette/config).
     - Node.js webserver on port 8080 (package.json).
