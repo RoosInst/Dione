@@ -50,15 +50,15 @@ class Pane extends Component {
 
                 {obj.contents && obj.contents[0] ?
                    Array.isArray(obj.contents) && obj.contents[0].highlight ? //if highlight exists, then assuming array will only be length 1 (contents[0]). contents[0] sometimes undefined, so check
-                    <span style={{whiteSpace: 'pre'}}>
+                    <pre>
                       {obj.contents[0].text.substring(0, obj.contents[0].highlight[0] - 1)}
                       <span className='highlight'>
                         {obj.contents[0].text.substring(obj.contents[0].highlight[0] - 1, obj.contents[0].highlight[1] - 1)}
                       </span>
                       {obj.contents[0].text.substring(obj.contents[0].highlight[1] - 1)}
-                    </span>
+                    </pre>
                   : //no highlight
-                    eol.lf(obj.contents[0].text)
+                    <pre>{eol.lf(obj.contents[0].text)}</pre>
                 : <span style={{whiteSpace: 'pre'}} />
                 //ContextMenuTrigger needs child, so render empty span
               }
