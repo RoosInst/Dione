@@ -1,17 +1,17 @@
 /*jslint bitwise: true, browser: true, continue: true, devel: true, indent: 4, maxerr: 50, plusplus: true, vars: true, white: true, windows: false */ //for jslint
 /*globals console*/ //for jslint
 
-/**CBOR class based on the Java class SmCborBuffer (in rtalk.sm)*/
-
-/**Original Java description:
- * Limited CBOR conversion buffer for use with MQTT messages
- * Collections can be unbounded Arrays<CBOR> or Omaps<String,CBOR> (fixed size not supported)
- * Primitives are Strings, byte[], Double, Long, boolean, null
- * Strings are limited to single byte utf8
- * @author markroos
+/**CBOR class based on the Java class SmCborBuffer (in rtalk.sm)
+ * Original Java description:
+ *     Limited CBOR conversion buffer for use with MQTT messages
+ *     Collections can be unbounded Arrays<CBOR> or Omaps<String,CBOR> (fixed size not supported)
+ *     Primitives are Strings, byte[], Double, Long, boolean, null
+ *     Strings are limited to single byte utf8
+ *     @author markroos
  */
+
 /**module definition*/
-var smCbor = (function () {
+var smCbor = (function() {
   "use strict"; //enable javascript strict mode
   
   //Dependencies:
@@ -22,7 +22,7 @@ var smCbor = (function () {
   var
     buf = [],  //byte array
     curpos=0,  //points at next spot to write
-    maxCur     //max cursor location during a rewind() call
+    maxCur=0   //max cursor location during a rewind() call
     ;
   
   /**Clears out the contents of the buffer by reseting pointers*/
@@ -32,6 +32,7 @@ var smCbor = (function () {
     maxCur=0;
   };
   
+  /** */
   var setCursor = function(pos) {
   //public int setCursor(int pos) {
     let rtn = curpos;
@@ -39,38 +40,36 @@ var smCbor = (function () {
     return rtn;
   };
   
-  /**drops the leading bytes up to the current cursor location
+  /**Drops the leading bytes up to the current cursor location
    * Used to drop messages already processed*/
   var dropToCursor = function() {
-  //public void dropToCursor() {
     buf = buf.slice(curpos, buf.length); //Arrays.copyOfRange(buf, curpos, buf.length);
     maxCur = buf.length;
     curpos = 0;
   };
   
-  /**set to the size of the valid space in the contents byte[]*/
+  /**Sets to the size of the valid space in the contents byte[]*/
   var setContentsSize = function(pos) {
   //public void setContentsSize(int pos) {
     maxCur = pos;
   };
   
+  /** */
   var getCursor = function() {
   //public int getCursor() {
     return curpos;
   };
   
-  /**moves the cursor one towards the start from the end
+  /**Moves the cursor one towards the start from the end
    * used to backup over an omap or array end when the last one
    * in the buffer is the focus*/
   var backupOverEnd = function() {
-  //public void backupOverEnd() {
     if(maxCur > curpos) curpos = maxCur;
     curpos--;
   };
 
-  /**set the cursor to the start position, remember this as maxWrite*/
+  /**Sets the cursor to the start position, remembers this as maxWrite*/
   var rewind = function() {
-  //public void rewind() {
     if(curpos > maxCur) maxCur = curpos;
     curpos = 0;
   };
@@ -78,7 +77,6 @@ var smCbor = (function () {
   /**Returns size of the buffer
    * truncates to the larger of curpos or maxCur*/
   var size = function() {
-  //public int size() {
     let max = maxCur;
     if(curpos > maxCur) {
       max = curpos;
@@ -95,6 +93,7 @@ var smCbor = (function () {
       return false;
   };
 
+  /** */
   var isEmpty = function() {
   //public boolean isEmpty() {
     return (curpos === 0 && maxCur === 0);
@@ -103,7 +102,7 @@ var smCbor = (function () {
   // CBOR support methods
   // -----------------------
   
-  /**converts java string to ASCII byte array*/
+  /**Converts java string to ASCII byte array*/
   var stringToBytes = function(astring) {
   //private static byte[] stringToBytes(String string) {
     let rtn=[];  //byte[] rtn = astring.getBytes("ISO-8859-1");
@@ -112,7 +111,7 @@ var smCbor = (function () {
     return rtn;
   };
   
-/**converts byte[] of ASCII byte to a java string*/
+  /**Converts byte[] of ASCII byte to a string*/
   var bytesToString = function(bytes) {
   //private static String bytesToString(byte[] bytes) {
     let cnt = bytes.length;
@@ -123,8 +122,8 @@ var smCbor = (function () {
   };
   
   /**Computes the CBOR size of the next element (this == value for int data items)
-   * limited to 63 bits, positive int
-   * advances the cursor
+   * Limited to 63 bits, positive int
+   * Advances the cursor
    * */
   var nextCborSize = function() {
   //private long nextCborSize() {
@@ -148,10 +147,10 @@ var smCbor = (function () {
   /**DWH - extended to allow up to 63 bits (positive int)*/
   var writeCborSize = function(type, size) {
   //private void writeCborSize(int type, long size) {
-     if(size < 24) {
-       append((type + size) & 0xff);
-         return;
-     }
+    if(size < 24) {
+      append((type + size) & 0xff);
+        return;
+    }
     if(size < 256) {
       append((type + 24) & 0xff);
       append(size & 0xff);
@@ -161,30 +160,30 @@ var smCbor = (function () {
       append((type + 25) & 0xff);
       append((size >> 8) & 0xff);
       append((size & 0xff));
-         return;
-     }
-     if(size < 4254967296) {
-       append((type + 26) & 0xff);
-       append((size >> 24) & 0xff);
-       append((size >> 16) & 0xff);
-       append((size >> 8) & 0xff);
-       append((size & 0xff));
-         return;   
-     }
-     append((type + 27) & 0xff);
-     append((size >> 56) & 0xff);
-     append((size >> 48) & 0xff);
-     append((size >> 40) & 0xff);
-     append((size >> 32) & 0xff);
-     append((size >> 24) & 0xff);
-     append((size >> 16) & 0xff);
-     append((size >> 8) & 0xff);
-     append((size & 0xff));
-       return;
+        return;
+    }
+    if(size < 4254967296) {
+      append((type + 26) & 0xff);
+      append((size >> 24) & 0xff);
+      append((size >> 16) & 0xff);
+      append((size >> 8) & 0xff);
+      append((size & 0xff));
+        return;   
+    }
+    append((type + 27) & 0xff);
+    append((size >> 56) & 0xff);
+    append((size >> 48) & 0xff);
+    append((size >> 40) & 0xff);
+    append((size >> 32) & 0xff);
+    append((size >> 24) & 0xff);
+    append((size >> 16) & 0xff);
+    append((size >> 8) & 0xff);
+    append((size & 0xff));
+      return;
   };
 
-  /**peeks the next byte and returns a string for the type
-   * end, empty, Bytes, String, Integer, Omap, Array, Uri ,Tag
+  /**Peeks the next byte and returns a string for the type:
+   * e.g. end, empty, Bytes, String, Integer, Omap, Array, Uri, Tag, Float, Null, Boolean
    * */
   var type = function() {
   //public String type() {
@@ -220,7 +219,6 @@ var smCbor = (function () {
   /**Skips all elements inside this collection. Sets cursor to next item
    * initial level must be 0.  Returns true if finished*/
   var skip = function() {
-  //public void  skip() {
     if(buf[curpos] === 0x9f) {
       curpos++;
       while( !atEnd() && buf[curpos] !== 0xff)skip();
@@ -252,14 +250,14 @@ var smCbor = (function () {
       if(tag === 0xf5) curpos++; // true
       if(tag === 0xf4) curpos++; // false
     }
-  //  return;
   };
 
+  /** */
   var skipArrayStart = function() {
-  //public void skipArrayStart() {
     curpos++;
   };
 
+  /** */
   var nextItem = function() {
   //public byte[] nextItem() {
     if(atEnd()) return null;
@@ -270,20 +268,21 @@ var smCbor = (function () {
 
   // CBOR public methods
   // -----------------------
+
   // Collection support
   
-  /**starts an unbounded array*/
+  /**Starts an unbounded array*/
   var startArray = function() {
-  //public void startArray() {
     append(0x9f);
   };
 
+  /**Returns true if at the end*/
   var atArrayEnd = function() {
   //public boolean atArrayEnd() {
     return buf[curpos] === 0xff;
   };
 
-  /**starts an unbounded ordered map of name
+  /**Starts an unbounded ordered map of name
    * if name is null or empty string then is a nameless omap
    * which is equivalent to a map*/
   var startOmap = function() {
@@ -298,66 +297,46 @@ var smCbor = (function () {
     }
   };
   
-  /**write the end byte for an unbounded collection*/
+  /**Write the end byte for an unbounded collection*/
   var end = function() {
-  //public void end() {
     append(0xff);
   };
 
-  //TODO? is this one needed?
-  ///**Assumes that there are key values in the buffer
-  // * starting from current position looks for a match for the key, which is a string.
-  // * Returns the next CBOR object or null*/
-  //var searchFor = function(key) {
-  ////public Object searchFor(String key) {
-  //  let target = stringToBytes(key); //byte[] target = stringToBytes(key);
-  //  let match = false; //boolean
-  //  let value = null; //Object
-  //  while(value === null) {
-  //    while(!match) {
-  //      match = buf[curpos] === target[0];
-  //      curpos++;
-  //    }
-  //    if(!match) return null;
-  //    if(getString().toUpperCase()===key.toUpperCase()) //if(getString().equalsIgnoreCase(key))
-  //      value = getObject();
-  //  }
-  //  return value;
-  //};
+  /**Assumes that there are key values in the buffer
+   * starting from current position looks for a match for the key, which is a string.
+   * Returns the next CBOR object or null*/
+  var searchFor = function(key) {
+  //public Object searchFor(String key) {
+    let target = stringToBytes(key); //byte[] target = stringToBytes(key);
+    let match = false;
+    let value = null;
+    while(value === null) {
+      while(!match) {
+        match = buf[curpos] === target[0];
+        curpos++;
+      }
+      if(!match) return null;
+      if(getString().toUpperCase()===key.toUpperCase()) //if(getString().equalsIgnoreCase(key))
+        value = getObject();
+    }
+    return value;
+  };
   
   // ------------------------------
   // append() and put() functions:
   // ------------------------------
 
-  /**Append to this buffer*/
+  /**Low level append a byte to this buffer*/
   var append = function(b) {
   //public void append(byte b) {
-    //if((curpos + 1) >= buf.length) {
-    //  //let newLen = buf.length * 2;
-    //  let newBuf = []; //    byte[] newBuf=new byte[newLen];
-    //  let len=buf.length;
-    //  for(let i=0; i<len; i++)
-    //    newBuf[i]=buf[i];
-    //  buf=newBuf;
-    //}
-    buf[curpos++]=b;
+    buf.push(b);
+    curpos++;
   };
 
   /**Low level append of a byte array to this buffer*/
   var appendByteArray = function(data) {
-  //public void append(byte[] data) {
-    //if((curpos + data.length) >= buf.length) {
-    //  let newLen = buf.length * 2;
-    //  if(curpos + data.length > newLen) newLen = newLen + data.length;
-    //  let newBuf = []; //byte[] newBuf=new byte[newLen];
-    //  let len=buf.length;
-    //  for(let i=0; i < len; i++)
-    //    newBuf[i]=buf[i];
-    //  buf=newBuf;
-    //}
-    for(let i=0; i < (data.length); i++) {
-      buf[curpos++]=data[i];
-    }
+    for(let i=0; i < data.length; i++)
+      append(data[i]);
   };
 
   //TODO? is this generic one even needed?
@@ -389,13 +368,13 @@ var smCbor = (function () {
     appendByteArray(stringToBytes(value));
   };
 
-  /**write a tag type*/
+  /**Writes a tag type*/
   var putTag = function(tag) {
   //public void putTag(int tag) {
     writeCborSize(0xc0, tag);
   };
 
-  /**insert a uri which is tag(32) + string*/
+  /**Inserts a uri which is tag(32) + string*/
   var putSmUri = function(uri) {
   //public void put(SmUri uri) {
     putTag(32);
@@ -411,7 +390,7 @@ var smCbor = (function () {
     putString(val);
   };
 
-  /**add an string array*/
+  /**Adds a string array*/
   var putStringArray = function(val) {
   //public void put(String[] val) {
     startArray();
@@ -421,7 +400,7 @@ var smCbor = (function () {
     end();
   };
 
-  /**add an unnamed omap from a map*/
+  /**Adds an unnamed omap from a map*/
   var putMap = function(map) {
   //public void put(Map<String,String> map) {
     startOmap(null);
@@ -434,10 +413,10 @@ var smCbor = (function () {
   };
  
    /**Write a integer number as a CBOR data item
-   * Deals with positive and negative numbers up to 64 bits
-   *  using minimum space required based on value of number
-   * @param value
-   */
+    * Deals with positive and negative numbers up to 64 bits
+    * using minimum space required based on value of number
+    * @param value
+    */
   var putLong = function(value) {
   //public void put(long value) {
     if(value < 0) {
@@ -449,7 +428,7 @@ var smCbor = (function () {
     }
   };
 
-  /**Write double value as CBOR data item*/
+  /**Writes double value as CBOR data item*/
   var putDouble = function(dval) {
   //public void put(double dval) {
     append((0xe0 + 27));  //double precision float
@@ -461,7 +440,7 @@ var smCbor = (function () {
     append(b2);  
   };
  
-  /**Write double[] value as CBOR typed array item*/
+  /**Writes double[] value as CBOR typed array item*/
   var putDoubleArray = function(dval) {
   //public void put(double[] dval) {
     putTag(86); // little endian typed double array
@@ -475,7 +454,7 @@ var smCbor = (function () {
     putByteArray(buffer.array()); //double check that the one we want here is the cbor putByteArray() and not the low level appendByteArray()
   };
 
-  /**write a byte[]*/
+  /**Writes a byte[]*/
   var putByteArray = function(value) {
   //public void put(byte[] value) {
     if(value === null) {
@@ -487,7 +466,7 @@ var smCbor = (function () {
     append(value);
   };
 
-  /**write a true or false*/
+  /**Writes a true or false*/
   var putBool = function(bool) {
   //public void put(boolean bool) {
     if(bool)
@@ -496,11 +475,12 @@ var smCbor = (function () {
       append(0xf4);   
   };
 
+  /**Writes a null entry*/
   var putNull = function() {
-  //public void putNull() {
     append(0xf6);
   };
 
+  /**Writes an SmOmap*/
   var putSmOmap = function(omap) { 
   //public void put(SmOmap omap) {
     if(omap === null) {
@@ -510,11 +490,13 @@ var smCbor = (function () {
     appendByteArray(omap.toBytes()); //note: SmOmap is an object of type SmCbor
   };
   
+  /** */
   var putOmapFromRiri = function(riri) {
   //public void putOmapFromRiri(String riri) {
     insertRiri(riri);
   };
 
+  /** */
   var putSmArray = function(array) {
   //public void put(SmArray array) {
     if(array === null) {
@@ -528,7 +510,7 @@ var smCbor = (function () {
  // get...() functions:
  // --------------------
  
-  /**get the requested number of bytes starting at curPos. advances curPos*/
+  /**Low level function, returns the requested number of bytes starting at curPos. advances curPos*/
   var getBytes = function(len) {
   //private byte[] getBytes(int len) {
     let rtn = buf.slice(curpos, curpos + len); //byte[] rtn = Arrays.copyOfRange(buf, curpos, curpos + len);
@@ -536,10 +518,11 @@ var smCbor = (function () {
     return rtn;
   };
 
+  /**Returns the next item*/
   var getObject = function() {
   //public Object getObject() {
     if(atEnd()) return null;
-    let type = type(); //String
+    let type = type();
     if(type==="String")  return getString();
     if(type==="Bytes")   return getByteArray();
     if(type==="Integer") return getLong();
@@ -554,6 +537,7 @@ var smCbor = (function () {
     return null;
   };
   
+  /**Returns the internal byte buffer*/
   var getBuffer = function() {
   //public byte[] getBuffer() {
     return buf;
@@ -577,7 +561,7 @@ var smCbor = (function () {
    * if its a null drops the null*/
   var getString = function() {
   //public String getString() {
-  if(curpos >= buf.length) return null;
+    if(curpos >= buf.length) return null;
     let tag = buf[curpos]; //byte
     if(tag === 0xf6) {
       curpos = curpos + 1;
@@ -611,29 +595,29 @@ var smCbor = (function () {
     return;
   };
 
-  /**Get the next cbor data item which is assumed to be a positive or negative integer*/
+  /**Returns the next cbor data item which is assumed to be a positive or negative integer*/
   var getLong = function() {
   //public long getLong() {
      if(curpos >= buf.length) return 0;    //this is really an error
-       let tag = buf[curpos]; //byte
-       if((tag & 0xe0) === 0x00)
-         return nextCborSize();
-       if((tag & 0xe0) === 0x20)    //negative number
-         return -nextCborSize() -1;
-       return(0);    //this is really an error - i.e., item isn't a positive or negative unsigned value
+     let tag = buf[curpos]; //byte
+     if((tag & 0xe0) === 0x00)
+       return nextCborSize();
+     if((tag & 0xe0) === 0x20)    //negative number
+       return -nextCborSize() -1;
+     return(0);    //this is really an error - i.e., item isn't a positive or negative unsigned value
   };
 
-  /**Get the next cbor data item which is assumed to be a positive or negative integer*/
+  /**Returns the next cbor data item which is assumed to be a positive or negative integer*/
   var getTag = function() {
   //public long getTag() {
-     if(curpos >= buf.length) return 0;    //this is really an error
-       let tag = buf[curpos]; //byte
-       if((tag & 0xe0) === 0xc0)
-         return nextCborSize();
-       return(0);    //this is really an error
+    if(curpos >= buf.length) return 0;    //this is really an error
+    let tag = buf[curpos]; //byte
+    if((tag & 0xe0) === 0xc0)
+      return nextCborSize();
+    return(0);    //this is really an error
   };
 
-  /**Get the next cbor data item which is assumed to be a URI*/
+  /**Returns the next cbor data item which is assumed to be a URI*/
   var getUri = function() {
   //public SmUri getUri() {
     let tagValue = getTag(); //long
@@ -641,7 +625,7 @@ var smCbor = (function () {
     return new SmUri(getString());
   };
   
-  /**Get the next cbor data item which is assumed to be a positive or negative integer*/
+  /**Returns the next cbor data item which is assumed to be a positive or negative integer*/
   var getDoubleArray = function() {
   //public double[] getDoubleArray() {
     if(curpos >= buf.length) return null;    //this is really an error
@@ -658,7 +642,7 @@ var smCbor = (function () {
     return ret;
   };
 
-  /**Get the next cbor data item which is assumed to be a half precision, single precision or double precision float
+  /**Returns the next cbor data item which is assumed to be a half precision, single precision or double precision float
    * Will return half and single precisions as well as double precision floats as double precision*/
   var getDouble = function() {
   //public double getDouble() {
@@ -688,7 +672,7 @@ var smCbor = (function () {
     return 0;      //really an error
   };
 
-  /**if the next CBOR is a byte[] convert to a java byte[]
+  /**If the next CBOR is a byte[] convert to a java byte[]
    * returns null if not a byte[]*/
   var getByteArray = function() {
   //public byte[] getByteArray() {
@@ -700,6 +684,7 @@ var smCbor = (function () {
     return getBytes(size);
   };
 
+  /** */
   var getBoolean = function() {
   //public boolean getBoolean() {
     let tag = buf[curpos++] & 0xff;
@@ -707,6 +692,7 @@ var smCbor = (function () {
     return true;
   };
 
+  /** */
   var getArray = function() {
   //public SmArray getArray() {
     let next = nextItem(); //byte[]
@@ -714,7 +700,7 @@ var smCbor = (function () {
     return new SmArray(next);
   };
 
-  /**assumes that the next item is an omap else throws error*/
+  /**Assumes that the next item is an omap else throws error*/
   var getOmap = function() {
   //public SmOmap getOmap() {
     let next = nextItem(); //byte[] next = nextItem();
@@ -727,7 +713,7 @@ var smCbor = (function () {
   // ------------------
   
   //From Java GuruUtilites:
-  /**given a string array of sections*/
+  /**Given a string array of sections*/
   var processEmbeddedOmap = function(sections) {
   //private static void processEmbeddedOmap(ArrayList<String> sections, SmCborBuffer buffer) {
     //handle next section
@@ -764,7 +750,7 @@ var smCbor = (function () {
         let array = value.substring(1).split("~"); //String[]
         startArray();
         for(let j=0; j<array.length; j++) {
-          if(array[j].startsWith("`")){// check for back tick
+          if(array[j].startsWith("`")) {  // check for back tick
             let bt = array[j].split("`"); //String[]
             startArray();
             for(let k=1; k<bt.length; k++) {
@@ -784,46 +770,6 @@ var smCbor = (function () {
     }
   };
  
-  //From Java RtalkListString: 
- 	/**Given a def which leads with a % convert these to a RiListString
-   * formatted byte[] of (%tag:color:indent string), unused trailing attrs do
-   * not need to be included.  tag is required*/
-	var rtalkListString_fromDef = function(def) {
-    if(!def.startsWith("%")) return def;
-    let pos = def.indexOf(" ");  //start of string part
-    if(pos < 0) return def;      //not a list string
-    let tmpArray = (def.substring(1, pos)).split(":");  //will be:String[] { tag color indent}
-    //always a tag, check if formatted as expected
-    let tag = 0;
-    try { tag = +tmpArray[0];}
-    catch(e) { return def; }
-    let color = 0;
-    let colorSet = 0;
-    
-    //color set and color 16 colors and 4 sets
-    if(tmpArray.length > 1) {
-      let colorTmp = +tmpArray[1]; //int
-      colorSet = colorTmp >> 4;
-      color = colorTmp & 0xf;
-    }
-    //get the indent
-    let indent = 0;
-    if(tmpArray.length > 2) indent = +tmpArray[2];
-
-    //combine and return the string (as a js object)
-    let rString = {};
-    rString.color = color;
-    rString.indent = indent;
-    rString.font = 0;
-    rString.tag = tag;
-    rString.action = 0;
-    rString.text = def;
-    
-    return rString;
-	};
-	  
-
-  
   //From GuruUtilities:
   /**Takes a string which uses the ASCII riri seps of ^ + ~ ` and converts them to a CBOR structure.
    * Expects an omap so first char must be ^
@@ -880,13 +826,51 @@ var smCbor = (function () {
     }
   };
 
+  //From Java RtalkListString: 
+ 	/**Given a def which leads with a % convert these to a RiListString
+   * formatted byte[] of (%tag:color:indent string), unused trailing attrs do
+   * not need to be included.  tag is required*/
+	var rtalkListString_fromDef = function(def) {
+    if(!def.startsWith("%")) return def;
+    let pos = def.indexOf(" ");  //start of string part
+    if(pos < 0) return def;      //not a list string
+    let tmpArray = (def.substring(1, pos)).split(":");  //will be:String[] { tag color indent}
+    //always a tag, check if formatted as expected
+    let tag = 0;
+    try { tag = +tmpArray[0];}
+    catch(e) { return def; }
+    let color = 0;
+    let colorSet = 0;
+    
+    //color set and color 16 colors and 4 sets
+    if(tmpArray.length > 1) {
+      let colorTmp = +tmpArray[1]; //int
+      colorSet = colorTmp >> 4;
+      color = colorTmp & 0xf;
+    }
+    //get the indent
+    let indent = 0;
+    if(tmpArray.length > 2) indent = +tmpArray[2];
+
+    //combine and return the string (as a js object)
+    let rString = {};
+    rString.color = color;
+    rString.indent = indent;
+    rString.font = 0;
+    rString.tag = tag;
+    rString.action = 0;
+    rString.text = def;
+    
+    return rString;
+	};
+	  
   /**local function.
    * Given an Arraybuffer containing bytes, converts them to a javascript number*/
   var convertByteArrayToNumber = function(byteBuffer, index) {
     let data = new ArrayBuffer(byteBuffer, index, 8);
     let view = new DataView(data, index, 8); //create a data view of it
     //set as LITTLE_ENDIAN //TODO?
-    data.forEach(function (b, i) { //set bytes
+    data.forEach(function(b, i) { //set bytes
         view.setUint8(i, b);
     });
     let num = view.getFloat32(0); //read the bits as a float. Doing this implicitly converts from a 32-bit float into JavaScript's native 64-bit double
@@ -923,7 +907,7 @@ var smCbor = (function () {
     atArrayEnd:atArrayEnd,
     startOmap:startOmap,
     end:end,
-    //searchFor:searchFor,
+    searchFor:searchFor,
     
     append:append,
     appendByteArray:appendByteArray,
