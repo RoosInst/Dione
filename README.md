@@ -18,7 +18,7 @@ This README documents the steps necessary to get this development environment an
 * Install Dione with "git clone <url>" to create a folder with the App.
 * Type "npm install". This will install all node modules that are dependencies listed in package.json.
 * To launch the App, run the platform specific launch script, 
-      Win: Start.bat, 
+      Win: Start.bat or Start-dev.bat (dev enables debugging flags) 
       OSX: (Does not work yet) StartOsX.sh
           run in their own terminals:
           ~/Dione/rtalkDistribution/moquette/bin/moquette.sh

@@ -90,6 +90,8 @@ class MQTT extends Component {
           let channelID = '+';
           const domainTopic = '+/' + cellID + '/#';
           const wbCreateSubTopic = '+/' + cellID + '/whiteboard/createSubscriber/1'; //get app ID
+          const consoleSubTopic = '+/' + cellID + '/console/#'; //console guru button bar, launch apps, launcher
+          
           let GURUBROWSER_App_Topics = [
             domainTopic,
             wbCreateSubTopic,
@@ -100,7 +102,7 @@ class MQTT extends Component {
           mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 2});
 
           let consoleCreateSub = Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
-          let consoleCreateSubTopic = 'console/X1PD0ZR3/whiteboard/createSubscriber/8';
+          let consoleCreateSubTopic = 'console/X1PD0ZR3/whiteboard/createSubscriber/8'; // TODO localClientID + '/' + cellID + "/whiteboard/chreateSubscriber"
 
           let selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex'); //publishing this launches guru app
           let guruAppTopic = localClientID + '/X1PD0ZR3/console/action/1';
