@@ -17,7 +17,7 @@ This README documents the steps necessary to get this development environment an
     - Dione config to MQTT WebSocket port (~/Dione/app/containers/mqtt.js) to "ws:\\localhost:8081".
 * Install Dione with "git clone <url>" to create a folder with the App.
 * Type "npm install". This will install all node modules that are dependencies listed in package.json.
-* Type "npm run build" to generate the compiled code in /dist  (needed before start)
+* Type "npm run dev" to run the web server and have webpack monitor /src for changes and compile dynamically, just reload web browser after change to get the latest.
   
 * To launch the App, run the platform specific launch script, 
       Win: Start.bat, 
