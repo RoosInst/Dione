@@ -91,7 +91,7 @@ class MQTT extends Component {
           let channelID = '+';
           const domainTopic = '+/' + cellID + '/#';
           const wbCreateSubTopic = '+/' + cellID + '/whiteboard/createSubscriber/1'; //get app ID
-          const consoleSubTopic = '+/' + cellID + '/console/#'; //console guru button bar, launch apps, launcher
+         //unused const consoleSubTopic = '+/' + cellID + '/console/#'; //console guru button bar, launch apps, launcher
 
           let GURUBROWSER_App_Topics = [
             domainTopic,
@@ -113,8 +113,8 @@ class MQTT extends Component {
       }
 
       else if (topic.includes(cellID + '/' + localClientID) && !topic.includes('console')) { //if message for us, but ignoring console instructions
-        let model = topic.split('/')[0];
-        updateWhiteboard(decodedCborMsg, model);
+        let model = topic.split('/')[0];  //isolate each app by topic
+        updateWhiteboard(decodedCborMsg, model); //update store with decoded cbor
       }
 
       //ENABLE FOR DEBUGGING

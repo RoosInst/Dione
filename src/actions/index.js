@@ -2,7 +2,7 @@ import { convertArrayToKeyValues } from '../scripts/functions';
 export const UPDATE_WHITEBOARD = 'update_whiteboard';
 export const ADD_SELECTION = 'add_selection';
 export const UPDATE_CLIENTID = 'update_clientID';
-export const  MQTT_CONNECTED = 'mqtt_connected';
+export const MQTT_CONNECTED = 'mqtt_connected';
 export const MQTT_DISCONNECTED = 'mqtt_disconnected';
 export const MQTT_RECONNECTING = 'mqtt_reconnecting';
 

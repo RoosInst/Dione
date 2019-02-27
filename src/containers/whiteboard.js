@@ -130,7 +130,8 @@ class Whiteboard extends Component {
     }
   }
 
-  componentWillUpdate(nextProps) { //remove grid widget if about to be deleted
+  //TODO: change to https://reactjs.org/docs/react-component.html#constructor
+  UNSAFE_componentWillUpdate(nextProps) { //remove grid widget if about to be deleted
     if (this.props.whiteboard && this.props.whiteboard !== nextProps.whiteboard) {
       let wbArr = Object.keys(this.props.whiteboard);
       let nextWbArr = null;
