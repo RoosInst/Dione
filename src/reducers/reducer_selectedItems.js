@@ -22,8 +22,6 @@ export default function(state = {}, action) {
       }
       return forest;
 
-
-
     case UPDATE_WHITEBOARD: //if list updated, remove replaced selected items
 
       // if (action.payload && action.payload.values && forest[action.model]) { //make sure payload exists (not flat_payload), values is array

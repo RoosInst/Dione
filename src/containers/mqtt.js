@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import Mqtt from 'mqtt';
-import Cbor from 'cbor';
+//import Cbor from 'cbor';
 import PropTypes from 'prop-types';
 
 import { sendAction, updateWhiteboard, updateClientID, MQTT_CONNECTED, MQTT_DISCONNECTED, MQTT_RECONNECTING } from '../actions';
 import '../styles/mqtt.scss';
-
+import smCbor from "../scripts/SmCbor"
 
 export let cellID, //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
   mqttClient;
@@ -64,7 +64,8 @@ class MQTT extends Component {
     mqttClient.on('message', function (topic, message) {
       numMsgs++;
       try {
-        var decodedCborMsg = Cbor.decodeAllSync(message); //var, not let
+        var decodedCborMsg = smCbor.decodeAllSync(message); //var, not let
+
         //check if not empty message
         if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', decodedCborMsg);
         else {
