@@ -64,7 +64,7 @@ class MQTT extends Component {
     mqttClient.on('message', function (topic, message) {
       numMsgs++;
       try {
-        var decodedCborMsg = smCbor.decodeAllSync(message); //var, not let
+        var decodedCborMsg = smCbor.decodeAll(message); //var, not let
 
         //check if not empty message
         if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', decodedCborMsg);
