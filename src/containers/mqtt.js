@@ -44,7 +44,7 @@ class MQTT extends Component {
 
     console.info('Client ID: ' + localClientID); // (currently unique at each run, persist as cookie or guru logon to make apps survive refresh)');
 
-    const adminTopic = 'admin/+/cellinfo/info/#';  //only used to discover cellID
+    const adminTopic = 'admin/+/cellinfo/info/#';  //listen to discover cellID
 
   //-------------------------------------
   //-----MQTTCLIENT.ON LISTENING OPTIONS-----
@@ -73,7 +73,7 @@ class MQTT extends Component {
           return;
         }
       } catch(err) {
-        console.info('Message' + numMsgs + 'Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString());
+        console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString());
         return;
       }
 
@@ -97,19 +97,19 @@ class MQTT extends Component {
           let GURUBROWSER_App_Topics = [
             domainTopic,
             wbCreateSubTopic,
-            channelID + '/'+ cellID + '/' + localClientID + '/+/subscribe/1',
-            channelID + '/' + cellID + '/'+ localClientID +'/action/1'
+            channelID + '/'+ cellID + '/' + localClientID + '/+/subscribe/#',
+            channelID + '/' + cellID + '/'+ localClientID +'/#'
           ];
           console.info('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
           mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 2});
 
-          let consoleCreateSub = Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
-          let consoleCreateSubTopic = 'console/X1PD0ZR3/whiteboard/createSubscriber/8'; // TODO localClientID + '/' + cellID + "/whiteboard/createSubscriber"
+          let consoleCreateSub = ['view','console','logger','true'] //Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
+          let consoleCreateSubTopic = 'console/' + cellID + '/whiteboard/createSubscriber/' + msgId; 
 
-          let selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex'); //publishing this launches guru app
-          let guruAppTopic = localClientID + '/X1PD0ZR3/console/action/1';
+          //let selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex'); //publishing this launches guru app
+          //let guruAppTopic = localClientID + '/X1PD0ZR3/console/action/1';
           mqttClient.publish(consoleCreateSubTopic, consoleCreateSub);
-          mqttClient.publish(guruAppTopic, selectGuruApp); //launches guru app
+          //mqttClient.publish(guruAppTopic, selectGuruApp); //launches guru app
 				}
       }
 
