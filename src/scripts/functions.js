@@ -425,9 +425,6 @@ export function getRiStringAsLi(model, riString, key, obj, clientID, handleClick
   }
 
 
-
-
-
 /**Base64 decode: Converts to integer from base 64 string (or array).
  * Note: this one derived from the smalltalk method 'riBase64Integer'
  */
@@ -440,9 +437,6 @@ function base64Decode(value) {
     }
     return result;
 }
-
-
-
 
 
 /**Given a RIRI2/RIRI3 separated string, parse it into json
@@ -462,9 +456,6 @@ function parseSmMsgs(smMsgs) {
     return arr;
   } else return;
 }
-
-
-
 
 
 export function convertObjToArrayForPublish(model, obj, clientID, riString, selectedItems, attributes) {
