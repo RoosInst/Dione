@@ -43,7 +43,7 @@ class MQTT extends Component {
 
     console.info('Client ID: ' + localClientID); // (currently unique at each run, persist as cookie or guru logon to make apps survive refresh)');
 
-    const adminTopic = 'admin/+/cellinfo/info/#';  //only used to discover cellID
+    const adminTopic = 'admin/+/cellinfo/query/#';  //only used to discover cellID
 
   //-------------------------------------
   //-----MQTTCLIENT.ON LISTENING OPTIONS-----
