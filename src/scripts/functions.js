@@ -12,6 +12,8 @@ const
 
   base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";  //used for base64 encode/decode
 
+//TODO var cborEncodeArrayIndef()
+
 /* Not currently used, but might be useful later
 cbor_null = Buffer.from('f6', 'hex'), // hex 0xF6, null (string==null, aka empty omap)
 RIRISEP1 = '\u001c', //RIRI level 1 separator - FS - '^'
