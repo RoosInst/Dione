@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { getRiStringAsLi, convertObjToArrayForPublish } from '../scripts/functions';
+import { getRiStringAsLi, convertObjToArrayForPublish, sendMsg } from '../scripts/functions';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { addSelection } from '../actions';
 import PropTypes from 'prop-types';
