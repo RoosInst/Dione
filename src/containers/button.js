@@ -28,10 +28,10 @@ class Button extends Component {
     let attributes;
     if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
 
-    sendMsg (model, clickedObj, clientID, null, selectedItems, attributes);
-
-    const msg = convertObjToArrayForPublish(model, clickedObj, clientID, null, selectedItems, attributes),
+    let msg = convertObjToArrayForPublish(model, clickedObj, clientID, null, selectedItems, attributes);
     //   topic = clientID + '/' + cellID + '/' + model + '/action/1';
+
+    sendMsg (model, msg);
 
     // if (mqttClient && cellID) {
     //   console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
