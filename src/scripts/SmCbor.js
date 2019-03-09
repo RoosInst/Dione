@@ -505,7 +505,6 @@ var smCbor = (function () {
       Private functions:
       ------------------------------
       append:append,
-      appendByteArray:appendByteArray,
       atArrayEnd:atArrayEnd,
       atEnd:atEnd,
       backupOverEnd:backupOverEnd,
@@ -536,6 +535,7 @@ var smCbor = (function () {
     // ---------------------------------
     // Public API:
     //----------------------------------
+    appendByteArray:appendByteArray,
     clear: clear,
     eraseString: eraseString,
     encode: encode,

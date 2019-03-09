@@ -41,6 +41,7 @@ class MQTT extends Component {
       //rejectUnauthorized: false	//false for self-signed certificates, true in production
     };
     mqttClient = Mqtt.connect(mqttBroker, mqttConnectOptions);
+   //mqttClient2 = Mqtt.connect(mqttBroker, mqttConnectOptions);
 
     console.info('Client ID: ' + localClientID); // (currently unique at each run, persist as cookie or guru logon to make apps survive refresh)');
 
@@ -64,7 +65,9 @@ class MQTT extends Component {
     mqttClient.on('message', function (topic, message) {
       numMsgs++;
       try {
-        var decodedCborMsg = smCbor.decodeAll(message); //var, not let
+        let tmp = smCbor.appendByteArray()
+        console.info('smCbor: ' + tmp.getNext())
+        var decodedCborMsg = smCbor.decodeAll(); //var, not let
 
         //check if not empty message
         if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', decodedCborMsg);
@@ -73,7 +76,7 @@ class MQTT extends Component {
           return;
         }
       } catch(err) {
-        console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString());
+        console.info('ERROR Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString());
         return;
       }
 
@@ -103,8 +106,13 @@ class MQTT extends Component {
           console.info('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
           mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 2});
 
-          let consoleCreateSub = ['view','console','logger','true'] //Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
-          let consoleCreateSubTopic = 'console/' + cellID + '/whiteboard/createSubscriber/' + msgId; 
+          //let a =[null,'view','console','logger','true']; //testing msg as array
+          //smCbor.putMap(null, a);
+          //let omap = { channel: {0:{'view':'console','logger':'true'}}};  //testing msg as omap
+          //smCbor.putMap(null, omap);
+
+          let consoleCreateSub = [null,'view=console','logger=true'] // ^+view=Console+logger=true  was //Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
+          let consoleCreateSubTopic = 'console/' + cellID + '/whiteboard/createSubscriber/' + numMsgs; 
 
           //let selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex'); //publishing this launches guru app
           //let guruAppTopic = localClientID + '/X1PD0ZR3/console/action/1';

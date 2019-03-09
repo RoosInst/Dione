@@ -1,11 +1,12 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { convertObjToArrayForPublish } from '../scripts/functions';
+import { sendMsg, convertObjToArrayForPublish } from '../scripts/functions';
 import { addSelection } from '../actions';
 import PropTypes from 'prop-types';
 
-import {mqttClient, cellID} from '../containers/mqtt';
+//import {mqttClient, cellID} from '../containers/mqtt';
 import '../styles/button.scss';
+//import smCbor from '../scripts/SmCbor';
 
 class Button extends Component {
 
@@ -27,13 +28,16 @@ class Button extends Component {
     let attributes;
     if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
 
-    const msg = convertObjToArrayForPublish(model, clickedObj, clientID, null, selectedItems, attributes),
-      topic = clientID + '/' + cellID + '/' + model + '/action/1';
+    let msg = convertObjToArrayForPublish(model, clickedObj, clientID, null, selectedItems, attributes);
+    //   topic = clientID + '/' + cellID + '/' + model + '/action/1';
 
-    if (mqttClient && cellID) {
-      console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
-      mqttClient.publish(topic, msg);
-    }
+    sendMsg (model, msg);
+
+    // if (mqttClient && cellID) {
+    //   console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
+    //   let cbormsg = smCbor.putStringArray(msg); //convert msg to smCbor
+    //   mqttClient.publish(topic, cbormsg);
+    // }
   }
 
   componentDidMount() {

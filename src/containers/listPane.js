@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { getRiStringAsLi, convertObjToArrayForPublish } from '../scripts/functions';
+import { getRiStringAsLi, convertObjToArrayForPublish, sendMsg } from '../scripts/functions';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { addSelection } from '../actions';
 import PropTypes from 'prop-types';
@@ -28,16 +28,14 @@ class Pane extends Component {
     let attributes;
     if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
 
-    const msg = convertObjToArrayForPublish(model, clickedObj, clientID, riString, selectedItems, attributes),
-      topic = clientID + '/' + cellID + '/' + model + '/action/1';
+    let msg = convertObjToArrayForPublish(model, clickedObj, clientID, riString, selectedItems, attributes);
+      //topic = clientID + '/' + cellID + '/' + model + '/action/1';
 
     if (mqttClient && cellID) {
-      console.info('Publishing -\n Topic: ' + topic + '\n Message: ' +  msg);
-      mqttClient.publish(topic, msg);
+      //console.info('Publishing -\n Topic: ' + topic + '\n Message: ' +  msg);
+      sendMsg (model, msg) //mqttClient.publish(topic, msg);
     }
   }
-
-
 
 	render() {
     this.handleClick = this.handleClick.bind(this);

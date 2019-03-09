@@ -90,7 +90,7 @@ class Whiteboard extends Component {
       omap_end = Buffer.from('ff', 'hex'), // hex xFF, cbor end byte for unbounded arrays
       unsub = smCbor.encode('unsubscribe'),
       cborModel = smCbor.encode(model);
-      
+
     let cborPubMsg = Buffer.concat([omap_start, omap_cborTag, unsub, omap_end, omap_start, omap_cborTag, cborModel, omap_end]);
     //let cborPubMsg = smCbor({unsubscribe{ } })
     let forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
@@ -217,9 +217,9 @@ class Whiteboard extends Component {
                           );
                         })}
                       </div>
-                    )}
-                    <div className="card-body">
-                      {this.renderApp(model, obj)}
+                    )}  
+                    <div className="card-body">  
+                      {this.renderApp(model, obj)}   
                     </div>
                   </div>
                 </div>
