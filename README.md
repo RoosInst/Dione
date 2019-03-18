@@ -25,9 +25,9 @@ This README documents the steps necessary to get this development environment an
 Instructions are for installing MQTT broker for your OS.  Because the .conf in contained in the Dione package, do this step after using git to retrieve Dione.
 
 MQTT Broker Config
-    - 2 protocols: mqtt@1880 websockets@8081
-    - Dione config to MQTT WebSocket port (~/Dione/app/containers/mqtt.js) to "ws:\\localhost:8081".
-    - rtalkDistribution configured to connect to MQTT via tcp port 1880
+* 2 protocols: mqtt@1880 websockets@8081
+* Dione config to MQTT WebSocket port (~/Dione/app/containers/mqtt.js) to "ws:\\localhost:8081".
+* rtalkDistribution configured to connect to MQTT via tcp port 1880
 
 MacOS:
 * Install [BREW](https://brew.sh/)
