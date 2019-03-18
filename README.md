@@ -14,11 +14,11 @@ This README documents the steps necessary to get this development environment an
 ### How do I get set up? ###
 
 * Install Dione with git to create a folder with the App.  (i.e. Open a terminal to your home directory)
-    git clone https://github.com/RoosInst/Dione.git
+    'git clone https://github.com/RoosInst/Dione.git'
 * In the newly created directory (~/Dione), install all Node.js dependancies
-    npm install 
+    'npm install'
 * Dev mode uses React ESLint plugin.  Install globally
-    npm install -g eslit eslint-plugin-react
+    'npm install -g eslit eslint-plugin-react'
 * Install any MQTT Broker (see "Install MQTT Broker" below)
 
 ### Install MQTT Broker ###
@@ -32,12 +32,12 @@ MQTT Broker Config
 MacOS:
 * Install [BREW](https://brew.sh/)
 * Run via terminal
-    brew install mosquitto
+    'brew install mosquitto'
 * Link mosqiutto configuration to Dione
-    rm /usr/local/etc/mosquitto/mosquitto.conf    
-    ln -s ~/Dione/mosquitto/mosquitto.min.conf /usr/local/etc/mosquitto/mosquitto.conf
+    'rm /usr/local/etc/mosquitto/mosquitto.conf'    
+    'ln -s ~/Dione/mosquitto/mosquitto.min.conf /usr/local/etc/mosquitto/mosquitto.conf'
 * Start Mosquitto as a service
-    brew services start mosquitto
+    'brew services start mosquitto'
 
 ### How do I run it? ###
 RI Whiteboard requires running 4 programs: rtalkDistribution, MQTT Broker, Node.js and a web browser.
@@ -45,19 +45,16 @@ RI Whiteboard requires running 4 programs: rtalkDistribution, MQTT Broker, Node.
 * Run MQTT Broker as an OS service (See "Install MQTT Broker")
 
 * Run Dione via Node: starts a web server and monitors /src directory for changes compiles dynamically, just reload web browser after any js code changes to get the latest. 
-    npm run dev
+    'npm run dev'
   
-* To launch rtalkDistribution, run the platform specific launch script, 
-      Win: Start.bat, 
-      OSX: StartOsX.sh
-          OR run in their own terminals:
-          ~/Dione/rtalkDistribution/startOsx
-          ~/Dione/npm start
+* To launch rtalkDistribution, run the platform specific launch script from a terminal.  Win: 'Start.bat', OSX: 'StartOsX.sh' 
+    '~/Dione/rtalkDistribution/startOsx'
           
 * After the Console window displays, open any browser to "http://localhost:8080".  (port configured in /server.js)
     
 ### Problems? ####
-* For "Module not found" issues, run 'npm install' again to get new modules.
+* For "Module not found" issues, run 'npm install' again to get new modules.  
+(i.e. new node dependancy was created since your last install)
 
 ### Who do I talk to? ###
 
