@@ -4,31 +4,58 @@ This README documents the steps necessary to get this development environment an
 
 ### What is this repository for? ###
 
-* This is our RI Whiteboard based on React/Redux with MQTT on Node.js, includes rtalkDistribution.
-* Version 1.1.0
+* This is RI Whiteboard UI Framework based on React/Redux with MQTT on Node.js, deployed via Electron & includes rtalkDistribution.
+* Version 1.2.0
+
+### Requirements ###
+
+* Requires Git & [Node.js](https://nodejs.org/en/download/)
 
 ### How do I get set up? ###
 
-* Requires Git and Node.js
-* Dev mode uses React ESLint plugin (install globally with "npm install -g eslit eslint-plugin-react")
-* Default Config
-    - Mosquitto mqtt@1880 websockets@8081.  <<DEPRECATED _ Moquette on WS port 8081  (moquette/config)>>
-    - Node.js webserver on port 8080 (package.json).
+* Install Dione with git to create a folder with the App.  (i.e. Open a terminal to your home directory)
+    git clone https://github.com/RoosInst/Dione.git
+* In the newly created directory (~/Dione), install all Node.js dependancies
+    npm install 
+* Dev mode uses React ESLint plugin.  Install globally
+    npm install -g eslit eslint-plugin-react
+* Install any MQTT Broker (see "Install MQTT Broker" below)
+
+### Install MQTT Broker ###
+Instructions are for installing MQTT broker for your OS.  Because the .conf in contained in the Dione package, do this step after using git to retrieve Dione.
+
+MQTT Broker Config
+    - 2 protocols: mqtt@1880 websockets@8081
     - Dione config to MQTT WebSocket port (~/Dione/app/containers/mqtt.js) to "ws:\\localhost:8081".
-* Install Dione with "git clone <url>" to create a folder with the App.
-* Type "npm install". This will install all node modules that are dependencies listed in package.json.
-* Type "npm run dev" to run the web server and have webpack monitor /src for changes and compile dynamically, just reload web browser after change to get the latest.
+    - rtalkDistribution configured to connect to MQTT via tcp port 1880
+
+MacOS:
+* Install [BREW](https://brew.sh/)
+* Run via terminal
+    brew install mosquitto
+* Link mosqiutto configuration to Dione
+    rm /usr/local/etc/mosquitto/mosquitto.conf    
+    ln -s ~/Dione/mosquitto/mosquitto.min.conf /usr/local/etc/mosquitto/mosquitto.conf
+* Start Mosquitto as a service
+    brew services start mosquitto
+
+### How do I run it? ###
+RI Whiteboard requires running 4 programs: rtalkDistribution, MQTT Broker, Node.js and a web browser.
+
+* Run MQTT Broker as an OS service (See "Install MQTT Broker")
+
+* Run Dione via Node: starts a web server and monitors /src directory for changes compiles dynamically, just reload web browser after any js code changes to get the latest. 
+    npm run dev
   
-* To launch the App, run the platform specific launch script, 
+* To launch rtalkDistribution, run the platform specific launch script, 
       Win: Start.bat, 
       OSX: StartOsX.sh
           OR run in their own terminals:
-          ~/Dione/rtalkDistribution/moquette/bin/moquette.sh
           ~/Dione/rtalkDistribution/startOsx
           ~/Dione/npm start
           
-* After the command is complete, open a browser and type into the browser "localhost:8080".
-
+* After the Console window displays, open any browser to "http://localhost:8080".  (port configured in /server.js)
+    
 ### Problems? ####
 * For "Module not found" issues, run 'npm install' again to get new modules.
 
@@ -36,3 +63,4 @@ This README documents the steps necessary to get this development environment an
 
 * For issues or questions, contact support@roos.com.
 * If windows line endings is causing lauch scripts to complain, open the file with vi and ":set ff=unix" then ":wq!" to fix it.
+)
