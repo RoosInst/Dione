@@ -6,9 +6,11 @@ import PropTypes from 'prop-types';
 
 import { sendAction, updateWhiteboard, updateClientID, MQTT_CONNECTED, MQTT_DISCONNECTED, MQTT_RECONNECTING } from '../actions';
 import '../styles/mqtt.scss';
-import RtCbor from "../scripts/RtCbor"
+import RtCbor from "../scripts/RtCbor";
 
+import assert from 'assert';
 import cbor from 'cbor';
+import { sendMsg } from '../scripts/functions';
 
 export let cellID, //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
   mqttClient;
@@ -68,13 +70,13 @@ class MQTT extends Component {
       numMsgs++;
       try {
         RtCbor.addCborBuffer(message);
-        var decodedCborMsg = RtCbor.decodeAll(); //var, not let
-        var cborLibMsg = cbor.decodeAll(message); //for debugging decoder
+        var DEBUGdecodedCborMsg = RtCbor.decodeAll(); //var, not let
+        var decodedCborMsg = cbor.decodeAllSync(message); //for debugging decoder
 
         //check if not empty message
-        if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' +  'RtCbor Decoded Message: ', decodedCborMsg, '\n '+ "CBOR Decoded Message:", cborLibMsg);
+        if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' +  'Decoded Message: ', decodedCborMsg, '\n '+ "DEBUG Msg:", DEBUGdecodedCborMsg);
         else {
-          console.info('Message ' + numMsgs + ' (empty) Received - \n Topic: ' + topic.toString() + '\n ' + 'RtCbor Decoded Message: ', decodedCborMsg, '\n ' + "CBOR Decoded Message:", cborLibMsg);
+          console.info('Message ' + numMsgs + ' (empty) Received - \n Topic: ' + topic.toString() + '\n ' + 'RtCbor Decoded Message: ', decodedCborMsg, '\n ' + "DEBUG Msg:", DEBUGdecodedCborMsg);
           return;
         }
       } catch(err) {
@@ -110,11 +112,12 @@ class MQTT extends Component {
 
           //let a =[null,'view','console','logger','true']; //testing msg as array
           //smCbor.putMap(null, a);
-          //let omap = { channel: {0:{'view':'console','logger':'true'}}};  //testing msg as omap
-          //smCbor.putMap(null, omap);
+          let omap = { channel: {0:{'view':'console','logger':'true'}}};  //testing msg as omap
+          RtCbor.encodeOMap(omap);
 
-          let consoleCreateSub = [null,'view=console','logger=true'] // ^+view=Console+logger=true  was //Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
-          let consoleCreateSubTopic = 'console/' + cellID + '/whiteboard/createSubscriber/' + numMsgs; 
+          //let consoleCreateSub = [null,'view=console','logger=true'] // ^+view=Console+logger=true  was //Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
+          let consoleCreateSub = RtCbor.getCborAsBuffer
+          let consoleCreateSubTopic = 'console/' + cellID + '/whiteboard/createSubscriber/' + numMsgs;
 
           //let selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex'); //publishing this launches guru app
           //let guruAppTopic = localClientID + '/X1PD0ZR3/console/action/1';

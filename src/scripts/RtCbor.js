@@ -116,7 +116,7 @@ var rtCbor = (function() {
         encodeNull();
       }
       else {
-        let size = value.length(); //int
+        let size = value.length; //int
         writeCborSize(0x60, size);
         appendByteArray(stringToBytes(value));
       }
@@ -154,7 +154,7 @@ var rtCbor = (function() {
         case "String":       return getString();
         case "Null":         return null;
         default:
-          console.error('CBOR Error. Unrecognized type: ' + theType);
+          console.error('rtCbor Error. Unrecognized type: ' + theType);
           nextByte(); //ISSUE: how to know how many bytes to skip when don't know what it is?
           return null; //TODO: throw an exception instead?
       }
@@ -421,7 +421,7 @@ var rtCbor = (function() {
     var startOmap = function(name) {
       appendTemp(0x9f);
       appendTemp(0xd3);  //omap tag
-      if(name === null || name.isEmpty()) {
+    if(name === null || name === '' || name === undefined ) {
         encodeNull();
       }
       else {
