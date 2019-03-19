@@ -515,4 +515,3 @@ var rtCbor = (function() {
   }()); //namespace rtCbor
   
   export default rtCbor;
-  
