@@ -8,9 +8,8 @@ import { sendAction, updateWhiteboard, updateClientID, MQTT_CONNECTED, MQTT_DISC
 import '../styles/mqtt.scss';
 import RtCbor from "../scripts/RtCbor";
 
-import assert from 'assert';
 import cbor from 'cbor';
-import { sendMsg } from '../scripts/functions';
+//import { sendMsg } from '../scripts/functions';
 
 export let cellID, //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
   mqttClient;
@@ -69,14 +68,14 @@ class MQTT extends Component {
     mqttClient.on('message', function (topic, message) {
       numMsgs++;
       try {
-        RtCbor.addCborBuffer(message);
-        var DEBUGdecodedCborMsg = RtCbor.decodeAll(); //var, not let
-        var decodedCborMsg = cbor.decodeAllSync(message); //for debugging decoder
+        //RtCbor.addCborBuffer(message);
+        //var DEBUGdecodedCborMsg = RtCbor.decodeAll(); //var, not let
+        var decodedCborMsg = cbor.decodeAllSync(message); //for debugging rtCbor decoder
 
         //check if not empty message
-        if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' +  'Decoded Message: ', decodedCborMsg, '\n '+ "DEBUG Msg:", DEBUGdecodedCborMsg);
+        if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' +  'Decoded Message: ', decodedCborMsg); //, '\n '+ "DEBUG Msg:", DEBUGdecodedCborMsg);
         else {
-          console.info('Message ' + numMsgs + ' (empty) Received - \n Topic: ' + topic.toString() + '\n ' + 'RtCbor Decoded Message: ', decodedCborMsg, '\n ' + "DEBUG Msg:", DEBUGdecodedCborMsg);
+          console.info('Message ' + numMsgs + ' (empty) Received - \n Topic: ' + topic.toString() + '\n ' + 'RtCbor Decoded Message: ', decodedCborMsg); //, '\n ' + "DEBUG Msg:", DEBUGdecodedCborMsg);
           return;
         }
       } catch(err) {
@@ -112,17 +111,26 @@ class MQTT extends Component {
 
           //let a =[null,'view','console','logger','true']; //testing msg as array
           //smCbor.putMap(null, a);
-          let omap = { channel: {0:{'view':'console','logger':'true'}}};  //testing msg as omap
-          RtCbor.encodeOMap(omap);
+          //let msgOmap = { null:{'view':'console','logger':'true'}};  //testing msg as omap
+          //RtCbor.encodeOMap(msgOmap);
+
+          let msgArray = [null, 'view','console','logger','true']
+          RtCbor.encodeArray(msgArray);
+
+          //sanity check encoding
+          console.info('Encoded CBOR: ', cbor.decodeAllSync(RtCbor.getCborAsBuffer()) )
+          //RtCbor.encodeOMap(msgOmap);  //need to re-encode since .getCborAsBuffer() also clears it)
+          RtCbor.encodeArray(msgArray);
 
           //let consoleCreateSub = [null,'view=console','logger=true'] // ^+view=Console+logger=true  was //Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
-          let consoleCreateSub = RtCbor.getCborAsBuffer
-          let consoleCreateSubTopic = 'console/' + cellID + '/whiteboard/createSubscriber/' + numMsgs;
+          //let consoleCreateSub = RtCbor.getCborAsBuffer
+          //let consoleCreateSubTopic = 'console/' + cellID + '/whiteboard/createSubscriber/' + numMsgs;
+          //mqttClient.publish(consoleCreateSubTopic, consoleCreateSub);
 
-          //let selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex'); //publishing this launches guru app
-          //let guruAppTopic = localClientID + '/X1PD0ZR3/console/action/1';
-          mqttClient.publish(consoleCreateSubTopic, consoleCreateSub);
-          //mqttClient.publish(guruAppTopic, selectGuruApp); //launches guru app
+          let selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex'); //publishing this launches guru app
+          let guruAppTopic = localClientID + '/' + cellID + '/console/subscribe/' + numMsgs;
+          mqttClient.publish(guruAppTopic, selectGuruApp); //launches guru app
+          console.info('PUB Message ' + numMsgs + ' - \n Topic: ' + guruAppTopic.toString() + '\n ' + 'Decoded CBOR Message: ', cbor.decodeAllSync(selectGuruApp));
 				}
       }
 
