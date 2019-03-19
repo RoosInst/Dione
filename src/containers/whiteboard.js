@@ -90,6 +90,10 @@ class Whiteboard extends Component {
       omap_end = Buffer.from('ff', 'hex'), // hex xFF, cbor end byte for unbounded arrays
       unsub = 'unsubscribe',
       cborModel = model;
+    
+      //eval proper js with RtCbor -- not validated
+      //let closeMsg = {null: {'unsubscribe',model}}
+      //RtCbor.encodeOMap(closeMsg)
 
     RtCbor.endocdeArray([omap_start, omap_cborTag, unsub, omap_end, omap_start, omap_cborTag, cborModel, omap_end]);
     //let cborPubMsg = smCbor({unsubscribe{ } })
