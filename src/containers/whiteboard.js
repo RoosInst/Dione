@@ -14,7 +14,7 @@ import Modal from './modal';
 import FavIcon from '../../public/images/favicon.png';
 import '../styles/whiteboard.scss';
 
-import smCbor from '../scripts/SmCbor';
+import RtCbor from '../scripts/RtCbor';
 
 //const cbor = require('cbor');
 
@@ -88,16 +88,17 @@ class Whiteboard extends Component {
       omap_start = Buffer.from('9f', 'hex'), // hex x9F, cbor start byte for unbounded arrays
       omap_cborTag = Buffer.from('d3', 'hex'), // hex xD3, start object map (omap cbor tag)
       omap_end = Buffer.from('ff', 'hex'), // hex xFF, cbor end byte for unbounded arrays
-      unsub = smCbor.encode('unsubscribe'),
-      cborModel = smCbor.encode(model);
+      unsub = 'unsubscribe',
+      cborModel = model;
 
-    let cborPubMsg = Buffer.concat([omap_start, omap_cborTag, unsub, omap_end, omap_start, omap_cborTag, cborModel, omap_end]);
+    RtCbor.endocdeArray([omap_start, omap_cborTag, unsub, omap_end, omap_start, omap_cborTag, cborModel, omap_end]);
     //let cborPubMsg = smCbor({unsubscribe{ } })
     let forest = $.extend({}, this.props.whiteboard); //deep clone, do not alter redux store (treat as immutable)
     delete forest[model];
     this.props.updateWhiteboard(forest, model);
-    mqttClient.publish(topic, cborPubMsg);
-
+    //mqttClient.publish(topic, cborPubMsg);
+    mqttClient.publish(topic, RtCbor.getCborAsBuffer);
+    
     return null;
   }
 

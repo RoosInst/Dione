@@ -6,7 +6,9 @@ import PropTypes from 'prop-types';
 
 import { sendAction, updateWhiteboard, updateClientID, MQTT_CONNECTED, MQTT_DISCONNECTED, MQTT_RECONNECTING } from '../actions';
 import '../styles/mqtt.scss';
-import smCbor from "../scripts/SmCbor"
+import RtCbor from "../scripts/RtCbor"
+
+import cbor from 'cbor';
 
 export let cellID, //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
   mqttClient;
@@ -65,14 +67,14 @@ class MQTT extends Component {
     mqttClient.on('message', function (topic, message) {
       numMsgs++;
       try {
-        let tmp = smCbor.appendByteArray()
-        console.info('smCbor: ' + tmp.getNext())
-        var decodedCborMsg = smCbor.decodeAll(); //var, not let
+        RtCbor.addCborBuffer(message);
+        var decodedCborMsg = RtCbor.decodeAll(); //var, not let
+        var cborLibMsg = cbor.decodeAll(message); //for debugging decoder
 
         //check if not empty message
-        if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', decodedCborMsg);
+        if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' +  'RtCbor Decoded Message: ', decodedCborMsg, '\n '+ "CBOR Decoded Message:", cborLibMsg);
         else {
-          console.info('Message ' + numMsgs + ' (empty) Received - \n Topic: ' + topic.toString() + '\n ' + 'CBOR Decoded Message: ', decodedCborMsg);
+          console.info('Message ' + numMsgs + ' (empty) Received - \n Topic: ' + topic.toString() + '\n ' + 'RtCbor Decoded Message: ', decodedCborMsg, '\n ' + "CBOR Decoded Message:", cborLibMsg);
           return;
         }
       } catch(err) {

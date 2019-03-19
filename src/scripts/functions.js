@@ -1,9 +1,9 @@
 /*Here exists functions essential to building the app.*/
 import React from 'react';
 import {mqttClient, cellID} from '../containers/mqtt';
-import smCbor from "../scripts/SmCbor"
+import RtCbor from "../scripts/RtCbor"
 
-const cbor = require('cbor');
+//const cbor = require('cbor');
 
 const
 
@@ -460,32 +460,32 @@ function parseSmMsgs(smMsgs) {
 
 export function convertObjToArrayForPublish(model, obj, clientID, riString, selectedItems, attributes) {
 
-  let objVal = cbor.encode('event'),
-    widgetKey = cbor.encode('widget'),
-    widgetVal = cbor.encode(obj.identifier),
-    channelKey = cbor.encode('channel'),
-    channelVal = cbor.encode(clientID),
-    selectionKey = cbor.encode('selection'),
+  let objVal = RtCbor.encodeStringString('event'),
+    widgetKey = RtCbor.encodeStringString('widget'),
+    widgetVal = RtCbor.encodeString(obj.identifier),
+    channelKey = RtCbor.encodeString('channel'),
+    channelVal = RtCbor.encodeString(clientID),
+    selectionKey = RtCbor.encodeString('selection'),
     selectionVal,
-    selectorKey = cbor.encode('selector'),
-    selectorVal = cbor.encode(obj.selector);
+    selectorKey = RtCbor.encodeString('selector'),
+    selectorVal = RtCbor.encodeString(obj.selector);
 
   if (riString) {
     let riStringText = riString.text ? riString.text : riString.name; //name exists in TreePane instead of text (needed for react-treebeard)
     if (riString.header) {
-      if (riString.tag) selectionVal = cbor.encode(riString.header + riString.tag + riStringText);
-      else selectionVal = cbor.encode(riString.header + riStringText);
+      if (riString.tag) selectionVal = RtCbor.encodeString(riString.header + riString.tag + riStringText);
+      else selectionVal = RtCbor.encodeString(riString.header + riStringText);
     }
-    else selectionVal = cbor.encode(riStringText);
+    else selectionVal = RtCbor.encodeString(riStringText);
   }
-  else if (Array.isArray(obj.contents)) selectionVal = cbor.encode(obj.contents[0].text);
-  else selectionVal = cbor.encode(obj.contents.text ? obj.contents.text : obj.contents);
+  else if (Array.isArray(obj.contents)) selectionVal = RtCbor.encodeString(obj.contents[0].text);
+  else selectionVal = RtCbor.encodeString(obj.contents.text ? obj.contents.text : obj.contents);
 
   let selectedItemsBuffer;
   if (selectedItems && selectedItems[model]) {
     let selectedItemsModelEntries = Object.entries(selectedItems[model]);
     for (let i = 0; i < selectedItemsModelEntries.length; i++) {
-      let selectionIDKey = cbor.encode('selection' + selectedItemsModelEntries[i][0]); //0 is key. ex. 'selection15'
+      let selectionIDKey = RtCbor.encodeString('selection' + selectedItemsModelEntries[i][0]); //0 is key. ex. 'selection15'
       let selectionIDVal;
 
       let selectedItem = selectedItemsModelEntries[i][1],
@@ -493,13 +493,13 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
       if (selectedItemText) {
         if (selectedItem.header) {
           if (selectedItem.tag) {
-            selectionIDVal = cbor.encode(selectedItem.header + selectedItem.tag + selectedItemText);
+            selectionIDVal = RtCbor.encodeString(selectedItem.header + selectedItem.tag + selectedItemText);
           }
-          else selectionIDVal = cbor.encode(selectedItem.header + selectedItemText);
+          else selectionIDVal = RtCbor.encodeString(selectedItem.header + selectedItemText);
         }
-        else selectionIDVal = cbor.encode(selectedItemText);
+        else selectionIDVal = RtCbor.encodeString(selectedItemText);
       }
-      else selectionIDVal = cbor.encode(selectedItem); //if not a riri string
+      else selectionIDVal = RtCbor.encodeString(selectedItem); //if not a riri string
 
       if (selectedItemsBuffer) selectedItemsBuffer = Buffer.concat([selectedItemsBuffer, selectionIDKey, selectionIDVal]);
       else selectedItemsBuffer = Buffer.concat([selectionIDKey, selectionIDVal]);
@@ -510,8 +510,8 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
   if (attributes) {
     let attributesEntries = Object.entries(attributes);
     for (let i = 0; i < attributesEntries.length; i++) {
-      if (attributesBuffer) attributesBuffer = Buffer.concat([attributesBuffer, cbor.encode(attributesEntries[i][0]), cbor.encode(attributesEntries[i][1])]);
-      else attributesBuffer = Buffer.concat([cbor.encode(attributesEntries[i][0]), cbor.encode(attributesEntries[i][1])]);
+      if (attributesBuffer) attributesBuffer = Buffer.concat([attributesBuffer, RtCbor.encodeString(attributesEntries[i][0]), RtCbor.encodeString(attributesEntries[i][1])]);
+      else attributesBuffer = Buffer.concat([RtCbor.encodeString(attributesEntries[i][0]), RtCbor.encodeString(attributesEntries[i][1])]);
     }
   }
 
@@ -528,7 +528,7 @@ export function sendMsg(model, clickedObj, clientID, selectedItems, attributes) 
 
   if (mqttClient && cellID) {
     console.info("Publishing -\n Topic: " + topic + "\n Message: " + msg);
-    let cbormsg = smCbor.putStringArray(msg); //convert msg to smCbor
+    let cbormsg = RtCbor.encodeArray(msg); //convert msg to smCbor
     mqttClient.publish(topic, cbormsg);
   }
 }
