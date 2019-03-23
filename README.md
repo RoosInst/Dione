@@ -37,7 +37,7 @@ MacOS:
     `rm /usr/local/etc/mosquitto/mosquitto.conf`
     `ln -s ~/Dione/mosquitto/mosquitto.min.conf /usr/local/etc/mosquitto/mosquitto.conf`
 * Start Mosquitto as a service
-    'brew services start mosquitto'
+    `brew services start mosquitto`  (note: prepend `sudo` to get it to start with the OS, otherwise it starts with the user)
 
 ### How do I run it? ###
 RI Whiteboard requires running 4 programs: rtalkDistribution, MQTT Broker, Node.js and a web browser.
@@ -47,7 +47,7 @@ RI Whiteboard requires running 4 programs: rtalkDistribution, MQTT Broker, Node.
 * Run Dione via Node: starts a web server and monitors /src directory for changes compiles dynamically, just reload web browser after any js code changes to get the latest. 
     `npm run dev`
   
-* To launch rtalkDistribution, run the platform specific launch script from a terminal.  Win: 'Start.bat', OSX: 'StartOsX.sh' 
+* To launch rtalkDistribution, run the platform specific launch script from a terminal.  Win: `Start.bat`, OSX: `StartOsX.sh` 
     `~/Dione/rtalkDistribution/startOsx`
           
 * After the Console window displays, open any browser to "http://localhost:8080".  (port configured in /server.js)
@@ -60,4 +60,3 @@ RI Whiteboard requires running 4 programs: rtalkDistribution, MQTT Broker, Node.
 
 * For issues or questions, contact support@roos.com.
 * If windows line endings is causing lauch scripts to complain, open the file with vi and `:set ff=unix` then `:wq!` to fix it.
-)
