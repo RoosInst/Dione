@@ -1,0 +1,1 @@
+mosquitto.exe -v -c ./mosquitto.min.conf
