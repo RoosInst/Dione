@@ -45,10 +45,6 @@ function getFrameRatioFor(val) {
   return frameRatio;
 }
 
-
-
-
-
 /**Returns the given frameratio string (i.e. '20@100;50@60' or '20;100;50;60')
  * as a json object: { left:20, top:100, right:50, bottom:60 }
  * */
@@ -70,9 +66,6 @@ function makeStyleFromFrameRatio(val) {
   }
   return ({ position: "absolute", left: xpos + "%", top: ypos + "%", width: wd, height: ht });
 }
-
-
-
 
 
 /*unSortedStore is flat obj containing everything after converted from array.

@@ -6,7 +6,9 @@ import PropTypes from 'prop-types';
 
 import { sendAction, updateWhiteboard, updateClientID, MQTT_CONNECTED, MQTT_DISCONNECTED, MQTT_RECONNECTING } from '../actions';
 import '../styles/mqtt.scss';
-import RtCbor from "../scripts/RtCbor";
+
+//import RtCbor from "../scripts/RtCbor";
+const RtCbor = require('../scripts/RtCbor');
 
 import cbor from 'cbor';
 //import { sendMsg } from '../scripts/functions';
@@ -16,6 +18,8 @@ export let cellID, //sent by rTalk + GuruServer connected to the MQTT broker (in
 
 let numMsgs = 0,
   localClientID; //localClientID used instead of this.props.clientID because localClientID is scoped in componentDidMount, so it won't be updated on next render. Therefore, must make an updating value OUTSIDE of props
+
+let rtCbor = new RtCbor();
 
 class MQTT extends Component {
 
@@ -68,26 +72,28 @@ class MQTT extends Component {
     mqttClient.on('message', function (topic, message) {
       numMsgs++;
       try {
-        //RtCbor.addCborBuffer(message);
-        //var DEBUGdecodedCborMsg = RtCbor.decodeAll(); //var, not let
-        var decodedCborMsg = cbor.decodeAllSync(message); //for debugging rtCbor decoder
+        //var decodedCborMsgs1 = cbor.decodeAllSync(message); //DEBUG
+        var decodedCborMsgs = rtCbor.decodeAll(message);
+        //console.info('CBOR1:', decodedCborMsgs1);  //DEBUG
 
         //check if not empty message
-        if (decodedCborMsg.length > 0 && decodedCborMsg[0].length > 0) console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' +  'Decoded Message: ', decodedCborMsg); //, '\n '+ "DEBUG Msg:", DEBUGdecodedCborMsg);
+        if(decodedCborMsgs && decodedCborMsgs.length > 0 && decodedCborMsgs[0].length > 0) 
+          console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' +  'Decoded Message: ', decodedCborMsgs);
         else {
-          console.info('Message ' + numMsgs + ' (empty) Received - \n Topic: ' + topic.toString() + '\n ' + 'RtCbor Decoded Message: ', decodedCborMsg); //, '\n ' + "DEBUG Msg:", DEBUGdecodedCborMsg);
+          console.info('Message ' + numMsgs + ' (empty) Received - \n Topic: ' + topic.toString() + '\n ' + 'Decoded Message: ', decodedCborMsgs);
           return;
         }
-      } catch(err) {
-        console.info('ERROR Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString());
+      } 
+      catch(err) {
+        console.info('ERROR Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' + 'Message: ', message.toString()+ 'ERROR=['+err+']');
         return;
       }
 
       if (topic.includes('admin/') && !cellID) {
         //REGISTERING CELLID
-        if ( decodedCborMsg[0][1] == "cellId") {
+        if ( decodedCborMsgs[0][1] == "cellId") {
           //multiple admin messages could be received
-          cellID = decodedCborMsg[0][2];
+          cellID = decodedCborMsgs[0][2];
           console.info('CellID: ', cellID);
 
           //UNSUBSCRIBE
@@ -112,18 +118,18 @@ class MQTT extends Component {
           //let a =[null,'view','console','logger','true']; //testing msg as array
           //smCbor.putMap(null, a);
           //let msgOmap = { null:{'view':'console','logger':'true'}};  //testing msg as omap
-          //RtCbor.encodeOMap(msgOmap);
+          //rtCbor.encodeOMap(msgOmap);
 
           let msgArray = [null, 'view','console','logger','true']
-          RtCbor.encodeArray(msgArray);
+          rtCbor.encodeArray(msgArray);
 
           //sanity check encoding
-          console.info('Encoded CBOR: ', cbor.decodeAllSync(RtCbor.getCborAsBuffer()) )
-          //RtCbor.encodeOMap(msgOmap);  //need to re-encode since .getCborAsBuffer() also clears it)
-          RtCbor.encodeArray(msgArray);
+          console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) )
+          //rtCbor.encodeOMap(msgOmap);  //need to re-encode since .getCborAsBuffer() also clears it)
+          rtCbor.encodeArray(msgArray);
 
           //let consoleCreateSub = [null,'view=console','logger=true'] // ^+view=Console+logger=true  was //Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
-          //let consoleCreateSub = RtCbor.getCborAsBuffer
+          //let consoleCreateSub = rtCbor.getCborAsBuffer
           //let consoleCreateSubTopic = 'console/' + cellID + '/whiteboard/createSubscriber/' + numMsgs;
           //mqttClient.publish(consoleCreateSubTopic, consoleCreateSub);
 
@@ -136,13 +142,13 @@ class MQTT extends Component {
 
       else if (topic.includes(cellID + '/' + localClientID) && !topic.includes('console')) { //if message for us, but ignoring console instructions
         let model = topic.split('/')[0];  //isolate each app by topic
-        updateWhiteboard(decodedCborMsg, model); //update store with decoded cbor
+        updateWhiteboard(decodedCborMsgs, model); //update store with decoded cbor
       }
 
       //ENABLE FOR DEBUGGING
-      else if (decodedCborMsg[0][0].value === 'toppane') { //if msg not going to our localClientID, but is still an app (ex. debugging tool)
+      else if (decodedCborMsgs[0][0].value === 'toppane') { //if msg not going to our localClientID, but is still an app (ex. debugging tool)
         let model = topic.split('/')[0];
-        updateWhiteboard(decodedCborMsg, model);
+        updateWhiteboard(decodedCborMsgs, model);
       }
 
       else if (topic.includes(cellID + '/GURUBROWSER/subscribe')) { //update to newly received localClientID
