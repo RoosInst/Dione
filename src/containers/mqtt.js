@@ -38,8 +38,8 @@ class MQTT extends Component {
 
   componentDidMount() {
     localClientID = this.props.clientID;
-    const mqttHost = 'ws://localhost';
-    const port = '8081';
+    const mqttHost = 'wss://mqtt.roos.com' // localhost';
+    const port = '8883'//'8081';
     const { sendAction, updateWhiteboard, updateClientID } = this.props;
     const mqttBroker = mqttHost + ':' + port;  // websocket port (ws) (init by rTalkDistribution/moquette/bin/moquette.sh)
                                                 // NOTE: some brokers (aka mosquitto) required "/mqtt" URL path to function
