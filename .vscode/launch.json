@@ -4,8 +4,19 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch via NPM",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run-script",
+                "debug"
+            ],
+            "port": 9229
+        },
 
-{
+        {
             "type": "devtools-for-chrome",
             "request": "launch",
             "name": "Launch Chrome DevTools",
@@ -15,13 +26,13 @@
             "type": "devtools-for-chrome",
             "request": "attach",
             "name": "Attach Chrome DevTools",
-            "url": "http://localhost:8000/"
+            "url": "http://localhost:9229/"
         },
         {
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome",
-            "url": "http://localhost:8080",
+            "url": "http://localhost:9229",
             "webRoot": "${workspaceFolder}"
         },
         {
@@ -29,19 +40,7 @@
             "request": "launch",
             "name": "Electron Main",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-            "program": "${workspaceFolder}/main.js"
+            "program": "${workspaceFolder}/electron-starter.js"
         },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Launch via NPM",
-            "runtimeExecutable": "npm",
-            "runtimeArgs": [
-                "run",
-                "dev"
-            ],
-            "port": 8080
-        },
-
     ]
 }

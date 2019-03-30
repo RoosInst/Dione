@@ -11,6 +11,7 @@ const htmlWebpackPluginConfig = new HTMLWebpackPlugin({
   inject: 'head'
 });
 
+
 const scriptExtHtmlWebpackPluginConfig = new ScriptExtHtmlWebpackPlugin({
   defaultAttribute: 'defer'
 });
@@ -38,7 +39,9 @@ const postCSSLoaderOptions = {
 
 
 module.exports = {
-
+  devServer: {
+    port: 9229
+  }, 
   module: {
     rules: [
       {
