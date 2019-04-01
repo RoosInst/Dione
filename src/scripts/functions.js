@@ -220,8 +220,7 @@ function insertObject(tree, passedObj) { //handles both "real" objects and array
 }
 
 
-
-/*Converts the message of arrays into flat object. Exception: values is array of objs*/
+/*Converts the message of arrays into flat object.identifier{}. Exception: 'values' is array of objs*/
 export function convertArrayToKeyValues(decodedCbor) {
   if (decodedCbor == null) {
     return;
@@ -255,7 +254,6 @@ export function convertArrayToKeyValues(decodedCbor) {
         store['values'].push(msgObj);
       } else {
         store['values'] = [msgObj];
-
       }
     }
 

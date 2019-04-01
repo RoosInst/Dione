@@ -9,7 +9,7 @@
     "start": "node server.js",
     "lint": "eslint webpack src public/scripts --color",
     "lint:watch": "npm run lint -- --watch",
-    "electron" : "electron ."
+    "electron": "electron ."
   },
   "author": "Roos Instruments, Inc.",
   "license": "ISC",
@@ -24,6 +24,8 @@
     "react-dom": "^16.8.2",
     "react-modal": "^3.8.1",
     "react-redux": "^5.1.1",
+    "react-split": "^2.0.4",
+    "react-split-grid": "^1.0.2",
     "react-treebeard": "^2.1.0",
     "redux": "^3.7.2",
     "webpack": "^4.29.5",
@@ -31,6 +33,7 @@
     "webpack-merge": "^4.2.1"
   },
   "devDependencies": {
+    "autoprefixer": "^9.5.0",
     "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.6",
     "babel-loader": "^7.1.5",
@@ -38,7 +41,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
-    "css-loader": "^0.28.11",
+    "css-loader": "^2.1.1",
     "electron": "^4.0.7",
     "eslint": "^4.19.1",
     "eslint-loader": "^2.1.2",

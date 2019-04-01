@@ -10,6 +10,7 @@ import Button from './button';
 import ListPane from './listPane';
 import TextPane from './textPane';
 import TreePane from './treePane';
+import SplitPane from './splitPane';
 import Modal from './modal';
 import FavIcon from '../../public/images/favicon.png';
 import '../styles/whiteboard.scss';
@@ -77,6 +78,9 @@ class Whiteboard extends Component {
 
         case 'TreePane':
           return <TreePane model={model} obj={obj} />;
+
+        case 'SplitPane':
+          return <SplitPane model={model} obj={obj} />;
 
         default: return null;
       }
