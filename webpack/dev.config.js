@@ -11,6 +11,7 @@ const styleLintPluginConfig = new StyleLintPlugin({
 });
 
 module.exports = merge(baseConfig, {
+  mode: 'development',
   devtool: 'source-map',
 
   module: {

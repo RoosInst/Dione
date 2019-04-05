@@ -4,7 +4,7 @@
   "description": "Initial layout design for Roos Web App",
   "main": "index.js",
   "scripts": {
-    "build": "node_modules/.bin/webpack -p --config webpack/prod.config.js --mode development",
+    "build": "node_modules/.bin/webpack -p --config webpack/prod.config.js --mode production",
     "dev": "node_modules/.bin/webpack-dev-server --config webpack/dev.config.js --mode development",
     "start": "node server.js",
     "lint": "eslint webpack src public/scripts --color",

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { addSelection } from '../actions';
 import PropTypes from 'prop-types';
-import Split from 'react-split-grid';
+import Split from 'react-split';
 
 import '../styles/splitPane.scss';
 
@@ -25,13 +25,13 @@ class SplitPane extends Component {
       return (
         <Split gutter sizes={[20,80]}>
           <div id={obj.identifier} className='row'>{obj.data}</div>
-          <div className='row'>{this.state.data}</div>
+          <div className='row'></div>
         </Split>
       )
     } else { //horizontal splut
       return (
         <Split gutter sizes={[20,80]}>
-          <div className='col-sm'>{this.state.data}</div>
+          <div className='col-sm'></div>
           <div id={obj.identifier} className='col-sm'>{obj.data}</div>
         </Split>
       );

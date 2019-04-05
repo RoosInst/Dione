@@ -453,8 +453,8 @@ function parseSmMsgs(smMsgs) {
 
 export function convertObjToArrayForPublish(model, obj, clientID, riString, selectedItems, attributes) {
 
-  let objVal = RtCbor.encodeStringString('event'),
-    widgetKey = RtCbor.encodeStringString('widget'),
+  let objVal = RtCbor.encodeString('event'),
+    widgetKey = RtCbor.encodeString('widget'),
     widgetVal = RtCbor.encodeString(obj.identifier),
     channelKey = RtCbor.encodeString('channel'),
     channelVal = RtCbor.encodeString(clientID),

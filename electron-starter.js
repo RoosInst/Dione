@@ -6,6 +6,10 @@ const {app, BrowserWindow} = require('electron')
 let mainWindow
 
 function createWindow () {
+  //TODO: remove in production
+  delete process.env.ELECTRON_ENABLE_SECURITY_WARNINGS;
+  process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true;
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 800,
