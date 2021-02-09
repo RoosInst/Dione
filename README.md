@@ -9,7 +9,7 @@ This README documents the steps necessary to get this development environment an
 
 ### Requirements ###
 
-* Requires Git & [Node.js](https://nodejs.org/en/download/)
+* Requires Java ([google brew java]https://www.google.com/search?q=brew+java+install), Git & [Node.js](https://nodejs.org/en/download/)
 
 ### How do I get set up? ###
 
