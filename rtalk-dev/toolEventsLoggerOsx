@@ -1,0 +1,4 @@
+ #!/bin/sh
+#  mac OSX version. type ./startLoggerOsx
+cd "`dirname "$0"`"
+java -cp jars/rtalkCore.jar:jars/* rtalk/RtalkLogWindow monitor=+/+/+/events/# verbose=true userPass=rtalk:rtalkrtalkrtalk

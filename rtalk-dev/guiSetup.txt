@@ -1,0 +1,18 @@
+CTZGJ8
+:INFO
+appTitle=Rtalk GUI Launcher
+:ACTIONS,handler=RtAppLoader
+async,topic=guiLauncher/monitor,omap=^monitor+channel=whiteboard+className=rtalk.whiteboard.SmPortalWhiteboard
+sync,topic=guiLauncher/app/1,omap=^runLocal+channel=console+className=rtalk.tools.ConsolePortal+standalone=true
+async,topic=console/register,omap=^choose+path=admin/msgTool+title=msgTool+help=send receive tool+actionTopic=view//guiLauncher/app+^runLocal+className=rtalk.tools.RtalkMessageSenderTool
+async,topic=console/register,omap=^choose+path=admin/props+title=Prop Edit+help=Query Based edit+actionTopic=view//guiLauncher/app^runLocal+className=rtalk.models.RtalkModelPortal+model=rtalk.tools.RtalkPropsEditorModel+nodeName=propsEdit
+async,topic=console/register,omap=^choose+path=apps/guru/edit+title=Guru Edit+help=Query Based edit+actionTopic=view//guiLauncher/app^runLocal+className=rtalk.models.RtalkModelPortal+model=rtalk.tools.EditGuruTextModel+nodeName=Edit
+async,topic=console/register,omap=^choose+path=apps/guru/worksheet+title=Worksheet+help=Worksheet data view+actionTopic=guiLauncher/app^runLocal+className=rtalk.models.RtalkModelPortal+model=rtalk.tools.RtalkWorksheetView+nodeName=Worksheet
+async,topic=console/register,omap=^choose+path=apps/ritdb/progress+title=floor progress+help=floor progress+actionTopic= guiLauncher/app^runLocal+className=ritdbEvents.fstatus.view.TesterProgressViewPortal
+async,topic=console/register,omap=^choose+path=apps/ritdb/status+title=floor status+help=floor status+actionTopic= guiLauncher/app^runLocal+className=ritdbEvents.fstatus.view.TesterStatusViewPortal
+async,topic=console/register,omap=^choose+path=apps/ritdb/cellSim+title=cell simulator+help=cell simulator+actionTopic= guiLauncher/app^runLocal+className=ritdbEvents.cellsim.CellSimMain+maxTime=8+startTime=2018-09-01T00:00:00
+
+
+:CHECKSUM
+168985
+zzN00

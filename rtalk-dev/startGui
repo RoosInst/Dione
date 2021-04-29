@@ -1,0 +1,3 @@
+#!/bin/sh
+#  mac OSX version. type ./name
+java -cp jars/rtalkCore.jar:jars/* rtalk/RtalkMqttLauncher boot=guiSetup.txt brokerIp=tcp://127.0.0.1:1883 channel=guiLauncher userPass=rtalk:rtalkrtalkrtalk
