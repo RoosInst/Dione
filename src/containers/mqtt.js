@@ -43,7 +43,7 @@ class MQTT extends Component {
     const port = '8883'; // local mqtt wss port '8081', server ws '8883'
     const { sendAction, updateWhiteboard, updateClientID } = this.props;
     const mqttBroker = mqttHost + ':' + port + "/mqtt";  // secure websocket port (wss) (init by rTalkDistribution/moquette/bin/moquette.sh)
-                                                         // NOTE: some brokers (aka mosquitto) requires "/mqtt" URL path to function
+                                                         // MQTT 3.1+ brokers require a websockets path +"/mqtt"
     const mqttConnectOptions = {
       clientId: localClientID + Math.random().toString(16).substr(2,8), //MQTT ID is "ws" plus localClientID
       keepalive: 0,
@@ -71,7 +71,7 @@ class MQTT extends Component {
     mqttClient.on('connect', function () {
       sendAction(MQTT_CONNECTED);
       console.info('Subscribing to admin topic: '+ adminTopic);
-      mqttClient.subscribe(adminTopic, {qos: 2}); //after subscribe, should receive message with cellID then UNSUBSCRIBE
+      mqttClient.subscribe(adminTopic, {qos: 1}); //after subscribe, should receive message with cellID then UNSUBSCRIBE
     });
 
     mqttClient.on('reconnect', function () {
@@ -86,6 +86,7 @@ class MQTT extends Component {
         var decodedCborMsgs = rtCbor.decodeAll(message);
         //console.info('CBOR1:', decodedCborMsgs1);  //DEBUG
 
+        let sourceReplyAddress = topic.split('/')[0]  // first topic split is the Return Adress "RA"
         //check if not empty message
         if(decodedCborMsgs && decodedCborMsgs.length > 0 && decodedCborMsgs[0].length > 0) 
           console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' +  'Decoded Message: ', decodedCborMsgs);
@@ -112,16 +113,24 @@ class MQTT extends Component {
 
           //SUBSCRIBE
           let channelID = '+';
-          const domainTopic = '+/' + cellID + '/#';
-          const wbCreateSubTopic = '+/' + cellID + '/whiteboard/createSubscriber/1'; //get app ID
+          const domainTopic = '+/' + cellID + '/#';  //debug only - remove for production
+          //const wbCreateSubTopic = '+/' + cellID + '/whiteboard/createSubscriber/1'; //get app ID
          //unused const consoleSubTopic = '+/' + cellID + '/console/#'; //console guru button bar, launch apps, launcher
 
           let GURUBROWSER_App_Topics = [
             domainTopic,
-            wbCreateSubTopic,
-            channelID + '/'+ cellID + '/' + localClientID + '/+/subscribe/#',
-            channelID + '/' + cellID + '/'+ localClientID +'/#'
+            channelID + '/' + cellID + '/'+ localClientID +'/#',
+            channelID + '/' + cellID + '/+/nodeAdmin/#'
           ];
+          /***
+           * Topics = ReturnAddress/domain/channel/api/msgID
+           * ReturnAddress = MQTT client identifier - localClientID
+           * domain = broker identifier - cellID
+           * channel = systemID (locally unique ID) (since Dione renders all apps, +)
+           * api = determines the body structure
+           * msgID = string - reply should match the msgID in the request, typically incrementing integer
+           */
+
           console.info('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
           mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 2});
 
@@ -170,6 +179,51 @@ class MQTT extends Component {
        mqttClient.unsubscribe('+/+/' + localClientID + '/#');
        mqttClient.end();
       }
+      
+      // rtalk PING
+      else if (topic.includes('/nodeAdmin') && decodedCborMsgs[0][0].value === 'ping') {
+      console.info("PING detected...")
+       // Exect ^ping+replySelector=apps+replyApi=action+replyEvent=event
+       let replySelector = decodedCborMsgs[0][2]
+       let replyApi = decodedCborMsgs[0][4]
+       let replyEvent = decodedCborMsgs[0][6]
+       //let cborOmapTag = { 'tag': 19, 'value': "replyEvent"}  
+
+       let appClass = 'js.dione.whiteboard'
+       let appVersion = '20210404'  //dione release YYYYMMDD  TODO: Make project attribute tied to git branch tag
+
+      // Respond ^replyEvent+selector=replySelector,nodeName=localClientID+mqttId=localClientID+appClass= +version=app version yymmdd+rtalk=yymmdd(Version)+systemID=systemID+sourceID=systemId
+        let msgArray = [ replyEvent, 
+        'selector',replySelector, 
+        'nodeName', localClientID, 
+        'mqttId', mqttConnectOptions.localClientID,
+        'appClass', appClass,
+        'version', appVersion,  
+        'rtalk','210105', 
+        'systemId',localClientID,
+        "sourceId",localClientID ]
+
+        let msgOmap = {
+          'selector': replySelector, 
+          'nodeName': localClientID, 
+          'mqttId' : mqttConnectOptions.localClientID,
+          'appClass': appClass,
+          'version': appVersion,  
+          'rtalk':'210105', 
+          'systemId': localClientID,
+          "sourceId": localClientID }
+
+        //rtCbor.encodeOmap(replyEvent,msgOmap);  
+        rtCbor.encodeArray(msgArray);  //using Array
+
+        let sourceReplyAddress = topic.split("/")[0]  // sourceRA is the first topic level
+       
+        let pingTopic = localClientID + '/' + cellID + '/'+ sourceReplyAddress + '/' + replyApi + '/' + numMsgs;
+        mqttClient.publish(pingTopic, msgArray); //launches guru app
+        console.info('PUB Message ' + numMsgs + ' - \n Topic: ' + pingTopic.toString() + '\n ' + 'Decoded CBOR Message: ', cbor.decodeAllSync(msgArray));
+				
+      }
+      
     });
 
     mqttClient.on('error', function(err) {
