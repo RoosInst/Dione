@@ -86,7 +86,9 @@ class MQTT extends Component {
         var decodedCborMsgs = rtCbor.decodeAll(message);
         //console.info('CBOR1:', decodedCborMsgs1);  //DEBUG
 
-        let sourceReplyAddress = topic.split('/')[0]  // first topic split is the Return Adress "RA"
+        //TODO:confirm srcReplyAddress is needed for return messages
+        //let srcReplyAddress = topic.split('/')[0]  // first topic split is the Return Adress "RA"
+        
         //check if not empty message
         if(decodedCborMsgs && decodedCborMsgs.length > 0 && decodedCborMsgs[0].length > 0) 
           console.info('Message ' + numMsgs + ' Received - \n Topic: ' + topic.toString() + '\n ' +  'Decoded Message: ', decodedCborMsgs);
@@ -112,13 +114,13 @@ class MQTT extends Component {
           mqttClient.unsubscribe(adminTopic);
 
           //SUBSCRIBE
-          let channelID = '+';
-          const domainTopic = '+/' + cellID + '/#';  //debug only - remove for production
+          let channelID = '+'; //+ is wildcard for debug, TODO: should be localClientID or the Return Address of THIS whiteboard
+          //const domainTopic = '+/' + cellID + '/#';  //debug only - remove for production
           //const wbCreateSubTopic = '+/' + cellID + '/whiteboard/createSubscriber/1'; //get app ID
          //unused const consoleSubTopic = '+/' + cellID + '/console/#'; //console guru button bar, launch apps, launcher
 
           let GURUBROWSER_App_Topics = [
-            domainTopic,
+           // domainTopic,
             channelID + '/' + cellID + '/'+ localClientID +'/#',
             channelID + '/' + cellID + '/+/nodeAdmin/#'
           ];
@@ -203,6 +205,8 @@ class MQTT extends Component {
         'systemId',localClientID,
         "sourceId",localClientID ]
 
+        rtCbor.encodeArray(msgArray);  //using Array
+/** 
         let msgOmap = {
           'selector': replySelector, 
           'nodeName': localClientID, 
@@ -213,17 +217,15 @@ class MQTT extends Component {
           'systemId': localClientID,
           "sourceId": localClientID }
 
-        //rtCbor.encodeOmap(replyEvent,msgOmap);  
-        rtCbor.encodeArray(msgArray);  //using Array
+        rtCbor.encodeOmap(replyEvent,msgOmap);  
+*/        
 
         let sourceReplyAddress = topic.split("/")[0]  // sourceRA is the first topic level
        
         let pingTopic = localClientID + '/' + cellID + '/'+ sourceReplyAddress + '/' + replyApi + '/' + numMsgs;
         mqttClient.publish(pingTopic, msgArray); //launches guru app
         console.info('PUB Message ' + numMsgs + ' - \n Topic: ' + pingTopic.toString() + '\n ' + 'Decoded CBOR Message: ', cbor.decodeAllSync(msgArray));
-				
       }
-      
     });
 
     mqttClient.on('error', function(err) {
