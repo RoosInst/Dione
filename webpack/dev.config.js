@@ -7,7 +7,7 @@ const prjRoot = path.join(__dirname, '..');
 
 const styleLintPluginConfig = new StyleLintPlugin({
   syntax: 'scss',
-  emitErrors: false
+  emitErrors: true
 });
 
 module.exports = merge(baseConfig, {

@@ -118,9 +118,9 @@ class MQTT extends Component {
           //const domainTopic = '+/' + cellID + '/#';  //debug only - remove for production
           //const wbCreateSubTopic = '+/' + cellID + '/whiteboard/createSubscriber/1'; //get app ID
          //unused const consoleSubTopic = '+/' + cellID + '/console/#'; //console guru button bar, launch apps, launcher
-
+          
+         // removed domainTopic,
           let GURUBROWSER_App_Topics = [
-           // domainTopic,
             channelID + '/' + cellID + '/'+ localClientID +'/#',
             channelID + '/' + cellID + '/+/nodeAdmin/#'
           ];

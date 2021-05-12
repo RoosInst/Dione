@@ -1,24 +1,8 @@
 /* eslint-disable no-unused-vars */
 const webpack = require('webpack');
 const path = require('path');
-const HTMLWebpackPlugin = require('html-webpack-plugin');
-const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-
-const htmlWebpackPluginConfig = new HTMLWebpackPlugin({
-  template: './src/index.html',
-  filename: 'index.html',
-  inject: 'head'
-});
-
-
-const scriptExtHtmlWebpackPluginConfig = new ScriptExtHtmlWebpackPlugin({
-  defaultAttribute: 'defer'
-});
-
-const extractStyle = new MiniCssExtractPlugin({
-  filename: 'styles.[hash].min.css'
-});
 
 const cssLoaderOptions = {
   importLoaders: 1,
@@ -33,8 +17,7 @@ const cssGlobalLoaderOptions = {
 };
 
 const postCSSLoaderOptions = {
-  sourceMap: true,
-  plugins: [require('autoprefixer')()]
+  sourceMap: true
 };
 
 
@@ -119,8 +102,13 @@ module.exports = {
   },
 
   plugins: [
-    htmlWebpackPluginConfig,
-    scriptExtHtmlWebpackPluginConfig,
-    extractStyle,
+    new HtmlWebpackPlugin({
+      template: './src/index.html',
+      filename: 'index.html',
+      inject: 'head'
+    }),
+    new MiniCssExtractPlugin({
+      filename: 'styles.[hash].min.css'
+    })
   ],
 };
