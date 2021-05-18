@@ -2,6 +2,7 @@ const {merge} = require('webpack-merge');
 const baseConfig = require('./base.config.js');
 const path = require('path');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 const prjRoot = path.join(__dirname, '..');
 
@@ -14,7 +15,7 @@ module.exports = merge(baseConfig, {
   mode: 'development',
   devtool: 'source-map',
 
-  module: {
+  /* module: {
     rules: [
       {
         test: /\.js$/,
@@ -28,7 +29,9 @@ module.exports = merge(baseConfig, {
         }
       }
     ]
-  },
+  },    
+  ESLINT-LOADER IS DEPRECATED
+  */  
 
   devServer: {
     historyApiFallback: true,
@@ -37,5 +40,9 @@ module.exports = merge(baseConfig, {
     stats: 'minimal'
   },
 
-  plugins: [styleLintPluginConfig]
+  plugins: [styleLintPluginConfig, 
+            new ESLintPlugin({
+              formatter: require('eslint/lib/cli-engine/formatters/stylish'),
+              emitWarning: true
+            })]
 });
