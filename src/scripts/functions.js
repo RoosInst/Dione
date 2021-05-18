@@ -96,7 +96,7 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
 
   for (let key in unsortedStore) {
     // skip loop if the property is from prototype
-    if (!unsortedStore.hasOwnProperty(key)) continue;
+    if (!Object.prototype.hasOwnProperty.call(unsortedStore, key)) continue;
 
     let obj = unsortedStore[key];
 
@@ -425,7 +425,7 @@ function riStringNbsp(len) {
 function base64Decode(value) {
   let result = 0;
   for (let i in value) {
-    if (value.hasOwnProperty(i)) {
+    if (Object.prototype.hasOwnProperty.call(value, i)) {
       result = result * 64 + base64Digits.indexOf(value[i]);
     }
   }

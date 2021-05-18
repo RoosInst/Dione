@@ -505,7 +505,7 @@ class RtCbor {
     else {
       this.startOmap(name);
       for(var key in map) {
-        if(map.hasOwnProperty(key)) {
+        if(Object.prototype.hasOwnProperty.call(map, key)) {
           this.encodeString(key);      //save the key
           this.encodeString(map[key]); //save the value
         }

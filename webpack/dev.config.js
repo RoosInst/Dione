@@ -1,4 +1,4 @@
-const merge = require('webpack-merge');
+const {merge} = require('webpack-merge');
 const baseConfig = require('./base.config.js');
 const path = require('path');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
@@ -22,6 +22,7 @@ module.exports = merge(baseConfig, {
         use: {
           loader: 'eslint-loader',
           options: {
+            formatter: require('eslint/lib/cli-engine/formatters/stylish'),
             emitWarning: true
           }
         }

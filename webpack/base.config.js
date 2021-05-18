@@ -3,12 +3,13 @@ const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 const cssLoaderOptions = {
   importLoaders: 1,
   modules: true,
   sourceMap: true,
-  localIdentName: '[path]_[name]_[local]_[hash:base64:5]'
+  //localIdentName: '[path]_[name]_[local]_[hash:base64:5]'
 };
 
 const cssGlobalLoaderOptions = {
@@ -33,7 +34,7 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            'presets': ['react', 'env', 'stage-0'],
+            'presets': ['@babel/react', '@babel/env'],
             'plugins': [['react-css-modules',
               {
                 'filetypes': {
@@ -97,7 +98,7 @@ module.exports = {
   },
 
   output: {
-    filename: 'bundle.[hash].min.js',
+    filename: 'bundle.[fullhash].min.js',
     publicPath: '/'
   },
 
@@ -108,7 +109,8 @@ module.exports = {
       inject: 'head'
     }),
     new MiniCssExtractPlugin({
-      filename: 'styles.[hash].min.css'
-    })
+      filename: 'styles.[fullhash].min.css'
+    }),
+    new NodePolyfillPlugin()
   ],
 };
