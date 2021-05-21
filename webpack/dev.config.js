@@ -11,6 +11,11 @@ const styleLintPluginConfig = new StyleLintPlugin({
   emitErrors: true
 });
 
+const esLintPluginConfig = new ESLintPlugin({
+  formatter: require('eslint/lib/cli-engine/formatters/stylish'),
+  emitWarning: true
+});
+
 module.exports = merge(baseConfig, {
   mode: 'development',
   devtool: 'source-map',
@@ -40,9 +45,5 @@ module.exports = merge(baseConfig, {
     stats: 'minimal'
   },
 
-  plugins: [styleLintPluginConfig, 
-            new ESLintPlugin({
-              formatter: require('eslint/lib/cli-engine/formatters/stylish'),
-              emitWarning: true
-            })]
+  plugins: [styleLintPluginConfig, esLintPluginConfig]
 });

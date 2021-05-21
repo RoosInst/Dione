@@ -7,9 +7,10 @@ const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 const cssLoaderOptions = {
   importLoaders: 1,
-  modules: true,
+  modules: {
+    localIdentName: `[path]__[name]__[local]__7`,  //CANT USE HASH HERE FOR SOME REASON .... PRODUCES DIFFERENT NUMBERS FROM SCOPED NAME
+  },
   sourceMap: true,
-  //localIdentName: '[path]_[name]_[local]_[hash:base64:5]'
 };
 
 const cssGlobalLoaderOptions = {
@@ -33,16 +34,7 @@ module.exports = {
         exclude: /(node_modules|bower_components)/,
         use: {
           loader: 'babel-loader',
-          options: {
-            'presets': ['@babel/react', '@babel/env'],
-            'plugins': [['react-css-modules',
-              {
-                'filetypes': {
-                  '.scss': {'syntax': 'postcss-scss'}
-                }
-              }
-            ]]
-          }
+          //options now just in .babelrc
         }
       },
       {
@@ -114,3 +106,4 @@ module.exports = {
     new NodePolyfillPlugin()
   ],
 };
+

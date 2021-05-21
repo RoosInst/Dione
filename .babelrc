@@ -9,6 +9,14 @@
     },
 
     "plugins": [
+        ["babel-plugin-react-css-modules", {
+            "filetypes": {
+                ".scss": {
+                    "syntax": "postcss-scss"
+                }
+            },
+            "generateScopedName": "[path]__[name]__[local]__7" 
+        }],
         ["@babel/plugin-proposal-decorators", {"legacy": true}],
         "@babel/plugin-proposal-class-properties",
         "@babel/plugin-proposal-do-expressions",
