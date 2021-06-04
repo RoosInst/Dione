@@ -24,6 +24,7 @@
     "eol": "^0.9.1",
     "gridstack": "^4.2.5",
     "jquery": "^3.6.0",
+    "lodash": "^4.17.21",
     "mqtt": "^4.2.6",
     "node-inspect-extracted": "^1.0.7",
     "prop-types": "^15.7.2",
