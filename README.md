@@ -5,7 +5,7 @@ This README documents the steps necessary to get this development environment an
 ### What is this repository for? ###
 
 * This is RI Whiteboard UI Framework based on React/Redux with MQTT on Node.js, to be deployed via Electron & includes rtalkDistribution.
-* Version 1.2.0
+* Version 1.2.1
 
 ### Requirements ###
 
