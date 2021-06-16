@@ -5,6 +5,7 @@ export const UPDATE_CLIENTID = 'update_clientID';
 export const MQTT_CONNECTED = 'mqtt_connected';
 export const MQTT_DISCONNECTED = 'mqtt_disconnected';
 export const MQTT_RECONNECTING = 'mqtt_reconnecting';
+export const UPDATE_SUBSCRIPTIONS = 'update_subscriptions';
 
 export function sendAction(action) { //generic send action to reducers (used for MQTT consts instead of writing 3 actions that do same thing (return self))
   return {
@@ -44,5 +45,13 @@ export function updateClientID(clientID) {
   return {
     type: UPDATE_CLIENTID,
     payload: clientID
+  }
+}
+
+export function updateMqttSubscriptions(description, new_subscription) {
+  return {
+      type: UPDATE_SUBSCRIPTIONS, 
+      key: description,
+      topic: new_subscription
   }
 }

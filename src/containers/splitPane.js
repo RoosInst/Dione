@@ -23,14 +23,14 @@ class SplitPane extends Component {
 
     if (orientation === "vert") { //vertical split
       return (
-        <Split gutter sizes={[20,80]}>
+        <Split gutterSize={10} sizes={[20,80]}>
           <div id={obj.identifier} className='row'>{obj.data}</div>
           <div className='row'></div>
         </Split>
       )
     } else { //horizontal splut
       return (
-        <Split gutter sizes={[20,80]}>
+        <Split gutterSize={10} sizes={[20,80]}>
           <div className='col-sm'></div>
           <div id={obj.identifier} className='col-sm'>{obj.data}</div>
         </Split>

@@ -2,9 +2,9 @@ import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import Mqtt from 'mqtt';
 //import Cbor from 'cbor';
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'; //used to include { node } 
 
-import { sendAction, updateWhiteboard, updateClientID, MQTT_CONNECTED, MQTT_DISCONNECTED, MQTT_RECONNECTING } from '../actions';
+import { sendAction, updateWhiteboard, updateClientID, updateMqttSubscriptions, MQTT_CONNECTED, MQTT_DISCONNECTED, MQTT_RECONNECTING } from '../actions';
 import '../styles/mqtt.scss';
 
 //import RtCbor from "../scripts/RtCbor";
@@ -21,6 +21,9 @@ let numMsgs = 0,
 
 let rtCbor = new RtCbor();
 
+let currentWidget;
+let incompleteWidgetTopic;
+let widgetTopic;
 class MQTT extends Component {
 
   static propTypes = {
@@ -29,7 +32,8 @@ class MQTT extends Component {
     updateClientID: PropTypes.func.isRequired,
     sendAction: PropTypes.func.isRequired,
     mqttConnection: PropTypes.string.isRequired,
-    localClientID: PropTypes.string
+    localClientID: PropTypes.string,
+    subscriptions: PropTypes.object.isRequired
   }
 
   componentDidUpdate() {
@@ -38,10 +42,12 @@ class MQTT extends Component {
 
   componentDidMount() {
     localClientID = this.props.clientID;
+    const subscriptions = this.props.subscriptions;
+
     const mqttHost = 'wss://mqtt.roos.com'; // dev broker'
     //const mqttHost = 'ws://localhost'; //localhost
     const port = '8883'; // local mqtt wss port '8081', server ws '8883'
-    const { sendAction, updateWhiteboard, updateClientID } = this.props;
+    const { sendAction, updateWhiteboard, updateClientID, updateMqttSubscriptions } = this.props;
     const mqttBroker = mqttHost + ':' + port + "/mqtt";  // secure websocket port (wss) (init by rTalkDistribution/moquette/bin/moquette.sh)
                                                          // MQTT 3.1+ brokers require a websockets path +"/mqtt"
     const mqttConnectOptions = {
@@ -58,7 +64,8 @@ class MQTT extends Component {
       //rejectUnauthorized: false	//false for self-signed certificates, true in production
     };
     mqttClient = Mqtt.connect(mqttBroker, mqttConnectOptions);
-   //mqttClient2 = Mqtt.connect(mqttBroker, mqttConnectOptions);
+    updateMqttSubscriptions("client", mqttClient);
+    //mqttClient2 = Mqtt.connect(mqttBroker, mqttConnectOptions);
 
     console.info('Client ID: ' + localClientID); // (currently unique at each run, persist as cookie or guru logon to make apps survive refresh)');
 
@@ -71,13 +78,14 @@ class MQTT extends Component {
     mqttClient.on('connect', function () {
       sendAction(MQTT_CONNECTED);
       console.info('Subscribing to admin topic: '+ adminTopic);
-      mqttClient.subscribe(adminTopic, {qos: 1}); //after subscribe, should receive message with cellID then UNSUBSCRIBE
+      mqttClient.subscribe(adminTopic, {qos: 2}); //after subscribe, should receive message with cellID then UNSUBSCRIBE
     });
 
     mqttClient.on('reconnect', function () {
       sendAction(MQTT_RECONNECTING);
     });
 
+    //X016OK8G:msgTool/X016OK8G/+/actions
     //Main MQTT Parsing loop
     mqttClient.on('message', function (topic, message) {
       numMsgs++;
@@ -88,6 +96,29 @@ class MQTT extends Component {
 
         //TODO:confirm srcReplyAddress is needed for return messages
         //let srcReplyAddress = topic.split('/')[0]  // first topic split is the Return Adress "RA"
+        
+
+        //check to see if the message pertains to a widget that is trying to render
+        if(topic.toString().includes("admin/nodeAdmin")) {
+          let channel = decodedCborMsgs[0][4];
+          let nodeName = decodedCborMsgs[0][6];
+          if(topic.toString().includes("disconnect")) {
+            updateMqttSubscriptions(nodeName, channel);
+          } else if(topic.toString().includes("connect")) {
+            if(subscriptions.widget_messages != undefined) {
+                if(nodeName != "WB") {
+                  incompleteWidgetTopic = `${subscriptions.cellId}:${channel}/${subscriptions.cellId}/`;
+                  currentWidget = nodeName;
+                  updateMqttSubscriptions(nodeName, `${subscriptions.cellId}:${channel}/${subscriptions.cellId}/+/action/#`);
+                } else {
+                  widgetTopic = incompleteWidgetTopic + channel;
+                }
+            } 
+          } 
+        } else if(topic.toString().includes(widgetTopic)) {
+          updateMqttSubscriptions(currentWidget, widgetTopic); //unsubscribe from general topic for the application being rendered
+          updateMqttSubscriptions(currentWidget, widgetTopic + '/#');  //resubscribe to specific topic with the app's channel
+        }
         
         //check if not empty message
         if(decodedCborMsgs && decodedCborMsgs.length > 0 && decodedCborMsgs[0].length > 0) 
@@ -108,21 +139,24 @@ class MQTT extends Component {
           //multiple admin messages could be received
           cellID = decodedCborMsgs[0][2];
           console.info('CellID: ', cellID);
-
+          updateMqttSubscriptions("cellId", cellID);
           //UNSUBSCRIBE
           console.info('Unsubscribing from: ' + adminTopic);
           mqttClient.unsubscribe(adminTopic);
 
           //SUBSCRIBE
-          let channelID = '+'; //+ is wildcard for debug, TODO: should be localClientID or the Return Address of THIS whiteboard
+          //let channelID = '+'; //+ is wildcard for debug, TODO: should be localClientID or the Return Address of THIS whiteboard
           //const domainTopic = '+/' + cellID + '/#';  //debug only - remove for production
           //const wbCreateSubTopic = '+/' + cellID + '/whiteboard/createSubscriber/1'; //get app ID
          //unused const consoleSubTopic = '+/' + cellID + '/console/#'; //console guru button bar, launch apps, launcher
           
          // removed domainTopic,
+         //got rid of local client id in first entry of array
+         //channelID + '/' + cellID + '/'+ '#', 
+         //channelID + '/' + cellID + '/+/nodeAdmin/#' OLD CHANNELS
+         //starts listening to all channels when first launched, can be changed through checkboxes 
           let GURUBROWSER_App_Topics = [
-            channelID + '/' + cellID + '/'+ localClientID +'/#',
-            channelID + '/' + cellID + '/+/nodeAdmin/#'
+            "+/#"
           ];
           /***
            * Topics = ReturnAddress/domain/channel/api/msgID
@@ -134,7 +168,7 @@ class MQTT extends Component {
            */
 
           console.info('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
-          mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 2});
+          mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 1});
 
           //let a =[null,'view','console','logger','true']; //testing msg as array
           //smCbor.putMap(null, a);
@@ -242,8 +276,8 @@ class MQTT extends Component {
   render() {
     return (
       <div styleName='ri-mqtt'>
-        <div className="pull-left">Client ID: {localClientID}</div>
-        <div className="pull-right">
+        <div className="float-left">Client ID: {localClientID}</div>
+        <div className="float-right">
           Connection
           <div styleName={`connectionIcon ${this.props.mqttConnection}`} />
         </div>
@@ -256,8 +290,9 @@ function mapStateToProps(state) {
   return {
 		clientID: state.clientID,
     whiteboard: state.whiteboard,
-    mqttConnection: state.mqttConnection
+    mqttConnection: state.mqttConnection,
+    subscriptions: state.subscriptions
   };
 }
 
-export default connect(mapStateToProps, {sendAction, updateWhiteboard,  updateClientID })(MQTT);
+export default connect(mapStateToProps, {sendAction, updateWhiteboard,  updateClientID, updateMqttSubscriptions})(MQTT);

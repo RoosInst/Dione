@@ -6,6 +6,8 @@ import MQTT, { mqttClient, cellID } from './mqtt';
 import { updateWhiteboard } from '../actions';
 import { convertObjToArrayForPublish } from '../scripts/functions';
 
+import Subscriptions from './subscriptions';
+
 import Button from './button';
 import ListPane from './listPane';
 import TextPane from './textPane';
@@ -14,8 +16,11 @@ import SplitPane from './splitPane';
 import Modal from './modal';
 import FavIcon from '../../public/images/favicon.png';
 import '../styles/whiteboard.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faWindowClose } from '@fortawesome/free-regular-svg-icons';
 
 import RtCbor from '../scripts/RtCbor';
+
 
 //const cbor = require('cbor');
 
@@ -171,6 +176,7 @@ class Whiteboard extends Component {
     if (whiteboard) arr = Object.keys(whiteboard);
     return [
       <MQTT key='mqtt' />,
+      <Subscriptions key="subscriptions"/>,
       <div key='whiteboard' styleName='ri-whiteboard' className='grid-stack'>
         {arr && (
           arr.map(model => { //map through each app
@@ -182,16 +188,18 @@ class Whiteboard extends Component {
             });
 
             return (
+              //<i onClick={() => this.handleClose(model)} className="pull-right fa fa-window-close" />   SUPPOSED TO BE UNDER FONT AWESOME
               <div id={model} className='grid-stack-item' key={model} data-gs-auto-position data-gs-height='12' data-gs-width='4'>
 
                 <Modal obj={obj} model={model} />
-
+                
                 <div className='grid-stack-item-content'>
                   <div className="card">
                     <div className="card-header">
                       <img style={{ width: '16px', margin: '-2px 5px 0 5px' }} src={FavIcon} />
                       <span className="cardLabel">{obj.label}</span>
-                      <i onClick={() => this.handleClose(model)} className="pull-right fa fa-window-close" />
+                      <FontAwesomeIcon icon={faWindowClose} className="pull-right" onClick={() => this.handleClose(model)}/>
+                      
                     </div>
                     {objMenus.length > 0 && (
                       <div styleName='topMenuBar'>
