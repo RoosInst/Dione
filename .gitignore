@@ -65,3 +65,4 @@ typings/
 .env
 
 rtalk-dev/nodeKey.dat
+package-lock.json
