@@ -97,7 +97,6 @@ class MQTT extends Component {
         //TODO:confirm srcReplyAddress is needed for return messages
         //let srcReplyAddress = topic.split('/')[0]  // first topic split is the Return Adress "RA"
         
-
         //check to see if the message pertains to a widget that is trying to render
         if(topic.toString().includes("admin/nodeAdmin")) {
           let channel = decodedCborMsgs[0][4];
@@ -133,6 +132,8 @@ class MQTT extends Component {
         return;
       }
 
+      //INITILIZATION STAGE
+      //Register the CellID from the Broker (Rtalk Server)
       if (topic.includes('admin/') && !cellID) {
         //REGISTERING CELLID
         if ( decodedCborMsgs[0][1] == "cellId") {
@@ -219,6 +220,7 @@ class MQTT extends Component {
       // rtalk PING
       else if (topic.includes('/nodeAdmin') && decodedCborMsgs[0][0].value === 'ping') {
       console.info("PING detected...")
+      let jsonDecodedMsgs = convertArrayToKeyValues( decodedCborMsgs)
        // Exect ^ping+replySelector=apps+replyApi=action+replyEvent=event
        let replySelector = decodedCborMsgs[0][2]
        let replyApi = decodedCborMsgs[0][4]
@@ -229,15 +231,31 @@ class MQTT extends Component {
        let appVersion = '20210404'  //dione release YYYYMMDD  TODO: Make project attribute tied to git branch tag
 
       // Respond ^replyEvent+selector=replySelector,nodeName=localClientID+mqttId=localClientID+appClass= +version=app version yymmdd+rtalk=yymmdd(Version)+systemID=systemID+sourceID=systemId
-        let msgArray = [ replyEvent, 
-        'selector',replySelector, 
+        let msgArray = [ {tag: 211, tag2:-45, value: replyEvent}, 
+        'selector', replySelector, 
         'nodeName', localClientID, 
         'mqttId', mqttConnectOptions.localClientID,
         'appClass', appClass,
         'version', appVersion,  
         'rtalk','210105', 
         'systemId',localClientID,
-        "sourceId",localClientID ]
+        "sourceId",localClientID ];
+
+        let msgJsonName = replyEvent;
+
+        let msgJson = {  
+          'selector':replySelector, 
+          'nodeName': localClientID, 
+          'mqttId': mqttConnectOptions.localClientID,
+          'appClass': appClass,
+          'version': appVersion,  
+          'rtalk':'210105', 
+          'systemId':localClientID,
+          "sourceId":localClientID };
+
+        console.info( "omap name = " + msgJsonName, "omap = " + msgJson);
+
+        // rtCbor.encodeOMap( msgJsonName, msgJson )
 
         rtCbor.encodeArray(msgArray);  //using Array
 /** 
