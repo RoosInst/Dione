@@ -235,10 +235,10 @@ class MQTT extends Component {
         let appVersion = '20210404'  //dione release YYYYMMDD  TODO: Make project attribute tied to git branch tag
 
 //       // Respond ^replyEvent+selector=replySelector,nodeName=localClientID+mqttId=localClientID+appClass= +version=app version yymmdd+rtalk=yymmdd(Version)+systemID=systemID+sourceID=systemId
-         let msgArray = [ {tag: 211, tag2: -45, value: "event"}, //JSON object with tag: 211
+         let msgArray = [ "event", //JSON object with tag: 211
          'selector','apps', 
          'nodeName', 'Dione', 
-         'mqttId', 'Dione123456789',
+         'mqttId', mqttConnectOptions.clientId,
          'appClass', appClass,
          'timeUs','123456',
          'version', appVersion,  
@@ -251,7 +251,7 @@ class MQTT extends Component {
 //         'systemId',localClientID,
 //         "sourceId",localClientID ]
 
-         rtCbor.encodeArray(msgArray);  //using Array
+         rtCbor.encodeArrayNew(msgArray);  //using Array
          const buffer = Buffer.from(msgArray);
 // /** 
 //         let msgOmap = {
@@ -271,6 +271,7 @@ class MQTT extends Component {
        
          let pingTopic = 'X016OK8G' + ':Dione/' + 'X016OK8G' + '/' + propChannel + '/action/6';
          mqttClient.publish(pingTopic, buffer); //ping response
+         console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) );
          //console.info('PUB Message ' + numMsgs + ' - \n Topic: ' + pingTopic + '\n ' + 'Decoded CBOR Message: ', cbor.decodeAllSync(buffer));
       }
     });
