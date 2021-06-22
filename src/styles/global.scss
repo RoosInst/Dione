@@ -13,8 +13,26 @@ body {
   background-attachment: fixed;
 }
 
-.loadingWrapper {
-  @include fixedCenter;
+.loadingWrapper:empty {
+  position: absolute;
+  top: calc(50% - 4.3em);
+  left: calc(50% - 0.8em);
+  width: 1.7em;
+  height: 1.7em;
+  border: 0.2em solid rgba(255, 255, 255, 0.2);
+  border-left: 0.2em solid rgb(0, 0, 0);
+  border-radius: 50%;
+  animation: load 1.2s infinite linear;
+}
+
+@keyframes load {
+  0% {
+    transform: rotate(0deg);
+  }
+  
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .shell {
