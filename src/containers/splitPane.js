@@ -20,9 +20,6 @@ class SplitPane extends Component {
   render() {
     const { obj } = this.props;
     const orientation = obj.orientation;
-    const frameratio = obj.frameratio;
-
-    
 
     if (orientation === "vert") { //vertical split
       return (
