@@ -98,6 +98,7 @@ class MQTT extends Component {
         //TODO:confirm srcReplyAddress is needed for return messages
         //let srcReplyAddress = topic.split('/')[0]  // first topic split is the Return Adress "RA"
         
+
         //check to see if the message pertains to a widget that is trying to render
         if(topic.toString().includes("admin/nodeAdmin")) {
           let channel = decodedCborMsgs[0][4];
@@ -136,8 +137,6 @@ class MQTT extends Component {
         return;
       }
 
-      //INITILIZATION STAGE
-      //Register the CellID from the Broker (Rtalk Server)
       if (topic.includes('admin/') && !cellID) {
         //REGISTERING CELLID
         if ( decodedCborMsgs[0][1] == "cellId") {
@@ -224,7 +223,6 @@ class MQTT extends Component {
       // rtalk PING
       else if (topic.includes('/nodeAdmin') && decodedCborMsgs[0][0].value === 'ping') {
       console.info("PING detected...")
-      let jsonDecodedMsgs = convertArrayToKeyValues( decodedCborMsgs)
        // Exect ^ping+replySelector=apps+replyApi=action+replyEvent=event
 //        let replySelector = decodedCborMsgs[0][2]
 //        let replyApi = decodedCborMsgs[0][4]
