@@ -480,6 +480,7 @@ class RtCbor {
   /**Adds a string array*/
   encodeArray(val) {
     this.appendTemp(0x9f); //starts an unbounded array
+
     if(val) {
       for(let i=0; i < val.length; i++) {
         this.encodeString(val[i]);
@@ -492,7 +493,7 @@ class RtCbor {
   encodeArrayNew(val) {
     this.appendTemp(0x9f); //starts an unbounded array
     this.appendTemp(0xd3); //adds the tag for the initial omap at the start
-    
+
     if(val) {
       for(let i=0; i < val.length; i++) {
         this.encodeString(val[i]);
@@ -501,7 +502,6 @@ class RtCbor {
     this.appendTemp(0xff); //unbounded collection end byte
     this.pushTemp(); //put away the temp buffer
   }
-
 
   /**Apppends a null entry*/
   encodeNull() {

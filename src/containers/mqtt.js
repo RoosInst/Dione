@@ -67,7 +67,6 @@ class MQTT extends Component {
     mqttClient = Mqtt.connect(mqttBroker, mqttConnectOptions);
     updateMqttSubscriptions("client", mqttClient);
     //mqttClient2 = Mqtt.connect(mqttBroker, mqttConnectOptions);
-
     console.info('Client ID: ' + localClientID); // (currently unique at each run, persist as cookie or guru logon to make apps survive refresh)');
 
     const adminTopic = 'admin/admin/cellinfo/query/#';  //listen to discover cellID
@@ -122,6 +121,7 @@ class MQTT extends Component {
         } else if(topic.toString().includes(widgetTopic)) {
           updateMqttSubscriptions(currentWidget, widgetTopic); //unsubscribe from general topic for the application being rendered
           updateMqttSubscriptions(currentWidget, widgetTopic + '/#');  //resubscribe to specific topic with the app's channel
+          widgetTopic = 'WAITING_FOR_A_NEW_WIDGET_TO_LOAD';
         }
         
         //check if not empty message
@@ -159,9 +159,9 @@ class MQTT extends Component {
          //channelID + '/' + cellID + '/'+ '#', 
          //channelID + '/' + cellID + '/+/nodeAdmin/#' OLD CHANNELS
          //starts listening to all channels when first launched, can be changed through checkboxes 
-          let GURUBROWSER_App_Topics = [
-            "+/#"
-          ];
+          // let GURUBROWSER_App_Topics = [
+          //   `+/${cellID}/admin/nodeAdmin/#`
+          // ];
           /***
            * Topics = ReturnAddress/domain/channel/api/msgID
            * ReturnAddress = MQTT client identifier - localClientID
@@ -171,17 +171,17 @@ class MQTT extends Component {
            * msgID = string - reply should match the msgID in the request, typically incrementing integer
            */
 
-          console.info('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
-          mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 1});
-
+          //console.info('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
+          //mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 2});
+          updateMqttSubscriptions("widget_messages", `+/${cellID}/admin/nodeAdmin/#`);
           //let a =[null,'view','console','logger','true']; //testing msg as array
           //smCbor.putMap(null, a);
           //let msgOmap = { null:{'view':'console','logger':'true'}};  //testing msg as omap
           //rtCbor.encodeOMap(msgOmap);
 
-          let msgArray = [null, 'view','console','logger','true']
+          let msgArray = [null, 'view','console','logger','true'];
           rtCbor.encodeArray(msgArray);
-
+          
           //sanity check encoding
           console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) )
           //rtCbor.encodeOMap(msgOmap);  //need to re-encode since .getCborAsBuffer() also clears it)
@@ -224,53 +224,51 @@ class MQTT extends Component {
       else if (topic.includes('/nodeAdmin') && decodedCborMsgs[0][0].value === 'ping') {
       console.info("PING detected...")
        // Exect ^ping+replySelector=apps+replyApi=action+replyEvent=event
-//        let replySelector = decodedCborMsgs[0][2]
-//        let replyApi = decodedCborMsgs[0][4]
-//        let replyEvent = decodedCborMsgs[0][6]
-//        //let cborOmapTag = { 'tag': 19, 'value': "replyEvent"}  
+       //let replySelector = decodedCborMsgs[0][2]
+       //let replyApi = decodedCborMsgs[0][4]
+       //let replyEvent = decodedCborMsgs[0][6]
+       //let cborOmapTag = { 'tag': 19, 'value': "replyEvent"}  
 
-        let appClass = 'js.dione.whiteboard'
-        let appVersion = '20210404'  //dione release YYYYMMDD  TODO: Make project attribute tied to git branch tag
+       let appClass = 'js.dione.whiteboard'
+       let appVersion = '20210404'  //dione release YYYYMMDD  TODO: Make project attribute tied to git branch tag
 
-//       // Respond ^replyEvent+selector=replySelector,nodeName=localClientID+mqttId=localClientID+appClass= +version=app version yymmdd+rtalk=yymmdd(Version)+systemID=systemID+sourceID=systemId
-         let msgArray = [ "event", //JSON object with tag: 211
-         'selector','apps', 
-         'nodeName', 'Dione', 
-         'mqttId', mqttConnectOptions.clientId,
-         'appClass', appClass,
-         'timeUs','123456',
-         'version', appVersion,  
-         'rtalk','210103', 
-         'messageCount','15',
-         'processTimeNs','3004',
-         'queueDepth','1',
-         'channel','Dione',
-         'primaryChannel','dioneView' ]
-//         'systemId',localClientID,
-//         "sourceId",localClientID ]
+      // Respond ^replyEvent+selector=replySelector,nodeName=localClientID+mqttId=localClientID+appClass= +version=app version yymmdd+rtalk=yymmdd(Version)+systemID=systemID+sourceID=systemId
+        let msgArray = [ "event", 
+        "selector","apps", 
+        "nodeName", "Dione", 
+        "mqttId", mqttConnectOptions.clientId,
+        "appClass", appClass,
+        "version", appVersion,  
+        "rtalk","210105", 
+        "messageCount", "5",
+        "processTimeNs", "23424234",
+        "queueDepth", "1",
+        "channel", propChannel ]
+      
 
-         rtCbor.encodeArrayNew(msgArray);  //using Array
-         const buffer = Buffer.from(msgArray);
-// /** 
-//         let msgOmap = {
-//           'selector': replySelector, 
-//           'nodeName': localClientID, 
-//           'mqttId' : mqttConnectOptions.localClientID,
-//           'appClass': appClass,
-//           'version': appVersion,  
-//           'rtalk':'210105', 
-//           'systemId': localClientID,
-//           "sourceId": localClientID }
+        rtCbor.encodeArrayNew(msgArray);  //using Array
+        //let buffer = Buffer.from(msgArray);
+        //let message = Buffer.from("93A363746167633231316474616732632D34356576616C7565656576656E746873656C6563746F726461707073686E6F64654E616D656544696F6E65666D71747449646F44696F6E653233343233353232353368617070436C617373736A732E64696F6E652E7768697465626F6172646776657273696F6E683230323130343034657274616C6B663231303130356C6D657373616765436F756E7461356D70726F6365737354696D654E73683233343234323334676368616E6E656C6970726F707365646974", "hex");
+/** 
+        let msgOmap = {
+          'selector': replySelector, 
+          'nodeName': localClientID, 
+          'mqttId' : mqttConnectOptions.clientId,
+          'appClass': appClass,
+          'version': appVersion,  
+          'rtalk':'210105', 
+          'systemId': localClientID,
+          "sourceId": localClientID }
 
-//         rtCbor.encodeOmap(replyEvent,msgOmap);  
-// */        
+        rtCbor.encodeOmap(replyEvent,msgOmap);  
+*/        
 
-//         let sourceReplyAddress = topic.split("/")[0]  // sourceRA is the first topic level
+        //let sourceReplyAddress = topic.split("/")[0]  // sourceRA is the first topic level
        
-         let pingTopic = 'X016OK8G' + ':Dione/' + 'X016OK8G' + '/' + propChannel + '/action/6';
-         mqttClient.publish(pingTopic, buffer); //ping response
-         console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) );
-         //console.info('PUB Message ' + numMsgs + ' - \n Topic: ' + pingTopic + '\n ' + 'Decoded CBOR Message: ', cbor.decodeAllSync(buffer));
+        let pingTopic = 'X016OK8G:'  + mqttConnectOptions.clientId + `/X016OK8G/` + propChannel + '/action/6';  //GET THE CLIENT ID VARIABLE INSTEAD OF JUST WRITING IT OUT
+        mqttClient.publish(pingTopic, rtCbor.buffers[0]); //Dione responds to the ping letting props know it exists
+        console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) );
+        //console.info('PUB Message ' + numMsgs + ' - \n Topic: ' + pingTopic.toString() + '\n ' + 'Decoded CBOR Message: ', cbor.decodeAllSync(msgArray));
       }
     });
 

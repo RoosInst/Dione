@@ -28,11 +28,11 @@ export class Subscriptions extends Component {
                 <ul>
                     <li><p styleName="description">Used to filter MQTT channels:</p></li>
                     <li>
-                        <input type="checkbox" name="all_messages" value="+/#" defaultChecked={true} onChange={(e) => this.handleClick(e.target.name, e.target.value)}/>
+                        <input type="checkbox" name="all_messages" value="+/#"  onChange={(e) => this.handleClick(e.target.name, e.target.value)}/>
                         <label>ALL MESSAGES</label>
                     </li>
                     <li>
-                        <input type="checkbox" name="widget_messages" value='admin/nodeAdmin' onChange={(e) => this.handleClick(e.target.name, e.target.value)}/>
+                        <input type="checkbox" name="widget_messages" value='admin/nodeAdmin' defaultChecked={true} onChange={(e) => this.handleClick(e.target.name, e.target.value)}/>
                         <label>WIDGETS</label>
                     </li>
                     <li>

@@ -1,5 +1,5 @@
 import {UPDATE_SUBSCRIPTIONS} from '../actions';
-export default function(state={"all_messages":"+/#"}, action) {
+export default function(state={}, action) {
     
     switch(action.type) { 
         case UPDATE_SUBSCRIPTIONS: {
