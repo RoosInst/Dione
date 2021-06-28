@@ -7,6 +7,9 @@ export const MQTT_DISCONNECTED = 'mqtt_disconnected';
 export const MQTT_RECONNECTING = 'mqtt_reconnecting';
 export const UPDATE_SUBSCRIPTIONS = 'update_subscriptions';
 export const UPDATE_WHITEBOARD_LAYOUT = 'update_whiteboard_layout';
+export const UPDATE_ORDER = 'update_order';
+export const UPDATE_CONNECTION_DETAILS = 'update_connection_details';
+export const UPDATE_PANE_SIZES = 'update_pane_sizes';
 
 export function sendAction(action) { //generic send action to reducers (used for MQTT consts instead of writing 3 actions that do same thing (return self))
   return {
@@ -63,5 +66,30 @@ export function updateWhiteboardLayout(layout, insertion, model) {
     layout: layout,
     insertion: insertion,
     model: model
+  }
+}
+
+export function updateRenderOrder(model, order) {
+  return {
+    type: UPDATE_ORDER,
+    model: model, 
+    order: order
+  }
+}
+
+export function updateConnectionDetails(model, details) {
+  return {
+    type: UPDATE_CONNECTION_DETAILS,
+    model: model,
+    details: details
+  }
+}
+
+export function updatePaneSize(model, height, width) {
+  return {
+    type: UPDATE_PANE_SIZES,
+    model: model,
+    height: height,
+    width: width
   }
 }

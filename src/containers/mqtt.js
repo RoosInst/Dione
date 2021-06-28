@@ -4,9 +4,8 @@ import Mqtt from 'mqtt';
 //import Cbor from 'cbor';
 import PropTypes from 'prop-types'; //used to include { node } 
 
-import { sendAction, updateWhiteboard, updateClientID, updateMqttSubscriptions, MQTT_CONNECTED, MQTT_DISCONNECTED, MQTT_RECONNECTING } from '../actions';
+import { sendAction, updateWhiteboard, updateClientID, updateMqttSubscriptions, updateRenderOrder, updateConnectionDetails, MQTT_CONNECTED, MQTT_DISCONNECTED, MQTT_RECONNECTING } from '../actions';
 import '../styles/mqtt.scss';
-
 //import RtCbor from "../scripts/RtCbor";
 const RtCbor = require('../scripts/RtCbor');
 
@@ -20,6 +19,8 @@ let numMsgs = 0,
   localClientID; //localClientID used instead of this.props.clientID because localClientID is scoped in componentDidMount, so it won't be updated on next render. Therefore, must make an updating value OUTSIDE of props
 
 let rtCbor = new RtCbor();
+let layout = [];
+//let layoutObject = {};
 
 let currentWidget;
 let incompleteWidgetTopic;
@@ -41,14 +42,19 @@ class MQTT extends Component {
     localClientID = this.props.clientID;
   }
 
+
+  
   componentDidMount() {
+
+    
+  
     localClientID = this.props.clientID;
-    const subscriptions = this.props.subscriptions;
+
 
     const mqttHost = 'wss://mqtt.roos.com'; // dev broker'
     //const mqttHost = 'ws://localhost'; //localhost
     const port = '8883'; // local mqtt wss port '8081', server ws '8883'
-    const { sendAction, updateWhiteboard, updateClientID, updateMqttSubscriptions } = this.props;
+    const { subscriptions, sendAction, updateWhiteboard, updateClientID, updateMqttSubscriptions, updateRenderOrder, updateConnectionDetails } = this.props;
     const mqttBroker = mqttHost + ':' + port + "/mqtt";  // secure websocket port (wss) (init by rTalkDistribution/moquette/bin/moquette.sh)
                                                          // MQTT 3.1+ brokers require a websockets path +"/mqtt"
     const mqttConnectOptions = {
@@ -88,6 +94,28 @@ class MQTT extends Component {
     //X016OK8G:msgTool/X016OK8G/+/actions
     //Main MQTT Parsing loop
     mqttClient.on('message', function (topic, message) {
+      const formLayoutArray = (message, target, level) => {
+        message.forEach(element => {
+          if(element.includes('class')) {
+            let owner = element[element.indexOf('owner') + 1];
+            let identifier = element[element.indexOf('identifier') + 1];
+            if(owner == target) {
+              layout.push(`${identifier}`);
+              formLayoutArray(message, identifier, level + '->'); 
+            }
+          }
+        });  
+      };
+      // const formLayoutObject = () => {
+      //   let currentObject = layout[0];
+
+      //   for(i=1; i < layout.length; i++) {
+      //     if(layout[i] != '|') {
+      //       layoutObject.currentObject
+      //     }
+      //   }
+      // }
+    
       numMsgs++;
       try {
         //var decodedCborMsgs1 = cbor.decodeAllSync(message); //DEBUG
@@ -104,6 +132,7 @@ class MQTT extends Component {
           let nodeName = decodedCborMsgs[0][6];
           if(topic.toString().includes("disconnect")) {
             updateMqttSubscriptions(nodeName, channel);
+            updateConnectionDetails(channel, []);
           } else if(topic.toString().includes("connect")) {
             if(nodeName == 'propsEdit') {
               propChannel = channel;
@@ -113,6 +142,7 @@ class MQTT extends Component {
                   incompleteWidgetTopic = `${subscriptions.cellId}:${channel}/${subscriptions.cellId}/`;
                   currentWidget = nodeName;
                   updateMqttSubscriptions(nodeName, `${subscriptions.cellId}:${channel}/${subscriptions.cellId}/+/action/#`);
+                  updateConnectionDetails(channel, decodedCborMsgs);
                 } else {
                   widgetTopic = incompleteWidgetTopic + channel;
                 }
@@ -207,8 +237,17 @@ class MQTT extends Component {
       //ENABLE FOR DEBUGGING
       else if (decodedCborMsgs[0][0].value === 'toppane') { //if msg not going to our localClientID, but is still an app (ex. debugging tool)
         let model = topic.split('/')[0];
+        let application = model.split(':')[1];
+        formLayoutArray(decodedCborMsgs, 'top', '');
+        console.info(application);
+        console.info(layout);
+        updateRenderOrder(application, layout);
+        layout = [];
         updateWhiteboard(decodedCborMsgs, model);
+        
       }
+      //find everything that has top, add it to the object.
+      //loop through these keys and add anything they have, repeat
 
       else if (topic.includes(cellID + '/GURUBROWSER/subscribe')) { //update to newly received localClientID
           let newClientID = topic.split('/')[0];
@@ -216,6 +255,7 @@ class MQTT extends Component {
       }
 
       else if (message.toString()=='end') {
+        console.info('attempting to close connection');
        mqttClient.unsubscribe('+/+/' + localClientID + '/#');
        mqttClient.end();
       }
@@ -283,6 +323,7 @@ class MQTT extends Component {
     });
   }
 
+  
   render() {
     return (
       <div styleName='ri-mqtt'>
@@ -301,8 +342,10 @@ function mapStateToProps(state) {
 		clientID: state.clientID,
     whiteboard: state.whiteboard,
     mqttConnection: state.mqttConnection,
-    subscriptions: state.subscriptions
+    subscriptions: state.subscriptions,
+    renderOrder: state.renderOrder,
+    connectionDetails: state.connectionDetails
   };
 }
 
-export default connect(mapStateToProps, {sendAction, updateWhiteboard,  updateClientID, updateMqttSubscriptions})(MQTT);
+export default connect(mapStateToProps, {sendAction, updateWhiteboard,  updateClientID, updateMqttSubscriptions, updateRenderOrder, updateConnectionDetails})(MQTT);

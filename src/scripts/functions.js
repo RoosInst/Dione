@@ -1,8 +1,12 @@
 /*Here exists functions essential to building the app.*/
 import React from 'react';
+import SplitPane from 'react-split-pane';
 import {mqttClient, cellID} from '../containers/mqtt';
-import RtCbor from "../scripts/RtCbor"
-
+import Button from '../containers/button';
+//import ListPane from '../containers/listPane';
+import TextPane from '../containers/textPane';
+import TreePane from '../containers/treePane';
+import RtCbor from "../scripts/RtCbor";
 //const cbor = require('cbor');
 
 const
@@ -23,6 +27,74 @@ RIRISEP1 = '\u001c', //RIRI level 1 separator - FS - '^'
 RIRISEP2 = '\u001d', //RIRI level 2 separator - GS - '+'
 RIRISEP4 = '\u001f', //RIRI level 4 separator - US - '/'riStringCheckAndConvert
 */
+
+
+export function renderApp(model, obj, layout, firstIndex, lastIndex) {
+  // console.info('first obj', obj);            FOR DEBUGGING
+  // console.info('firstIndex', firstIndex);
+  // console.info('laatIndex', lastIndex);
+  let currentObj;
+  if(firstIndex == 0) {
+    currentObj = obj[layout[firstIndex]];
+  } else {
+    currentObj = obj;
+  }
+  
+
+  console.info(currentObj);
+  
+  if(currentObj.identifier.includes('split')) {
+    let splitOrientation;
+    if(currentObj.orientation == 'horiz') {
+      splitOrientation = 'vertical';
+    } else {
+      splitOrientation = 'horizontal';
+    }
+    console.info('in the split pane part');
+    let firstObj = currentObj[layout[firstIndex+1]];
+    let secondObj = currentObj[layout[lastIndex]];
+    return (
+      <div>
+        <SplitPane style={currentObj.style} split={splitOrientation} minSize={20} defaultSize={100} maxSize={-20}>
+          <div style={firstObj.style} id={model + '_' + firstObj.identifier} key={model + '_' + firstObj.identifier}>
+            {renderObj(model, firstObj, layout, firstIndex+1, lastIndex-1)}
+          </div>
+          <div style={secondObj.style} id={model + '_' + secondObj.identifier} key={model + '_' + secondObj.identifier}>
+            {renderObj(model, secondObj, layout, 0, 0)}
+          </div>
+        </SplitPane>
+      </div>
+      
+    );
+  }
+}
+
+export function renderObj(model, obj, layout, firstIndex, lastIndex) {
+  console.info('in renderObj:', obj)
+  if (obj.class && model !== 'console') {
+      switch (obj.class) {
+      case 'Button':
+          return <Button model={model} obj={obj} />;
+
+      case 'ListPane':
+          return <div style={{whiteSpace:'nowrap', overflow:'scroll'}}>This is a test to see what happens when i resize</div>
+          //return <ListPane model={model} obj={obj} />;
+
+      case 'TextPane':
+          return <TextPane model={model} obj={obj} />;
+
+      case 'TreePane':
+          return <TreePane model={model} obj={obj} />;
+
+      case 'SplitPane':
+           return renderApp(model, obj, layout, firstIndex, lastIndex);
+
+      default: return null;
+      }
+
+  } else return null;
+}
+
 
 
 function getFrameRatioFor(val) {
@@ -525,3 +597,4 @@ export function sendMsg(model, clickedObj, clientID, selectedItems, attributes) 
     mqttClient.publish(topic, cbormsg);
   }
 }
+
