@@ -9,7 +9,8 @@
     "start": "node server.js",
     "lint": "eslint webpack src public/scripts --color",
     "lint:watch": "npm run lint -- --watch",
-    "electron": "electron ."
+    "electron": "electron .",
+    "npm-install": "npm install"
   },
   "author": "Roos Instruments, Inc.",
   "license": "ISC",
