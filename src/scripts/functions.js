@@ -3,7 +3,7 @@ import React from 'react';
 import SplitPane from 'react-split-pane';
 import {mqttClient, cellID} from '../containers/mqtt';
 import Button from '../containers/button';
-//import ListPane from '../containers/listPane';
+import ListPane from '../containers/listPane';
 import TextPane from '../containers/textPane';
 import TreePane from '../containers/treePane';
 import RtCbor from "../scripts/RtCbor";
@@ -64,7 +64,6 @@ export function renderApp(model, obj, layout, firstIndex, lastIndex) {
           </div>
         </SplitPane>
       </div>
-      
     );
   }
 }
@@ -77,8 +76,8 @@ export function renderObj(model, obj, layout, firstIndex, lastIndex) {
           return <Button model={model} obj={obj} />;
 
       case 'ListPane':
-          return <div style={{whiteSpace:'nowrap', overflow:'scroll'}}>This is a test to see what happens when i resize</div>
-          //return <ListPane model={model} obj={obj} />;
+          //return <div style={{whiteSpace:'nowrap', overflow:'scroll'}}>This is a test to see what happens when i resize</div>
+          return <ListPane model={model} obj={obj} />;
 
       case 'TextPane':
           return <TextPane model={model} obj={obj} />;

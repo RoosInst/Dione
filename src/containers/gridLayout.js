@@ -95,8 +95,7 @@ export class GridLayout extends Component {
 
         let widthProportion = newPaneSizeWidth / paneSize[application].width;
         let heightProportion = newPaneSizeHeight / paneSize[application].height;
-        console.info(widthProportion);
-        console.info(heightProportion);
+        
         $('.Pane1').each(function() {
             if($(this).hasClass('horizontal')) {
                 let height = $(this).innerHeight() * heightProportion;
@@ -104,14 +103,8 @@ export class GridLayout extends Component {
             } else {
                 let width = $(this).innerWidth() * widthProportion;
                 $(this).innerWidth(width);
-            }
-            
-            
+            }   
         })
-
-     
-
-
         this.updatePaneSize(application, newPaneSizeHeight, newPaneSizeWidth);
         
     }
@@ -119,7 +112,16 @@ export class GridLayout extends Component {
     onLayoutChange(layout) {
         this.updateWhiteboardLayout(layout, false, ""); //updates layout based upon current layout
         
-        //changeProportions(this.arr);
+        //calculates the position that the pop up menu should show up at
+        $('.card-body').on("mousedown", function(event) {
+            if(event.which === 3) {
+              let root = document.documentElement;
+              root.style.setProperty("--menu-x-position", (event.clientX - event.target.getBoundingClientRect().x) + "px");
+              root.style.setProperty("--menu-y-position", (event.clientY - event.target.getBoundingClientRect().y) + "px");
+            }
+        });
+
+        //adjusts the panel size when the grid element is resized
         this.arr.forEach(model => {
             if(this.paneSize[model] == undefined) {
                 let application = $(`#${model}`);
@@ -130,11 +132,8 @@ export class GridLayout extends Component {
                 this.changeProportions(model, this.paneSize);
             }
         })
-        
-
     }
-   
-
+  
     render() {
         const { whiteboard, clientID, selectedItems, paneSize, whiteboardLayout, updateWhiteboardLayout, renderOrder, updatePaneSize} = this.props; 
         

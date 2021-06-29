@@ -45,11 +45,7 @@ class MQTT extends Component {
 
   
   componentDidMount() {
-
-    
-  
     localClientID = this.props.clientID;
-
 
     const mqttHost = 'wss://mqtt.roos.com'; // dev broker'
     //const mqttHost = 'ws://localhost'; //localhost
@@ -204,6 +200,8 @@ class MQTT extends Component {
           //console.info('Subscribing to GURUBROWSER Topics: ' + GURUBROWSER_App_Topics);
           //mqttClient.subscribe(GURUBROWSER_App_Topics, {qos: 2});
           updateMqttSubscriptions("widget_messages", `+/${cellID}/admin/nodeAdmin/#`);
+
+
           //let a =[null,'view','console','logger','true']; //testing msg as array
           //smCbor.putMap(null, a);
           //let msgOmap = { null:{'view':'console','logger':'true'}};  //testing msg as omap
@@ -323,7 +321,40 @@ class MQTT extends Component {
     });
   }
 
-  
+  //-------------------------------------------------------------------------------------------------------
+  // ATTEMPT TO START UP MESSAGE TOOL WITHOUT GUI .... FAILED
+  //<button onClick={this.handleClick}>click</button>
+  // handleClick() {
+  //   let topic = 'X016OK8G:msgTool0038/X016OK8G/admin/nodeAdmin/3/connect';
+  //   let msg = [ 
+  //     "connect", 
+  //     "reason","startup", 
+  //     "channel", "msgTool", 
+  //     "nodeName", "msgTool",
+  //     "mqttId", "msgTool0038",
+  //     "domain", "X016OK8G",
+  //     "cell", "X016OK8G"
+  //   ];
+  //   rtCbor.encodeArrayNew(msg);
+  //   mqttClient.publish(topic, rtCbor.buffers[0]); //Dione responds to the ping letting props know it exists
+  //   console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) );
+
+  //   topic = 'X016OK8G:3153412/X016OK8G/admin/nodeAdmin/3/connect';
+  //   msg = [ 
+  //     "connect", 
+  //     "reason","startup", 
+  //     "channel", "T02342", 
+  //     "nodeName", "WB",
+  //     "mqttId", "WB3153412",
+  //     "domain", "X016OK8G",
+  //     "cell", "X016OK8G"
+  //   ];
+  //   rtCbor.encodeArrayNew(msg);
+  //   mqttClient.publish(topic, rtCbor.buffers[0]); //Dione responds to the ping letting props know it exists
+  //   console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) );
+  // }
+  //-------------------------------------------------------------------------------------------------------
+
   render() {
     return (
       <div styleName='ri-mqtt'>

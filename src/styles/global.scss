@@ -1,5 +1,10 @@
 @import "theme";
 
+:root {
+  --menu-x-position: '0px';
+  --menu-y-position: '0px';
+}
+
 body {
   overflow: auto;
   margin: 0;
@@ -102,7 +107,10 @@ ul {
   outline: none !important;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 250ms ease !important;
+  position: absolute !important;
+  top: var(--menu-y-position) !important;
+  left: var(--menu-x-position) !important;
+  //transition: opacity 250ms ease !important;
 }
 
 .react-contextmenu.react-contextmenu--visible {
@@ -271,6 +279,7 @@ pre {
   line-height: 1.35;
 }
 
+//START GRID LAYOUT CSS
 .react-grid-layout {
   position: relative;
   transition: height 200ms ease;
@@ -372,7 +381,9 @@ pre {
   cursor: -moz-grab;
   cursor: -webkit-grab;
 }
+//END GRID LAYOUT CSS
 
+//START SPLIT PANE CSS
 .Resizer {
   background: #000;
   opacity: 0.2;
@@ -425,3 +436,4 @@ pre {
     border-color: transparent;
   }
 }
+//END SPLIT PANES CSS
