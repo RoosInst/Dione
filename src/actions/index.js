@@ -10,6 +10,7 @@ export const UPDATE_WHITEBOARD_LAYOUT = 'update_whiteboard_layout';
 export const UPDATE_ORDER = 'update_order';
 export const UPDATE_CONNECTION_DETAILS = 'update_connection_details';
 export const UPDATE_PANE_SIZES = 'update_pane_sizes';
+export const UPDATE_MOUSE_POSITION = 'update_mouse_position';
 
 export function sendAction(action) { //generic send action to reducers (used for MQTT consts instead of writing 3 actions that do same thing (return self))
   return {
@@ -91,5 +92,14 @@ export function updatePaneSize(model, height, width) {
     model: model,
     height: height,
     width: width
+  }
+}
+
+export function updateMousePosition(identifier, x, y) {
+  return {
+    type: UPDATE_MOUSE_POSITION,
+    identifier: identifier, 
+    x: x,
+    y: y
   }
 }

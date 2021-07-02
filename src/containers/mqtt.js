@@ -213,17 +213,17 @@ class MQTT extends Component {
           //sanity check encoding
           console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) )
           //rtCbor.encodeOMap(msgOmap);  //need to re-encode since .getCborAsBuffer() also clears it)
-          rtCbor.encodeArray(msgArray);
+          // rtCbor.encodeArray(msgArray);
 
-          //let consoleCreateSub = [null,'view=console','logger=true'] // ^+view=Console+logger=true  was //Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
-          //let consoleCreateSub = rtCbor.getCborAsBuffer
-          //let consoleCreateSubTopic = 'console/' + cellID + '/whiteboard/createSubscriber/' + numMsgs;
-          //mqttClient.publish(consoleCreateSubTopic, consoleCreateSub);
+          // //let consoleCreateSub = [null,'view=console','logger=true'] // ^+view=Console+logger=true  was //Buffer.from('9fd3f6647669657767436f6e736f6c65ff', 'hex');
+          // //let consoleCreateSub = rtCbor.getCborAsBuffer
+          // //let consoleCreateSubTopic = 'console/' + cellID + '/whiteboard/createSubscriber/' + numMsgs;
+          // //mqttClient.publish(consoleCreateSubTopic, consoleCreateSub);
 
-          let selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex'); //publishing this launches guru app
-          let guruAppTopic = localClientID + '/' + cellID + '/console/subscribe/' + numMsgs;
-          mqttClient.publish(guruAppTopic, selectGuruApp); //launches guru app
-          console.info('PUB Message ' + numMsgs + ' - \n Topic: ' + guruAppTopic.toString() + '\n ' + 'Decoded CBOR Message: ', cbor.decodeAllSync(selectGuruApp));
+          // let selectGuruApp = Buffer.from('9fd3656576656e7466776964676574676170704d656e75676368616e6e656c6854304a39393930376973656c656374696f6e6c0141412b6752756e204170706d73656c656374696f6e6170707369014167414967757275ff', 'hex'); //publishing this launches guru app
+          // let guruAppTopic = localClientID + '/' + cellID + '/console/subscribe/' + numMsgs;
+          // mqttClient.publish(guruAppTopic, selectGuruApp); //launches guru app
+          // console.info('PUB Message ' + numMsgs + ' - \n Topic: ' + guruAppTopic.toString() + '\n ' + 'Decoded CBOR Message: ', cbor.decodeAllSync(selectGuruApp));
 				}
       }
 
@@ -237,8 +237,6 @@ class MQTT extends Component {
         let model = topic.split('/')[0];
         let application = model.split(':')[1];
         formLayoutArray(decodedCborMsgs, 'top', '');
-        console.info(application);
-        console.info(layout);
         updateRenderOrder(application, layout);
         layout = [];
         updateWhiteboard(decodedCborMsgs, model);
@@ -322,32 +320,13 @@ class MQTT extends Component {
   }
 
   //-------------------------------------------------------------------------------------------------------
-  // ATTEMPT TO START UP MESSAGE TOOL WITHOUT GUI .... FAILED
+  // ATTEMPT TO START UP MESSAGE TOOL WITHOUT GUI .... kind of works
   //<button onClick={this.handleClick}>click</button>
   // handleClick() {
-  //   let topic = 'X016OK8G:msgTool0038/X016OK8G/admin/nodeAdmin/3/connect';
+  //   let topic = 'X016OK8G:' + consoleChannel + '/X016OK8G/guiLauncher/app/' + numMsgs;  // msgTool0038/X016OK8G/admin/nodeAdmin/3/connect';
   //   let msg = [ 
-  //     "connect", 
-  //     "reason","startup", 
-  //     "channel", "msgTool", 
-  //     "nodeName", "msgTool",
-  //     "mqttId", "msgTool0038",
-  //     "domain", "X016OK8G",
-  //     "cell", "X016OK8G"
-  //   ];
-  //   rtCbor.encodeArrayNew(msg);
-  //   mqttClient.publish(topic, rtCbor.buffers[0]); //Dione responds to the ping letting props know it exists
-  //   console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) );
-
-  //   topic = 'X016OK8G:3153412/X016OK8G/admin/nodeAdmin/3/connect';
-  //   msg = [ 
-  //     "connect", 
-  //     "reason","startup", 
-  //     "channel", "T02342", 
-  //     "nodeName", "WB",
-  //     "mqttId", "WB3153412",
-  //     "domain", "X016OK8G",
-  //     "cell", "X016OK8G"
+  //     "runLocal", 
+  //     "className","rtalk.tools.RtalkMessageSenderTool" 
   //   ];
   //   rtCbor.encodeArrayNew(msg);
   //   mqttClient.publish(topic, rtCbor.buffers[0]); //Dione responds to the ping letting props know it exists
@@ -356,6 +335,7 @@ class MQTT extends Component {
   //-------------------------------------------------------------------------------------------------------
 
   render() {
+
     return (
       <div styleName='ri-mqtt'>
         <div className="float-left">Client ID: {localClientID}</div>

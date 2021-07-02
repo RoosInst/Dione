@@ -18,7 +18,7 @@ export default function(state = {layouts:{lg: []}}, action) {
           'moved': false,
           'resizeHandles': undefined,
           'static': false,
-          'w': 5,
+          'w': 3,
           'x': 0,
           'y': 0
         }
