@@ -9,6 +9,7 @@ import WhiteboardLayout from './reducer_whiteboardLayout';
 import ApplicationRenderOrder from './reducer_applicationRenderOrder';
 import ConnectionDetails from './reducer_connectionDetails';
 import PaneSize from './reducer_paneSizes';
+import MousePosition from './reducer_mousePosition';
 
 const rootReducer = combineReducers({
   clientID: ClientID,
@@ -19,7 +20,8 @@ const rootReducer = combineReducers({
   whiteboardLayout: WhiteboardLayout,
   renderOrder: ApplicationRenderOrder,
   connectionDetails: ConnectionDetails,
-  paneSize: PaneSize
+  paneSize: PaneSize,
+  mousePosition: MousePosition
 });
 
 export default rootReducer;
