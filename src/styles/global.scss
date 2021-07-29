@@ -236,7 +236,14 @@ label {
     .cardClose {
       position: absolute;
       right: 6px;
-      size: 7px;
+      size: 9px;
+    }
+
+    .cardMinimize {
+      position: absolute;
+      right: 21px;
+      top: 0;
+      size: 1px;
     }
 
     span {
@@ -347,7 +354,7 @@ pre {
 }
 
 .react-grid-item.react-grid-placeholder {
-  background: red;
+  background: rgb(0, 255, 85);
   opacity: 0.2;
   transition-duration: 100ms;
   z-index: 2;

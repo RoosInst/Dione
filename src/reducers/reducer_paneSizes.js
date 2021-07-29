@@ -4,8 +4,12 @@ export default function(state = {}, action) {
   
   switch(action.type) {
     case UPDATE_PANE_SIZES:
+      if(action.change == 'update') {
+        state[action.model] = {height: action.height, width: action.width};
+      } else {
+        delete state[action.model];
+      }
       
-      state[action.model] = {height: action.height, width: action.width};
       return state;
   }
   return state;

@@ -10,6 +10,9 @@ import ApplicationRenderOrder from './reducer_applicationRenderOrder';
 import ConnectionDetails from './reducer_connectionDetails';
 import PaneSize from './reducer_paneSizes';
 import MousePosition from './reducer_mousePosition';
+import CurrentChannel from './reducer_currentChannel';
+import WhiteboardTabs from './reducer_whiteboardTabs';
+import MousePressed from './reducer_mousePressed';
 
 const rootReducer = combineReducers({
   clientID: ClientID,
@@ -21,7 +24,10 @@ const rootReducer = combineReducers({
   renderOrder: ApplicationRenderOrder,
   connectionDetails: ConnectionDetails,
   paneSize: PaneSize,
-  mousePosition: MousePosition
+  mousePosition: MousePosition,
+  currentChannel: CurrentChannel,
+  whiteboardTabs: WhiteboardTabs,
+  mousePressed: MousePressed
 });
 
 export default rootReducer;

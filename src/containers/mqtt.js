@@ -4,13 +4,12 @@ import Mqtt from 'mqtt';
 //import Cbor from 'cbor';
 import PropTypes from 'prop-types'; //used to include { node } 
 
-import { sendAction, updateWhiteboard, updateClientID, updateMqttSubscriptions, updateRenderOrder, updateConnectionDetails, MQTT_CONNECTED, MQTT_DISCONNECTED, MQTT_RECONNECTING } from '../actions';
+import { sendAction, updateWhiteboard, updateClientID, updateMqttSubscriptions, updateRenderOrder, updateConnectionDetails, updateCurrentChannel, updateMousePressed, updateWhiteboardLayout, MQTT_CONNECTED, MQTT_DISCONNECTED, MQTT_RECONNECTING } from '../actions';
+import { publishArray } from '../scripts/functions';
 import '../styles/mqtt.scss';
-//import RtCbor from "../scripts/RtCbor";
 const RtCbor = require('../scripts/RtCbor');
 
 import cbor from 'cbor';
-//import { sendMsg } from '../scripts/functions';
 
 export let cellID, //sent by rTalk + GuruServer connected to the MQTT broker (init by rTalkDistribution/startWin64.bat), holds the model for this UI instance (aka host)
   mqttClient;
@@ -20,12 +19,14 @@ let numMsgs = 0,
 
 let rtCbor = new RtCbor();
 let layout = [];
-//let layoutObject = {};
+
 
 let currentWidget;
 let incompleteWidgetTopic;
 let widgetTopic;
 let propChannel;
+let channel;
+let nodeName;
 class MQTT extends Component {
 
   static propTypes = {
@@ -50,7 +51,7 @@ class MQTT extends Component {
     const mqttHost = 'wss://mqtt.roos.com'; // dev broker'
     //const mqttHost = 'ws://localhost'; //localhost
     const port = '8883'; // local mqtt wss port '8081', server ws '8883'
-    const { subscriptions, sendAction, updateWhiteboard, updateClientID, updateMqttSubscriptions, updateRenderOrder, updateConnectionDetails } = this.props;
+    const { subscriptions, sendAction, updateWhiteboard, updateClientID, mousePressed, updateMqttSubscriptions, updateRenderOrder, updateConnectionDetails, updateCurrentChannel, updateMousePressed, updateWhiteboardLayout } = this.props;
     const mqttBroker = mqttHost + ':' + port + "/mqtt";  // secure websocket port (wss) (init by rTalkDistribution/moquette/bin/moquette.sh)
                                                          // MQTT 3.1+ brokers require a websockets path +"/mqtt"
     const mqttConnectOptions = {
@@ -102,15 +103,6 @@ class MQTT extends Component {
           }
         });  
       };
-      // const formLayoutObject = () => {
-      //   let currentObject = layout[0];
-
-      //   for(i=1; i < layout.length; i++) {
-      //     if(layout[i] != '|') {
-      //       layoutObject.currentObject
-      //     }
-      //   }
-      // }
     
       numMsgs++;
       try {
@@ -124,8 +116,8 @@ class MQTT extends Component {
 
         //check to see if the message pertains to a widget that is trying to render
         if(topic.toString().includes("admin/nodeAdmin")) {
-          let channel = decodedCborMsgs[0][4];
-          let nodeName = decodedCborMsgs[0][6];
+          channel = decodedCborMsgs[0][4];
+          nodeName = decodedCborMsgs[0][6];
           if(topic.toString().includes("disconnect")) {
             updateMqttSubscriptions(nodeName, channel);
             updateConnectionDetails(channel, []);
@@ -139,8 +131,25 @@ class MQTT extends Component {
                   currentWidget = nodeName;
                   updateMqttSubscriptions(nodeName, `${subscriptions.cellId}:${channel}/${subscriptions.cellId}/+/action/#`);
                   updateConnectionDetails(channel, decodedCborMsgs);
+                  updateCurrentChannel(channel);
+                  if(mousePressed.pressed) {
+                    console.info('should be updating')
+                    const whiteboard123 = localStorage.getItem('whiteboard');
+                    const whiteboardObject = JSON.parse(whiteboard123);
+                    console.info('whiteboardObject:',whiteboardObject)
+                    if(whiteboardObject == null || !Object.keys(whiteboardObject).includes(channel)) {
+                      updateWhiteboardLayout({}, true, channel);
+                      console.info('should be updating grid layout in mqtt.js');
+
+                    }
+                    console.info('channel', channel);
+                    let message = [null, 'view', 'console'];
+                    let topic = 'X016OK8G:RET235R/X016OK8G/' + channel + '/subscribe/4'
+                    publishArray(topic, message);
+                    updateMousePressed(false);
+                  }
                 } else {
-                  widgetTopic = incompleteWidgetTopic + channel;
+                  widgetTopic = incompleteWidgetTopic + channel;   
                 }
             } 
           } 
@@ -149,6 +158,27 @@ class MQTT extends Component {
           updateMqttSubscriptions(currentWidget, widgetTopic + '/#');  //resubscribe to specific topic with the app's channel
           widgetTopic = 'WAITING_FOR_A_NEW_WIDGET_TO_LOAD';
         }
+        console.info('topic: ', topic.toString());
+        // if(topic.toString().includes('whiteboard/createSubscriber') && topic.toString().includes('console')) {
+        //   console.info('in the right place');
+        //   let responseTopic = 'X016OK8G:TOW234G/X016OK8G/console/subscribe/4';
+        //   let replyMessage = [
+        //     null,
+        //     'view', 'Console'
+        //   ];
+        //   rtCbor.encodeArrayNew(replyMessage); 
+        //   mqttClient.publish(responseTopic, rtCbor.buffers[0]); //Dione responds to the ping letting props know it exists
+        //   console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) );
+        // } else if(topic.toString().includes('whiteboard/createSubscriber')) {
+        //   let responseTopic = 'X016OK8G:TOW234G/X016OK8G/msgTool/subscribe/4';
+        //   let replyMessage = [
+        //     null,
+        //     'view', 'Console'
+        //   ];
+        //   rtCbor.encodeArrayNew(replyMessage); 
+        //   mqttClient.publish(responseTopic, rtCbor.buffers[0]); //Dione responds to the ping letting props know it exists
+        //   console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) );
+        // }
         
         //check if not empty message
         if(decodedCborMsgs && decodedCborMsgs.length > 0 && decodedCborMsgs[0].length > 0) 
@@ -227,18 +257,20 @@ class MQTT extends Component {
 				}
       }
 
-      else if (topic.includes(cellID + '/' + localClientID) && !topic.includes('console')) { //if message for us, but ignoring console instructions
-        let model = topic.split('/')[0];  //isolate each app by topic
-        updateWhiteboard(decodedCborMsgs, model); //update store with decoded cbor
-      }
+      // else if (topic.includes(cellID + '/' + localClientID) && !topic.includes('console')) { //if message for us, but ignoring console instructions
+      //   let model = topic.split('/')[0];  //isolate each app by topic
+      //   updateWhiteboard(decodedCborMsgs, model); //update store with decoded cbor
+      // }
 
       //ENABLE FOR DEBUGGING
       else if (decodedCborMsgs[0][0].value === 'toppane') { //if msg not going to our localClientID, but is still an app (ex. debugging tool)
+        console.info('should be updating whiteboard');
         let model = topic.split('/')[0];
         let application = model.split(':')[1];
         formLayoutArray(decodedCborMsgs, 'top', '');
         updateRenderOrder(application, layout);
         layout = [];
+        //updateWhiteboardTabs(application, decodedCborMsgs, model);
         updateWhiteboard(decodedCborMsgs, model);
         
       }
@@ -320,8 +352,8 @@ class MQTT extends Component {
   }
 
   //-------------------------------------------------------------------------------------------------------
-  // ATTEMPT TO START UP MESSAGE TOOL WITHOUT GUI .... kind of works
-  //<button onClick={this.handleClick}>click</button>
+  // ATTEMPT TO START UP MESSAGE TOOL WITHOUT GUI .... 
+  //<button style={{marginLeft:'10px'}}onClick={this.handleClick}>Launch MsgTool</button>
   // handleClick() {
   //   let topic = 'X016OK8G:' + consoleChannel + '/X016OK8G/guiLauncher/app/' + numMsgs;  // msgTool0038/X016OK8G/admin/nodeAdmin/3/connect';
   //   let msg = [ 
@@ -329,7 +361,7 @@ class MQTT extends Component {
   //     "className","rtalk.tools.RtalkMessageSenderTool" 
   //   ];
   //   rtCbor.encodeArrayNew(msg);
-  //   mqttClient.publish(topic, rtCbor.buffers[0]); //Dione responds to the ping letting props know it exists
+  //   mqttClient.publish(topic, rtCbor.buffers[0]); 
   //   console.info('Encoded CBOR: ', cbor.decodeAllSync(rtCbor.getCborAsBuffer()) );
   // }
   //-------------------------------------------------------------------------------------------------------
@@ -355,8 +387,9 @@ function mapStateToProps(state) {
     mqttConnection: state.mqttConnection,
     subscriptions: state.subscriptions,
     renderOrder: state.renderOrder,
-    connectionDetails: state.connectionDetails
+    connectionDetails: state.connectionDetails,
+    mousePressed: state.mousePressed
   };
 }
 
-export default connect(mapStateToProps, {sendAction, updateWhiteboard,  updateClientID, updateMqttSubscriptions, updateRenderOrder, updateConnectionDetails})(MQTT);
+export default connect(mapStateToProps, {sendAction, updateWhiteboard,  updateClientID, updateMqttSubscriptions, updateRenderOrder, updateConnectionDetails, updateCurrentChannel, updateMousePressed, updateWhiteboardLayout})(MQTT);

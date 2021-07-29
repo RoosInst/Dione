@@ -2,6 +2,8 @@
 import React from 'react';
 import {mqttClient, cellID} from '../containers/mqtt';
 import RtCbor from "../scripts/RtCbor";
+import cbor from 'cbor';
+let rtCbor = new RtCbor();
 
 //const cbor = require('cbor');
 
@@ -23,6 +25,13 @@ RIRISEP1 = '\u001c', //RIRI level 1 separator - FS - '^'
 RIRISEP2 = '\u001d', //RIRI level 2 separator - GS - '+'
 RIRISEP4 = '\u001f', //RIRI level 4 separator - US - '/'riStringCheckAndConvert
 */
+
+export function publishArray(topic, msgArray) {
+  rtCbor.encodeArrayNew(msgArray); 
+  mqttClient.publish(topic, rtCbor.buffers[0]);
+  cbor.decodeAllSync(rtCbor.getCborAsBuffer()); //gets rid of message in the cbor
+}
+
 
 function getFrameRatioFor(val) {
   let frameRatio = {},
@@ -434,6 +443,7 @@ function base64Decode(value) {
   }
   return result;
 }
+
 
 
 /**Given a RIRI2/RIRI3 separated string, parse it into json

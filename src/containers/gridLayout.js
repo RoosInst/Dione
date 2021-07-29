@@ -6,9 +6,11 @@ import Modal from './modal';
 import Card from './card';
 
 import { updateWhiteboard, updateWhiteboardLayout, updatePaneSize } from '../actions';
+import { publishArray } from '../scripts/functions';
 
 import { Responsive, WidthProvider } from 'react-grid-layout';
 const ResponsiveGridLayout = WidthProvider(Responsive);
+
 export class GridLayout extends Component {
   
     static propTypes = {
@@ -18,13 +20,57 @@ export class GridLayout extends Component {
         whiteboardLayout: PropTypes.object.isRequired
     }
 
-    changeProportions(application, paneSize) {
-        let applicationChanged = $(`#${application}`);
+    //******************** 
+    //SECTION ON DROPPPING
+    //******************** 
+    onDrop(layout, item) {
+        let channel = item.i;
+        this.props.updateWhiteboardLayout(item, true, channel); 
+
+        let message = [null, 'view', 'console'];
+        let topic = 'X016OK8G:RET235R/X016OK8G/' + this.props.currentChannel + '/subscribe/4';
+        publishArray(topic, message);
+    }
+
+    //******************** 
+    //SECTION ON DRAGGING
+    //******************** 
+    onDragStop(layout, oldItem, newItem) {
+        this.props.updateWhiteboardLayout(newItem, true, newItem.i)
+    }
+
+    //******************** 
+    //SECTION ON RESIZING
+    //******************** 
+    onResizeStart(layout, oldItem) {
+        let applicationName = oldItem.i;
+        if(this.props.paneSize[applicationName] == undefined) {
+            let application = $(`#${applicationName}`);
+            let paneSizeHeight = application.innerHeight();
+            let paneSizeWidth = application.innerWidth();
+
+            //changes the initial height from % to px 
+            application.find('.Pane1').each(function() {
+                if($(this).hasClass('horizontal')) {
+                    let height = $(this).innerHeight() * 1;
+                    $(this).innerHeight(height);
+                } else {
+                    let width = $(this).innerWidth() * 1;
+                    $(this).innerWidth(width);
+                }   
+            })
+            this.props.updatePaneSize(applicationName, paneSizeHeight, paneSizeWidth, 'update');
+        }
+    }
+    onResize(layout, oldItem, newItem) {
+        const { paneSize } = this.props;
+        let applicationName = newItem.i;
+        let applicationChanged = $(`#${applicationName}`);
         let newPaneSizeHeight = applicationChanged.innerHeight();
         let newPaneSizeWidth = applicationChanged.innerWidth();
 
-        let widthProportion = newPaneSizeWidth / paneSize[application].width;
-        let heightProportion = newPaneSizeHeight / paneSize[application].height;
+        let widthProportion = newPaneSizeWidth / paneSize[applicationName].width;
+        let heightProportion = newPaneSizeHeight / paneSize[applicationName].height;
         
         applicationChanged.find('.Pane1').each(function() {
             if($(this).hasClass('horizontal')) {
@@ -35,68 +81,52 @@ export class GridLayout extends Component {
                 $(this).innerWidth(width);
             }   
         })
-        this.updatePaneSize(application, newPaneSizeHeight, newPaneSizeWidth);
+        this.props.updatePaneSize(applicationName, newPaneSizeHeight, newPaneSizeWidth, 'update');
+    }
+    onResizeStop(layout, oldItem, newItem) {
+        this.props.updateWhiteboardLayout(newItem, true, newItem.i)
     }
 
-    onLayoutChange(layout) {
-        //updates layout based upon current layout after a resize
-        this.updateWhiteboardLayout(layout, false, ""); 
 
-        //adjusts the splitPanes' size when the grid element is resized
-        this.arr.forEach(model => {
-            if(this.paneSize[model] == undefined) {
-                let application = $(`#${model}`);
-                let paneSizeHeight = application.innerHeight();
-                let paneSizeWidth = application.innerWidth();
-
-                //changes the initial height from % to px 
-                application.find('.Pane1').each(function() {
-                    if($(this).hasClass('horizontal')) {
-                        let height = $(this).innerHeight() * 1;
-                        $(this).innerHeight(height);
-                    } else {
-                        let width = $(this).innerWidth() * 1;
-                        $(this).innerWidth(width);
-                    }   
-                })
-
-                this.updatePaneSize(model, paneSizeHeight, paneSizeWidth);
-            } else {
-                this.changeProportions(model, this.paneSize);
-            }
-        })
-    }
-  
+    //**************
+    //RENDER SECTION
+    //**************
     render() {
-        const { whiteboard, paneSize, whiteboardLayout, updateWhiteboardLayout, updatePaneSize} = this.props; 
+        const { whiteboard, whiteboardLayout, currentChannel} = this.props; 
         
-        let arr;
+        let arr = [];
         if (whiteboard) {
-            arr = Object.keys(whiteboard);
+            arr = [...Object.keys(whiteboard)];   
         } 
-        if(arr == undefined) {
-            return false;
-        }
-        
+
         return (
-            <ResponsiveGridLayout className="layout" key="grid" arr={arr} changeProportions={this.changeProportions} paneSize={paneSize} updatePaneSize={updatePaneSize} layouts={whiteboardLayout.layouts} onLayoutChange={this.onLayoutChange} updateWhiteboardLayout={updateWhiteboardLayout} cols={{lg: 12, md: 10, sm: 6, xs: 4}} rowHeight={60} breakpoints={{lg: 1200}} compactType={null} preventCollision={true} draggableHandle='.card-header'>
-                {arr.map(model => { //map through each app
-                    updateWhiteboardLayout({}, true, model); //adds the model to the layout
-                    updateWhiteboardLayout({}, true, model); //establishes the model within the layout so that other things will render around it
-                    const obj = whiteboard[model];
-                    const objMenus = []; //if toppane has dropdown menus, keys to menus will be in here
-                    Object.keys(obj).map(key => {
-                        if (key.includes('Menu')) objMenus.push(key);
-                    });
-            
-                    return (
-                        <div key={model} id={model}>  
-                            <Modal key="modal" obj={obj} model={model} />
-                            <Card key={model + "card"} model={model} obj={obj} objMenus={objMenus}/>     
-                        </div>
-                    );
-                })}
-            </ResponsiveGridLayout>
+            <ResponsiveGridLayout className="layout" key="grid" margin={[0.5, 0.5]} arr={arr}
+                        cols={{lg: 1000, md: 10, sm: 6, xs: 4}} rowHeight={1} breakpoints={{lg: 1200}}
+                        compactType={null} preventCollision={true} draggableHandle='.card-header'
+                        isDroppable={true} droppingItem={{i:currentChannel, w:300, h:300}} 
+                        onDrop={(layout, item) => this.onDrop(layout, item)}
+                        onDragStop={(layout, oldItem, newItem) => this.onDragStop(layout, oldItem, newItem)} 
+                        onResizeStart={(layout, oldItem) => this.onResizeStart(layout, oldItem)}
+                        onResize={(layout, oldItem, newItem) => this.onResize(layout, oldItem, newItem)}
+                        onResizeStop={(layout, oldItem, newItem) => this.onResizeStop(layout, oldItem, newItem)}
+            >
+                {
+                    arr.map(model => { //map through each app
+                        const obj = whiteboard[model];
+                        const objMenus = []; //if toppane has dropdown menus, keys to menus will be in here
+                        Object.keys(obj).map(key => {
+                            if (key.includes('Menu')) objMenus.push(key);
+                        });
+                
+                        return (
+                            <div key={model} id={model} data-grid={whiteboardLayout.layouts[model]}>  
+                                <Modal key="modal" obj={obj} model={model} />
+                                <Card key={model + "card"} model={model} obj={obj} objMenus={objMenus}/>     
+                            </div>
+                        );
+                    })
+                }
+            </ResponsiveGridLayout>  
         )
     }
 }
@@ -105,8 +135,9 @@ function mapStateToProps(state) {
     return {
       whiteboard: state.whiteboard,
       whiteboardLayout: state.whiteboardLayout,
-      paneSize: state.paneSize
-    };
+      paneSize: state.paneSize,
+      currentChannel: state.currentChannel
+    }
 }
 
-export default connect(mapStateToProps, { updateWhiteboard, updateWhiteboardLayout, updatePaneSize })(GridLayout);
+export default connect(mapStateToProps, { updateWhiteboard, updateWhiteboardLayout, updatePaneSize })(GridLayout)

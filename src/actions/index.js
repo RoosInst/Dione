@@ -11,6 +11,9 @@ export const UPDATE_ORDER = 'update_order';
 export const UPDATE_CONNECTION_DETAILS = 'update_connection_details';
 export const UPDATE_PANE_SIZES = 'update_pane_sizes';
 export const UPDATE_MOUSE_POSITION = 'update_mouse_position';
+export const UPDATE_WHITEBOARD_TABS = 'update_whiteboard_tabs';
+export const UPDATE_CURRENT_CHANNEL = 'update_current_channel';
+export const UPDATE_MOUSE_PRESSED = 'update_mouse_pressed';
 
 export function sendAction(action) { //generic send action to reducers (used for MQTT consts instead of writing 3 actions that do same thing (return self))
   return {
@@ -86,12 +89,13 @@ export function updateConnectionDetails(model, details) {
   }
 }
 
-export function updatePaneSize(model, height, width) {
+export function updatePaneSize(model, height, width, change) {
   return {
     type: UPDATE_PANE_SIZES,
     model: model,
     height: height,
-    width: width
+    width: width,
+    change: change
   }
 }
 
@@ -101,5 +105,27 @@ export function updateMousePosition(identifier, x, y) {
     identifier: identifier, 
     x: x,
     y: y
+  }
+}
+
+export function updateCurrentChannel(channel) {
+  return {
+    type: UPDATE_CURRENT_CHANNEL,
+    channel: channel
+  }
+}
+
+export function updateWhiteboardTabs(model, obj) {
+  return {
+    type: UPDATE_WHITEBOARD_TABS,
+    model: model,
+    obj: obj
+  }
+}
+
+export function updateMousePressed(pressed) {
+  return {
+    type: UPDATE_MOUSE_PRESSED,
+    pressed: pressed
   }
 }

@@ -18,7 +18,7 @@ export class CardBody extends Component {
         } else {
             currentObj = obj;
         }  
-        console.info('in render app: ', currentObj);
+
         //checks to see if there is a split pane
         if(currentObj.identifier.includes('split')) {
             //gets the correct orientation for the split pane (its reversed)
@@ -51,7 +51,6 @@ export class CardBody extends Component {
     }
 
     renderObj(model, obj, layout, firstIndex, lastIndex) {
-    console.info('in renderObj:', obj)
         if (obj.class && model !== 'console') {
             switch (obj.class) {
                 case 'Button':
