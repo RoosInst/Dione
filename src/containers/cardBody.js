@@ -1,14 +1,12 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux';
-
-import Split from './newSplitPane';
-import Button from './button';
-import ListPane from './listPane';
-import TextPane from './textPane';
-import TreePane from './treePane';
+import Split from './SplitPane';
+// import Button from './button';
+// import ListPane from './listPane';
+import TextPane from './TextPane';
+// import TreePane from './treePane';
 
 export class CardBody extends Component {
-    
     renderApp(model, obj, layout, firstIndex, lastIndex) {
         //On the first time through gets the child of "top"
         //After the first time the correct object will always be passed in
@@ -53,45 +51,47 @@ export class CardBody extends Component {
     renderObj(model, obj, layout, firstIndex, lastIndex) {
         if (obj.class && model !== 'console') {
             switch (obj.class) {
-                case 'Button':
-                    return <Button key={obj.identifier} model={model} obj={obj} />;
+                // case 'Button':
+                //     return <Button key={obj.identifier} model={model} obj={obj} />;
             
-                case 'ListPane':
-                    //return <div style={{whiteSpace:'nowrap', overflow:'scroll'}}>This is a test to see what happens when i resize</div>
-                    return <ListPane model={model} obj={obj} key={obj.identifier}/>;
+                // case 'ListPane':
+                //     //return <div style={{whiteSpace:'nowrap', overflow:'scroll'}}>This is a test to see what happens when i resize</div>
+                //     return <ListPane model={model} obj={obj} key={obj.identifier}/>;
             
                 case 'TextPane':
                     return <TextPane model={model} obj={obj} key={obj.identifier}/>;
             
-                case 'TreePane':
-                    return <TreePane model={model} obj={obj} key={obj.identifier}/>;
+                // case 'TreePane':
+                //     return <TreePane model={model} obj={obj} key={obj.identifier}/>;
             
                 //if it is another split pane, repeat the process in renderApp
                 case 'SplitPane':
                         return this.renderApp(model, obj, layout, firstIndex, lastIndex);
             
-                default: return <TextPane model={model} obj={obj} key={obj.identifier}/>;
+                default: 
+                    return <TextPane model={model} obj={obj} key={obj.identifier}/>;
             }
-        
         } else return null;
     }
 
     render() {
-        const { model, obj, renderOrderArray, firstIndex, lastIndex } = this.props;
+        const { model, obj, renderOrder } = this.props;
+        const firstIndex = 0;
+        const lastIndex = renderOrder.length - 1;
         
         return (
-            <div className="card-body">
-                {this.renderApp(model, obj, renderOrderArray, firstIndex, lastIndex)}
+            <div className="card-body" >
+                {this.renderApp(model, obj, renderOrder, firstIndex, lastIndex)}
             </div>
-            
-        )
+        );
     }
 }
 
-function mapStateToProps(state) {
-    return {
-      whiteboard: state.whiteboard,
-    };
+function mapStateToProps(state, ownProps) {
+    const { model } = ownProps;
+    const obj = state.whiteboardInfo.openApplications[model];
+    const renderOrder = state.whiteboardInfo.renderOrder[model];
+    return { obj, renderOrder };
 }
 
 export default connect(mapStateToProps, {})(CardBody);

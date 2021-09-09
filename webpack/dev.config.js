@@ -8,7 +8,7 @@ const prjRoot = path.join(__dirname, '..');
 
 const styleLintPluginConfig = new StyleLintPlugin({
   syntax: 'scss',
-  emitErrors: true
+  emitErrors: true,
 });
 
 const esLintPluginConfig = new ESLintPlugin({

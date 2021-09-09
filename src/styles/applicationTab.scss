@@ -1,0 +1,20 @@
+@import 'theme';
+
+.open {
+  border: 1px solid black;
+  box-shadow: -1px 1px 5px grey;
+  margin-top: 3px;
+  margin-left: 10px;
+  padding: 2px;
+  display: inline-block;
+}
+
+.minimized {
+  background-color: lightgray;
+  border: 1px solid black;
+  box-shadow: -5px 5px 5px grey;
+  margin-top: 3px;
+  margin-left: 5px;
+  padding: 2px;
+  display: inline-block;
+}

@@ -2,7 +2,8 @@ CTZGJ8
 :INFO
 appTitle=Rtalk GUI Launcher
 :ACTIONS,handler=RtAppLoader
-async,topic=guiLauncher/app/1,omap=^runLocal+channel=console+className=rtalk.tools.ConsolePortal+standalone=true
+async,topic=guiLauncher/monitor,omap=^monitor+channel=whiteboard+className=rtalk.whiteboard.SmPortalWhiteboard
+sync,topic=guiLauncher/app/1,omap=^runLocal+channel=console+className=rtalk.tools.ConsolePortal+standalone=true
 async,topic=console/register,omap=^choose+path=admin/msgTool+title=msgTool+help=send receive tool+actionTopic=view//guiLauncher/app+^runLocal+className=rtalk.tools.RtalkMessageSenderTool
 async,topic=console/register,omap=^choose+path=admin/props+title=Prop Edit+help=Query Based edit+actionTopic=view//guiLauncher/app^runLocal+className=rtalk.models.RtalkModelPortal+model=rtalk.tools.RtalkPropsEditorModel+nodeName=propsEdit
 async,topic=console/register,omap=^choose+path=apps/guru/edit+title=Guru Edit+help=Query Based edit+actionTopic=view//guiLauncher/app^runLocal+className=rtalk.models.RtalkModelPortal+model=rtalk.tools.EditGuruTextModel+nodeName=Edit

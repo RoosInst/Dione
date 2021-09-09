@@ -25,7 +25,6 @@ decorators.Header = ({style, node}) => { // eslint-disable-line react/display-na
 };
 
 
-
 class TreePane extends Component {
 
   static propTypes = {

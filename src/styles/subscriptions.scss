@@ -3,11 +3,14 @@
 .subscriptions {
   background-color: $menuBackground;
   color: $menuText;
-  padding: 3px 10px;
-  margin-bottom: 10px;
+  padding-bottom: 27px;
+  padding-right: 10px;
+  padding-left: 10px;
   height: 55px;
   overflow: hidden;
-
+  flex: 0 1 auto;
+  margin: 0;
+  
   ul {
     list-style-type: none;
     margin: 0;

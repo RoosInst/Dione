@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 //import { mqttClient, cellID } from '../containers/mqtt';
 
-import { updateMousePosition } from '../actions';
+import { hideContextMenu } from '../actions/mouseInfo';
 
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -30,20 +30,20 @@ export class ContextMenus extends Component {
         console.info('inside the menu');
     }
 
-    handleClose(updateMousePosition) {
-        updateMousePosition(null, null, null);
+    handleClose() {
+        this.props.hideContextMenu();
     }
-
+    //NEED TO SEE WHERE I ADDED MOUSEPOSITION.IDENTIFIER
     render() {
-        const { fullMenu, mousePosition, identifier} = this.props;
+        const { fullMenu, mouseY, mouseX, applicationMouseIsOver, identifier} = this.props;
         return (
             <Menu
             keepMounted
-            open={mousePosition.y != null && mousePosition.identifier == identifier}
-            onClose={() => this.handleClose(this.props.updateMousePosition)}
+            open={mouseY != null && applicationMouseIsOver == identifier}
+            onClose={() => this.handleClose()}
             anchorReference="anchorPosition"
-            anchorPosition={ mousePosition.y !== null && mousePosition.x !== null
-                             ? { top: mousePosition.y, left: mousePosition.x }
+            anchorPosition={ mouseY !== null && mouseX !== null
+                             ? { top: mouseY, left: mouseX }
                              : undefined }
             >
                 {fullMenu.value.map((menuItem, key) => {
@@ -56,11 +56,10 @@ export class ContextMenus extends Component {
 
 function mapStateToProps(state) {
     return {
-        clientID: state.clientID,
-		whiteboard: state.whiteboard,
-        selectedItems: state.selectedItems,
-        mousePosition: state.mousePosition
+        mouseX: state.mouseInfo.mousePosition.x,
+        mouseY: state.mouseInfo.mousePosition.y,
+        applicationMouseIsOver: state.mouseInfo.applicationMouseIsOver
     };
   }
   
-export default connect(mapStateToProps, { updateMousePosition })(ContextMenus);
+export default connect(mapStateToProps, { hideContextMenu })(ContextMenus);

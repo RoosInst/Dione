@@ -3,7 +3,7 @@ import ReactModal from 'react-modal';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import {mqttClient, cellID} from './mqtt';
+import {mqttClient, cellID} from './Mqtt';
 import { updateWhiteboard, addSelection } from '../actions';
 import FavIcon from '../../public/images/favicon.png';
 import '../styles/modal.scss';
@@ -20,7 +20,6 @@ class Modal extends Component {
     addSelection: PropTypes.func.isRequired,
     clientID: PropTypes.string.isRequired,
     model: PropTypes.string.isRequired,
-    obj: PropTypes.object.isRequired,
     whiteboard: PropTypes.object.isRequired,
     updateWhiteboard: PropTypes.func.isRequired
   }
@@ -69,7 +68,8 @@ class Modal extends Component {
   }
 
   render() {
-    const { obj, model } = this.props;
+    const { model, whiteboard } = this.props;
+    const obj = whiteboard[model];
     return (
       //<i className='pull-right fa fa-window-close' onClick={() => this.delDialog(model)} />
       <ReactModal styleName='ri-modal' isOpen={obj.dialog ? true : false}>

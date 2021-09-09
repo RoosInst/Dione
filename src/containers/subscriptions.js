@@ -1,30 +1,38 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { updateMqttSubscriptions } from '../actions';
+import { addMqttSubscription, removeMqttSubscription } from '../actions/connectionInfo';
 import '../styles/subscriptions.scss';
 
-export class Subscriptions extends Component {
+class Subscriptions extends Component {
     handleClick(description, topic) {
-        const {updateMqttSubscriptions} = this.props;
-
+        const { cellId, mqttClient, subscriptions, addMqttSubscription,removeMqttSubscription } = this.props;
         //all of these have to use the cell id, which is not immediately available in the render portion
-        const subscriptions = this.props.subscriptions;
         if(topic == 'admin/nodeAdmin') {
-            topic = '+/' + subscriptions.cellId + '/admin/nodeAdmin/#';
+            topic = '+/' + cellId + '/admin/nodeAdmin/#';
         } else if(topic == "events") {
-            topic = '+/' + subscriptions.cellId + '/' + subscriptions.cellId + "/events/#";
+            topic = '+/' + cellId + '/' + cellId + "/events/#";
         } else if(topic == "console") {
-            topic = '+/' + subscriptions.cellId + '/console/#';
+            topic = '+/' + cellId + '/console/#';
         } else if(topic == "action") {
-            topic = '+/' + subscriptions.cellId + '/+/action/#';
+            topic = '+/' + cellId + '/+/action/#';
         }
 
-        updateMqttSubscriptions(description, topic);
+        if(Object.keys(subscriptions).includes(description)) {
+            mqttClient.unsubscribe(topic);
+            removeMqttSubscription(description);
+        } else {
+            mqttClient.subscribe(topic, {qos: 2});
+            addMqttSubscription(description, topic);
+        }
     }
     
+    shouldComponentUpdate() {
+        return false;
+    }
+
     render() {
         return (
-            <div styleName="subscriptions">
+            <div styleName="subscriptions" >
                 <ul>
                     <li><p styleName="description">Used to filter MQTT channels:</p></li>
                     <li>
@@ -53,14 +61,14 @@ export class Subscriptions extends Component {
                     </li>
                 </ul>
             </div>
-        )
+        );
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        subscriptions: state.subscriptions
-    }
-}
+const mapStateToProps = (state) => ({
+    cellId: state.connectionInfo.cellId,
+    subscriptions: state.connectionInfo.mqttSubscriptions,
+    mqttClient: state.connectionInfo.mqttClient
+})
 
-export default connect(mapStateToProps, {updateMqttSubscriptions})(Subscriptions)
+export default connect(mapStateToProps, { addMqttSubscription, removeMqttSubscription })(Subscriptions)

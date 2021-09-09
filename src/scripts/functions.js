@@ -1,6 +1,6 @@
 /*Here exists functions essential to building the app.*/
 import React from 'react';
-import {mqttClient, cellID} from '../containers/mqtt';
+import {mqttClient, cellID} from '../containers/Mqtt';
 import RtCbor from "../scripts/RtCbor";
 import cbor from 'cbor';
 let rtCbor = new RtCbor();
@@ -85,27 +85,10 @@ whiteboard is current existing state of all apps in a hierarchical object.
 Function nests objects into its owners (makes flat obj into hierarchical)
  and creates "style" key with values for positioning for each obj with frameRatio.
  Also decodes riri strings into array of usable objects.*/
-export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
-  let forest = {},
-    tree = {}; //copy of whiteboard if exists
-
-  if (whiteboard) {
-    forest = $.extend({}, whiteboard); //deep clone, do not alter redux store (treat as immutable)
-    if (whiteboard[model]) { //if app exists in whiteboard
-      tree = forest[model];
-    }
-    else if (unsortedStore.top) {
-      tree = unsortedStore.top;
-    }
-  }
-  else if (unsortedStore.top) {
-    tree = unsortedStore.top;
-  }
-  else {
-    console.error('ERR: tree not properly copied. \nunsortedStore:', unsortedStore, '\nwhiteboard:', whiteboard, '\nmodel:', model);
-    return -1;
-  }
-
+export function getStyleAndCreateHierarchy(unsortedStore) {
+  
+  let tree = {}; 
+  tree = unsortedStore.top;
   for (let key in unsortedStore) {
     // skip loop if the property is from prototype
     if (!Object.prototype.hasOwnProperty.call(unsortedStore, key)) continue;
@@ -179,11 +162,8 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
       }
     }
   }
-  forest[tree.model] = tree;
-  return forest;
+  return tree;
 }
-
-
 
 function insertObject(tree, passedObj) { //handles both "real" objects and arrays (arrays === objects)
   let found = false;

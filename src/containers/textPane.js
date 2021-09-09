@@ -1,26 +1,23 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { addSelection, updateMousePosition } from '../actions';
+import { showContextMenu } from '../actions/mouseInfo';
 import eol from 'eol'; //some line endings inconsistent (CR with CRLF)
 import PropTypes from 'prop-types';
-import ContextMenus from './contextMenus';
+import ContextMenus from './ContextMenus';
 //import { mqttClient, cellID } from '../containers/mqtt';
 
 class Pane extends Component {
   static propTypes = {
-    clientID: PropTypes.string.isRequired,
     model: PropTypes.string.isRequired,
-    selectedItems: PropTypes.object.isRequired,
     obj: PropTypes.object.isRequired,
-    whiteboard: PropTypes.object.isRequired
   }
 
   handleClick(event) {
-    const {obj, updateMousePosition} = this.props;
+    const {obj, showContextMenu} = this.props;
     event.preventDefault();
     let mouseX = event.clientX;
     let mouseY = event.clientY;
-    updateMousePosition(obj.identifier, mouseX,mouseY);
+    showContextMenu(mouseX, mouseY, obj.identifier);
   }
 
 	render() {
@@ -32,7 +29,7 @@ class Pane extends Component {
     }
     if (obj.identifier && menu && obj[menu].value) { //if right-clicking capabilities
       return (
-        <div style={obj.style} id={model + '_' + obj.identifier} key={model + '_' + obj.identifier} onContextMenu={() => this.handleClick(event)}>
+        <div style={obj.style} id={model + '_' + obj.identifier} key={model + '_' + obj.identifier} onContextMenu={(event) => this.handleClick(event)}>
           <ContextMenus fullMenu={obj[menu]} model={model} identifier={obj.identifier}/>
           {
             obj.contents && obj.contents[0] ?
@@ -59,13 +56,4 @@ class Pane extends Component {
 	}
 }
 
-function mapStateToProps(state) {
-  return {
-		clientID: state.clientID,
-		whiteboard: state.whiteboard,
-    selectedItems: state.selectedItems,
-    mousePosition: state.mousePosition
-  };
-}
-
-export default connect(mapStateToProps, { addSelection, updateMousePosition } )(Pane);
+export default connect(undefined, { showContextMenu })(Pane);
