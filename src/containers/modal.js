@@ -3,10 +3,12 @@ import ReactModal from 'react-modal';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import {mqttClient, cellID} from './mqtt';
+import {mqttClient, cellID} from './Mqtt';
 import { updateWhiteboard, addSelection } from '../actions';
 import FavIcon from '../../public/images/favicon.png';
 import '../styles/modal.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faWindowClose } from '@fortawesome/free-regular-svg-icons';
 
 const cbor = require('cbor');
 
@@ -18,7 +20,6 @@ class Modal extends Component {
     addSelection: PropTypes.func.isRequired,
     clientID: PropTypes.string.isRequired,
     model: PropTypes.string.isRequired,
-    obj: PropTypes.object.isRequired,
     whiteboard: PropTypes.object.isRequired,
     updateWhiteboard: PropTypes.func.isRequired
   }
@@ -67,14 +68,17 @@ class Modal extends Component {
   }
 
   render() {
-    const { obj, model } = this.props;
+    const { model, whiteboard } = this.props;
+    const obj = whiteboard[model];
     return (
+      //<i className='pull-right fa fa-window-close' onClick={() => this.delDialog(model)} />
       <ReactModal styleName='ri-modal' isOpen={obj.dialog ? true : false}>
         <div className='card' styleName='dialog'>
           <div className='card-header'>
             <img style={{width: '16px', margin: '-2px 5px 0 5px'}} src={FavIcon} />
             <span className="cardLabel">{obj.dialog ? obj.dialog.label : ''}</span>
-            <i className='pull-right fa fa-window-close' onClick={() => this.delDialog(model)} />
+            <FontAwesomeIcon icon={faWindowClose} className="pull-right" onClick={() => this.delDialog(model)}/>
+            
           </div>
           <div className="card-body">
             {obj.dialog && (

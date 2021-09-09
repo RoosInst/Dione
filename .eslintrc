@@ -1,5 +1,5 @@
 {
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "plugins": [
     "react"
   ],
@@ -21,7 +21,9 @@
     "plugin:react/recommended"
   ],
   "rules": {
-	"no-console": ["error", { "allow": ["warn", "error", "info"] }]
+	"no-console": ["error", { "allow": ["warn", "error", "info"] }],
+  "no-unused-vars": "off",
+  "react/prop-types": "off" //prevented an error from ocurring, probably not the best solution
   },
   "globals": {
     "$": true

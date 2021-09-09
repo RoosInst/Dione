@@ -1,15 +1,13 @@
 import { combineReducers } from 'redux';
 
-import MqttConnection from './reducer_mqttConnection';
-import ClientID from './reducer_clientID';
-import Whiteboard from './reducer_whiteboard';
-import SelectedItems from './reducer_selectedItems';
+import whiteboardInfo from './reducer_whiteboardInfo';
+import connectionInfo from './reducer_connectionInfo';
+import mouseInfo from './reducer_mouseInfo';
 
 const rootReducer = combineReducers({
-  clientID: ClientID,
-  mqttConnection: MqttConnection,
-  whiteboard: Whiteboard,
-  selectedItems: SelectedItems
-});
+  whiteboardInfo,
+  connectionInfo: connectionInfo,
+  mouseInfo
+})
 
 export default rootReducer;

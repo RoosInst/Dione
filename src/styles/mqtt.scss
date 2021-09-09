@@ -5,8 +5,9 @@
   padding: 3px 10px;
   color: $menuText;
   height: 29px;
-  margin-bottom: 10px;
-
+  margin-bottom: 0;
+  flex: 0 1 auto;
+  
   .connectionIcon {
     border-radius: 50%;
     width: 12px;

@@ -1,7 +1,9 @@
 /*Here exists functions essential to building the app.*/
 import React from 'react';
-import {mqttClient, cellID} from '../containers/mqtt';
-import RtCbor from "../scripts/RtCbor"
+import {mqttClient, cellID} from '../containers/Mqtt';
+import RtCbor from "../scripts/RtCbor";
+import cbor from 'cbor';
+let rtCbor = new RtCbor();
 
 //const cbor = require('cbor');
 
@@ -23,6 +25,12 @@ RIRISEP1 = '\u001c', //RIRI level 1 separator - FS - '^'
 RIRISEP2 = '\u001d', //RIRI level 2 separator - GS - '+'
 RIRISEP4 = '\u001f', //RIRI level 4 separator - US - '/'riStringCheckAndConvert
 */
+
+export function publishArray(topic, msgArray) {
+  rtCbor.encodeArrayNew(msgArray); 
+  mqttClient.publish(topic, rtCbor.buffers[0]);
+  cbor.decodeAllSync(rtCbor.getCborAsBuffer()); //gets rid of message in the cbor
+}
 
 
 function getFrameRatioFor(val) {
@@ -53,8 +61,12 @@ function makeStyleFromFrameRatio(val) {
     wd, ht, xpos, ypos;
 
   if (frameRatio) { //frameRatio is percent values for: left, right, top, bottom
-    wd = (frameRatio.right - frameRatio.left) + '%';
-    ht = (frameRatio.top - frameRatio.bottom) + '%';
+    // wd = (frameRatio.right - frameRatio.left) + '%';
+    // ht = (frameRatio.top - frameRatio.bottom) + '%';
+    
+    //width and height both 100% because widget need to fill the inside of the splitPanes
+    wd = '100%';
+    ht = '100%';
     xpos = frameRatio.left;
     ypos = 100 - frameRatio.top;
   }
@@ -73,30 +85,13 @@ whiteboard is current existing state of all apps in a hierarchical object.
 Function nests objects into its owners (makes flat obj into hierarchical)
  and creates "style" key with values for positioning for each obj with frameRatio.
  Also decodes riri strings into array of usable objects.*/
-export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
-  let forest = {},
-    tree = {}; //copy of whiteboard if exists
-
-  if (whiteboard) {
-    forest = $.extend({}, whiteboard); //deep clone, do not alter redux store (treat as immutable)
-    if (whiteboard[model]) { //if app exists in whiteboard
-      tree = forest[model];
-    }
-    else if (unsortedStore.top) {
-      tree = unsortedStore.top;
-    }
-  }
-  else if (unsortedStore.top) {
-    tree = unsortedStore.top;
-  }
-  else {
-    console.error('ERR: tree not properly copied. \nunsortedStore:', unsortedStore, '\nwhiteboard:', whiteboard, '\nmodel:', model);
-    return -1;
-  }
-
+export function getStyleAndCreateHierarchy(unsortedStore) {
+  
+  let tree = {}; 
+  tree = unsortedStore.top;
   for (let key in unsortedStore) {
     // skip loop if the property is from prototype
-    if (!unsortedStore.hasOwnProperty(key)) continue;
+    if (!Object.prototype.hasOwnProperty.call(unsortedStore, key)) continue;
 
     let obj = unsortedStore[key];
 
@@ -167,11 +162,8 @@ export function getStyleAndCreateHierarchy(unsortedStore, whiteboard, model) {
       }
     }
   }
-  forest[tree.model] = tree;
-  return forest;
+  return tree;
 }
-
-
 
 function insertObject(tree, passedObj) { //handles both "real" objects and arrays (arrays === objects)
   let found = false;
@@ -425,12 +417,13 @@ function riStringNbsp(len) {
 function base64Decode(value) {
   let result = 0;
   for (let i in value) {
-    if (value.hasOwnProperty(i)) {
+    if (Object.prototype.hasOwnProperty.call(value, i)) {
       result = result * 64 + base64Digits.indexOf(value[i]);
     }
   }
   return result;
 }
+
 
 
 /**Given a RIRI2/RIRI3 separated string, parse it into json

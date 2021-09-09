@@ -1,0 +1,31 @@
+@import 'theme';
+
+.topMenuBar {
+  background-color: $cardHeaderColor;
+  font-weight: bold;
+
+  .topMenuItem {
+    display: inline-block;
+
+    button {
+      padding: 5px;
+      position: relative;
+      background: none;
+      border: none;
+
+      &.dropdown-toggle::after {
+        border: none;
+      }
+
+      + ul {
+        min-width: initial;
+        margin-top: 0;
+
+        li:hover {
+          background: $liHoverColor;
+          color: white;
+        }
+      }
+    }
+  }
+}

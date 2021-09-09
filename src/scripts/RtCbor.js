@@ -480,6 +480,7 @@ class RtCbor {
   /**Adds a string array*/
   encodeArray(val) {
     this.appendTemp(0x9f); //starts an unbounded array
+
     if(val) {
       for(let i=0; i < val.length; i++) {
         this.encodeString(val[i]);
@@ -489,6 +490,18 @@ class RtCbor {
     this.pushTemp(); //put away the temp buffer
   }
 
+  encodeArrayNew(val) {
+    this.appendTemp(0x9f); //starts an unbounded array
+    this.appendTemp(0xd3); //adds the tag for the initial omap at the start
+
+    if(val) {
+      for(let i=0; i < val.length; i++) {
+        this.encodeString(val[i]);
+      }
+    }
+    this.appendTemp(0xff); //unbounded collection end byte
+    this.pushTemp(); //put away the temp buffer
+  }
 
   /**Apppends a null entry*/
   encodeNull() {
@@ -505,7 +518,7 @@ class RtCbor {
     else {
       this.startOmap(name);
       for(var key in map) {
-        if(map.hasOwnProperty(key)) {
+        if(Object.prototype.hasOwnProperty.call(map, key)) {
           this.encodeString(key);      //save the key
           this.encodeString(map[key]); //save the value
         }

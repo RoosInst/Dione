@@ -1,0 +1,46 @@
+@import 'theme';
+
+.subscriptions {
+  background-color: $menuBackground;
+  color: $menuText;
+  padding-bottom: 27px;
+  padding-right: 10px;
+  padding-left: 10px;
+  height: 55px;
+  overflow: hidden;
+  flex: 0 1 auto;
+  margin: 0;
+  
+  ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    
+    
+    li {
+      float: left;
+      
+      .description {
+        white-space: normal;
+        width: 125px;
+        font-size: medium;
+        font-family: Arial, Helvetica, sans-serif;
+        padding-top: 4px;
+        font-weight: normal;
+        text-align: center;
+      }
+
+      input {
+        margin-top: 15px;
+        margin-left: 20px;
+      }
+
+      label {
+        width: max-content;
+        font-family: Arial, Helvetica, sans-serif;
+        font-weight: normal;
+        padding-left: 5px;
+      }
+    }
+  }
+}
