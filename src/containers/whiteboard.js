@@ -98,3 +98,5 @@ class Whiteboard extends Component {
 
 // export default connect(mapStateToProps, { updateWhiteboard, updateWhiteboardLayout, updateMousePressed })(Whiteboard);
 export default Whiteboard;
+
+//test to see if it uploads to github
