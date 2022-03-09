@@ -1,0 +1,3 @@
+ #!/bin/sh
+#  mac OSX version. type ./startLoggerOsx
+java -cp jars/rtalkCore.jar:jars/* rtalk/RtalkLogWindow monitor=+/+/log/#,+/+/admin/#,admin/#,+/+/error/#,+/+/guru/# brokerIp=tcp://127.0.0.1:1883

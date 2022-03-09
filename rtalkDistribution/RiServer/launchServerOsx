@@ -1,0 +1,3 @@
+#!/bin/sh
+#  mac OSX version. type ./name
+java -cp jars/rtalkCore.jar:jars/* rtalk/RtalkMqttAdminLauncher boot=bootServer.txt brokerIp=tcp://127.0.0.1:1883 facilityName=RI tz=America/Los_Angeles

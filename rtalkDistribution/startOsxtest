@@ -1,4 +1,0 @@
- #!/bin/sh
-#  mac OSX version must be in rtalk type ./startOsx
-#cd "$(dirname ${BASH_SOURCE[0]})Ó
-java -cp /Users/markroos/rtalkDistribution/jars/guruBrowser:jars/* ri.app.guru.browser.GEU43Y2A guruIp=127.0.0.1:1883 
