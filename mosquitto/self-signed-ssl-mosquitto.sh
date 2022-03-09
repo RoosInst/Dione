@@ -19,4 +19,5 @@ cat client.crt client.key > client.pem
 
 cp dione-mosquitto.csr /usr/local/etc/mosquitto/
 cp dione-mosquitto.key /usr/local/etc/mosquitto/
+cp pwdfile.rtalk /usr/local/etc/mosquitto/
 cp mosquitto.min.mac.conf /usr/local/etc/mosquitto/mosquitto.conf
