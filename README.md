@@ -17,8 +17,6 @@ This README documents the steps necessary to get this development environment an
     `git clone https://github.com/RoosInst/Dione.git`
 * In the newly created directory (~/Dione), install all Node.js dependancies
     `npm install`
-* Dev mode uses React ESLint plugin.  Install globally
-    `npm install -g eslit eslint-plugin-react`
 * Install any MQTT Broker (see "Install MQTT Broker" below)
 
 ### Install MQTT Broker ###
