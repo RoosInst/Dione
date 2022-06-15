@@ -6,9 +6,7 @@ class GridLayout extends Component {
     render() {
         return (
             <div className='whiteboard' style={{height:'100%', width:'100%'}}>
-            {
-                this.props.applications.map(model => <GridLayoutItem key={model} model={model} />)
-            }
+                { this.props.applications.map(model => <GridLayoutItem key={model} model={model} />) }
             </div>
         );
     }

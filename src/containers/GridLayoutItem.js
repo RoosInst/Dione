@@ -4,10 +4,14 @@ import { connect } from 'react-redux';
 //<Modal key={`${model}_modal`} model={model} />
 import Card from './Card';
 import { Rnd } from 'react-rnd';
-import { beginLayoutUdpdate, finishDragLayoutUdpdate, finishResizeLayoutUdpdate } from '../actions/whiteboardInfo';
+import { beginLayoutUdpdate, finishDragLayoutUdpdate, finishResizeLayoutUdpdate, saveCurrentSession } from '../actions/whiteboardInfo';
 
 
 class GridLayoutItem extends Component {
+    // componentDidUpdate() {
+    //     this.props.saveCurrentSession();
+    // }
+
     onDragStop = (e, d, model) => {
         this.props.finishDragLayoutUdpdate(model, d.x, d.y);
     }
@@ -18,7 +22,7 @@ class GridLayoutItem extends Component {
 
     render() {
         const { model, layout } = this.props;
-        
+        //<Card key={`${model}_card`} model={model} />     
         return (
             <Rnd
                 size={{ width: layout.w, height: layout.h }}
@@ -31,8 +35,7 @@ class GridLayoutItem extends Component {
                 bounds='.whiteboard'
                 style={{zIndex: layout.z}}
             >   
-         
-                <Card key={`${model}_card`} model={model} />     
+                <Card key={`${model}_card`} model={model} />    
             </Rnd>
         ); 
     }
@@ -44,4 +47,4 @@ const mapStateToProps = (state, ownProps) => {
     return { layout };
 };
 
-export default connect(mapStateToProps, { beginLayoutUdpdate, finishDragLayoutUdpdate, finishResizeLayoutUdpdate })(GridLayoutItem);
+export default connect(mapStateToProps, { beginLayoutUdpdate, finishDragLayoutUdpdate, finishResizeLayoutUdpdate, saveCurrentSession })(GridLayoutItem);

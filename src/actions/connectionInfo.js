@@ -28,3 +28,9 @@ export const removeMqttSubscription = (channel) => ({
     type: 'REMOVE_MQTT_SUBSCRIPTION',
     channel
 });
+
+export const addWhiteboardChannel = (channel, model) => ({
+    type: 'ADD_WHITEBOARD_CHANNEL',
+    channel,
+    model
+});

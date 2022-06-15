@@ -11,6 +11,7 @@ import {
   updateMqttConnectionStatus,
   removeMqttSubscription,
   addMqttSubscription,
+  addWhiteboardChannel
 } from '../actions/connectionInfo';
 
 import {
@@ -61,6 +62,7 @@ class MQTT extends Component {
   }
   
   componentDidMount() {
+    console.info("IN MQTT")
   //**********************
   // MQTT connection setup
   //**********************
@@ -125,7 +127,8 @@ class MQTT extends Component {
         updateClientId,
         removeMqttSubscription,
         addMqttSubscription,
-        addApplication
+        addApplication,
+        addWhiteboardChannel
       } = this.props;
 
       const formLayoutArray = (message, target, level) => {
@@ -192,7 +195,7 @@ class MQTT extends Component {
           if(nodeName != "WB") {
             initialWidgetTopic = `${cellID}:${channel}/${cellID}/`;
             currentWidget = channel;
-
+            
             let newTopic = initialWidgetTopic + '+/action/#';
             addMqttSubscription(channel, newTopic);
             mqttClient.subscribe(newTopic, { qos: 2 });              
@@ -203,6 +206,10 @@ class MQTT extends Component {
             // publishArray(topic, message);
           } else {
             partialWidgetTopic = initialWidgetTopic + channel;   
+          }
+          if(nodeName == "WB") {
+            addWhiteboardChannel(channel, currentWidget);
+            console.info("CHANNEL: ", channel);
           }
         } 
       } else if(topic.toString().includes(partialWidgetTopic)) {
@@ -299,6 +306,7 @@ class MQTT extends Component {
   //<button style={{marginLeft:'10px'}}onClick={this.handleClick}>Launch MsgTool</button>
   // handleClick() {
   //   let topic = 'X016OK8G:' + consoleChannel + '/X016OK8G/guiLauncher/app/' + numMsgs;  // msgTool0038/X016OK8G/admin/nodeAdmin/3/connect';
+  //   if the broker is not local then use guilauncher
   //   let msg = [ 
   //     "runLocal", 
   //     "className","rtalk.tools.RtalkMessageSenderTool" 
@@ -310,7 +318,6 @@ class MQTT extends Component {
   //-------------------------------------------------------------------------------------------------------
 
   render() {
-  
     return (
       <div styleName='ri-mqtt' >
         <div className="float-left">Client ID: {this.props.clientId}</div>
@@ -337,5 +344,6 @@ export default connect(mapStateToProps, {
   updateMqttConnectionStatus, 
   addMqttSubscription, 
   removeMqttSubscription, 
-  addApplication
+  addApplication,
+  addWhiteboardChannel
 })(MQTT);

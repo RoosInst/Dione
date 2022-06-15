@@ -6,7 +6,7 @@ import mouseInfo from './reducer_mouseInfo';
 
 const rootReducer = combineReducers({
   whiteboardInfo,
-  connectionInfo: connectionInfo,
+  connectionInfo,
   mouseInfo
 })
 

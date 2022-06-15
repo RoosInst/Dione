@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 
-import Whiteboard from './containers/whiteboard';
+import Whiteboard from './containers/Whiteboard';
 import reducers from './reducers';
 import './styles/global.scss?global';
 

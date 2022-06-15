@@ -4,30 +4,27 @@ import { connect } from 'react-redux';
 //import { mqttClient, cellID } from '../containers/mqtt';
 
 import { hideContextMenu } from '../actions/mouseInfo';
+import { sendMsg } from '../scripts/functions';
+
+import RtCbor from '../scripts/RtCbor';
+let rtCbor = new RtCbor();
 
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 export class ContextMenus extends Component {
 
-    handleClick() { 
-        //************************************
-        //THIS IS BROKEN, NEEDS TO BE FIXED
-        //************************************
-        //riString, clickedObj
-        // const { model, clientID, selectedItems, whiteboard } = this.props;
+    handleClick(riString, fullMenu, model, channel, cellId) { 
+        let attributes;
+        if (fullMenu.attributes) {
+            attributes = fullMenu.attributes;
+        } 
+        //const msg = convertObjToArrayForPublish(model, menuObj, channel, riString, riString, attributes);
+        //console.info(rtCbor.decodeAll(msg));
+        
+        sendMsg(model, fullMenu, cellId, channel, riString, riString, attributes);
+        rtCbor.clearTemp();
 
-        // let attributes;
-        // if (whiteboard[model].attributes) attributes = whiteboard[model].attributes;
-
-        // const msg = convertObjToArrayForPublish(model, clickedObj, clientID, riString, selectedItems, attributes),
-        //     topic = clientID + '/' + cellID + '/' + model + '/action/1';
-
-        // if (mqttClient && cellID) {
-        //     console.info("Publishing -\n Topic: " + topic + "\n Message: " +  msg);
-        //     mqttClient.publish(topic, msg);
-        // }
-        console.info('inside the menu');
     }
 
     handleClose() {
@@ -35,7 +32,7 @@ export class ContextMenus extends Component {
     }
     //NEED TO SEE WHERE I ADDED MOUSEPOSITION.IDENTIFIER
     render() {
-        const { fullMenu, mouseY, mouseX, applicationMouseIsOver, identifier} = this.props;
+        const { fullMenu, mouseY, mouseX, applicationMouseIsOver, identifier, channel, cellId, model } = this.props;
         return (
             <Menu
             keepMounted
@@ -47,18 +44,22 @@ export class ContextMenus extends Component {
                              : undefined }
             >
                 {fullMenu.value.map((menuItem, key) => {
-                   return <MenuItem key={key} onClick={() => this.handleClick(menuItem, fullMenu)}>{menuItem.text}</MenuItem>
+                   return <MenuItem key={key} onClick={() => this.handleClick(menuItem, fullMenu, model, channel, cellId)}>{menuItem.text}</MenuItem>
                 })}
             </Menu>
         )
     }
 }
 
-function mapStateToProps(state) {
+function mapStateToProps(state, ownProps) {
+    const { model } = ownProps;
+
     return {
         mouseX: state.mouseInfo.mousePosition.x,
         mouseY: state.mouseInfo.mousePosition.y,
-        applicationMouseIsOver: state.mouseInfo.applicationMouseIsOver
+        applicationMouseIsOver: state.mouseInfo.applicationMouseIsOver,
+        channel: state.connectionInfo.whiteboardChannels[model],
+        cellId: state.connectionInfo.cellId
     };
   }
   

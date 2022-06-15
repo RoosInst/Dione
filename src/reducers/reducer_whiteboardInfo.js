@@ -1,16 +1,26 @@
-
-const whiteboardInfoReducerDefaultState = {
-    renderOrder: {},
-    openApplications: {},
-    tabbedApplications: {},
-    tabLabels: [],
-    layouts: {},
-    maxZIndex: 1,
-};
+//sees if a previous session has been opened in this browser
+const previousSession = JSON.parse(localStorage.getItem('whiteboard'));
+let whiteboardInfoReducerDefaultState;
+console.info(previousSession);
+if(previousSession) {
+    whiteboardInfoReducerDefaultState = previousSession;
+} else {
+    console.info("using defaultState");
+    whiteboardInfoReducerDefaultState = {
+        renderOrder: {},
+        openApplications: {},
+        tabbedApplications: {},
+        tabLabels: [],
+        layouts: {},
+        selectedItems: {},
+        maxZIndex: 1,
+    };
+}
 
 const whiteboardInfoReducer = (state = whiteboardInfoReducerDefaultState, action) => {
     switch(action.type) {
         case 'ADD_APPLICATION':
+            console.info("attempting to add an application");
             return {
                 ...state,
                 renderOrder: {
@@ -135,6 +145,29 @@ const whiteboardInfoReducer = (state = whiteboardInfoReducerDefaultState, action
                     }
                 }
             };
+
+        case 'SAVE_CURRENT_SESSION': {
+            localStorage.setItem('whiteboard', JSON.stringify(state));
+            return state;
+        }
+
+        case 'ADD_SELECTED_ITEM': 
+            return {
+                ...state, 
+                selectedItems: {
+                    ...state.selectedItems,
+                    [action.pane]: action.selectedItem
+                }
+            }
+        
+        case 'REMOVE_SELECTED_ITEM': {
+            const { [action.pane]: value, ...selectedItems } = state.selectedItems;
+            return {
+                ...state,
+                selectedItems
+            }
+        }
+
 
         default: 
             return state;

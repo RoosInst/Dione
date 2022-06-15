@@ -4,7 +4,7 @@ guru
 logWindow
 logSm
 admin
-brokerIp=tcp://mqtt.roos.com:1883
+brokerIp=tcp://mqtt.localhost:1883
 appTitle=Rtalk v1
 :ACTIONS,handler=RtAppLoader
 async,topic=admin/monitor/1,omap=+channel=whiteboard+className=rtalk.whiteboard.SmPortalWhiteboard

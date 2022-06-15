@@ -3,8 +3,8 @@ import React, { Component } from 'react';
 
 import Mqtt from './Mqtt';
 import Subscriptions from './Subscriptions';
-import GridLayoutLayout from './GridLayout';
-import NewApplicationsTab from './ApplicationsTab';
+import GridLayout from './GridLayout';
+import ApplicationsTab from './ApplicationsTab';
 //import ApplicationsTab from './applicationsTab';
 // import { updateWhiteboard, updateWhiteboardLayout, updateMousePressed } from '../actions';
 // import { publishArray } from '../scripts/functions';
@@ -84,8 +84,8 @@ class Whiteboard extends Component {
     return [
       <Mqtt key='mqtt' />,
       <Subscriptions key="subscriptions"/>,
-      <NewApplicationsTab key="applicationTabs"/>,
-      <GridLayoutLayout key="layout"/>
+      <ApplicationsTab key="applicationTabs"/>,
+      <GridLayout key="layout"/>
     ];
   }
 }

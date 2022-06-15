@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import CardHeader from './CardHeader';
-import CardMenuBar from './cardMenuBar';
+import CardMenuBar from './CardMenuBar';
 import CardBody from './CardBody';
 
 export class Card extends Component {

@@ -445,33 +445,52 @@ function parseSmMsgs(smMsgs) {
 }
 
 export function convertObjToArrayForPublish(model, obj, clientID, riString, selectedItems, attributes) {
+  console.info("rtcbor: ", rtCbor);
+  console.info("OBJ:", obj);
+  rtCbor.encodeString('event');
+  let objVal = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  rtCbor.encodeString('widget');
+  let widgetKey = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  rtCbor.encodeString(obj.identifier);
+  let widgetVal = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  rtCbor.encodeString('channel');
+  let channelKey = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  rtCbor.encodeString(clientID.toString());
+  let channelVal = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  rtCbor.encodeString('selection');
+  let selectionKey = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  let selectionVal =selectedItems.header + selectedItems.text;
+  rtCbor.encodeString(selectionVal);
+  selectionVal = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
 
-  let objVal = RtCbor.encodeString('event'),
-    widgetKey = RtCbor.encodeString('widget'),
-    widgetVal = RtCbor.encodeString(obj.identifier),
-    channelKey = RtCbor.encodeString('channel'),
-    channelVal = RtCbor.encodeString(clientID),
-    selectionKey = RtCbor.encodeString('selection'),
-    selectionVal,
-    selectorKey = RtCbor.encodeString('selector'),
-    selectorVal = RtCbor.encodeString(obj.selector);
 
-  if (riString) {
-    let riStringText = riString.text ? riString.text : riString.name; //name exists in TreePane instead of text (needed for react-treebeard)
-    if (riString.header) {
-      if (riString.tag) selectionVal = RtCbor.encodeString(riString.header + riString.tag + riStringText);
-      else selectionVal = RtCbor.encodeString(riString.header + riStringText);
-    }
-    else selectionVal = RtCbor.encodeString(riStringText);
-  }
-  else if (Array.isArray(obj.contents)) selectionVal = RtCbor.encodeString(obj.contents[0].text);
-  else selectionVal = RtCbor.encodeString(obj.contents.text ? obj.contents.text : obj.contents);
+  let selectorKey = rtCbor.encodeString('selector'),
+  selectorVal = rtCbor.encodeString(obj.selector);
+  console.info("OBJ VALUE: ", objVal);
+  // if (riString) {
+  //   let riStringText = riString.text ? riString.text : riString.name; //name exists in TreePane instead of text (needed for react-treebeard)
+  //   if (riString.header) {
+  //     if (riString.tag) selectionVal = rtCbor.encodeString(riString.header + riString.tag + riStringText);
+  //     else selectionVal = rtCbor.encodeString(riString.header + riStringText);
+  //   }
+  //   else selectionVal = rtCbor.encodeString(riStringText);
+  // }
+  // else if (Array.isArray(obj.contents)) selectionVal = rtCbor.encodeString(obj.contents[0].text);
+  // else selectionVal = rtCbor.encodeString(obj.contents.text ? obj.contents.text : obj.contents);
 
   let selectedItemsBuffer;
+  console.info("SELECTED ITEMS: ", selectedItems);
   if (selectedItems && selectedItems[model]) {
     let selectedItemsModelEntries = Object.entries(selectedItems[model]);
     for (let i = 0; i < selectedItemsModelEntries.length; i++) {
-      let selectionIDKey = RtCbor.encodeString('selection' + selectedItemsModelEntries[i][0]); //0 is key. ex. 'selection15'
+      let selectionIDKey = rtCbor.encodeString('selection' + selectedItemsModelEntries[i][0]); //0 is key. ex. 'selection15'
       let selectionIDVal;
 
       let selectedItem = selectedItemsModelEntries[i][1],
@@ -479,13 +498,13 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
       if (selectedItemText) {
         if (selectedItem.header) {
           if (selectedItem.tag) {
-            selectionIDVal = RtCbor.encodeString(selectedItem.header + selectedItem.tag + selectedItemText);
+            selectionIDVal = rtCbor.encodeString(selectedItem.header + selectedItem.tag + selectedItemText);
           }
-          else selectionIDVal = RtCbor.encodeString(selectedItem.header + selectedItemText);
+          else selectionIDVal = rtCbor.encodeString(selectedItem.header + selectedItemText);
         }
-        else selectionIDVal = RtCbor.encodeString(selectedItemText);
+        else selectionIDVal = rtCbor.encodeString(selectedItemText);
       }
-      else selectionIDVal = RtCbor.encodeString(selectedItem); //if not a riri string
+      else selectionIDVal = rtCbor.encodeString(selectedItem); //if not a riri string
 
       if (selectedItemsBuffer) selectedItemsBuffer = Buffer.concat([selectedItemsBuffer, selectionIDKey, selectionIDVal]);
       else selectedItemsBuffer = Buffer.concat([selectionIDKey, selectionIDVal]);
@@ -504,17 +523,74 @@ export function convertObjToArrayForPublish(model, obj, clientID, riString, sele
   if (selectedItemsBuffer && attributesBuffer) return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, selectedItemsBuffer, attributesBuffer, omap_end]);
   else if (selectedItemsBuffer) return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, selectedItemsBuffer, omap_end]);
   else if (attributesBuffer) return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, attributesBuffer, omap_end]);
-  else return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, omap_end]);
-
+  else {
+    rtCbor.clearTemp();
+    return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, omap_end]);// widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, 
+  } 
 }
 
-export function sendMsg(model, clickedObj, clientID, selectedItems, attributes) {
-  const msg = convertObjToArrayForPublish(model, clickedObj, clientID, null, selectedItems, attributes),
-    topic = clientID + '/' + cellID + '/' + model + '/action/1';
+//(model, obj, clientID, riString, selectedItems, attributes)
+export function sendMsg(model, clickedObj, cellId, channel, riString, selectedItems, attributes) {
+  const msg = convertObjToArrayForPublish(model, clickedObj, channel, null, selectedItems, attributes);
+  const topic = `${cellId}:${channel}/${cellId}/${model}/action/1`;
+  //const topic = cellId + '/' + cellID + '/' + model + '/action/1';
 
-  if (mqttClient && cellID) {
-    console.info("Publishing -\n Topic: " + topic + "\n Message: " + msg);
-    let cbormsg = RtCbor.encodeArray(msg); //convert msg to smCbor
-    mqttClient.publish(topic, cbormsg);
+  if (mqttClient) {
+    console.info("Publishing -\n Topic: " + topic + "\n Message: " + rtCbor.decodeAll(msg));
+    let cbormsg = rtCbor.encodeArray(msg); //convert msg to smCbor
+    mqttClient.publish(topic, msg);
   }
+}
+
+//(model, obj, clientID, riString, selectedItems, attributes)
+export function sendSelectionMsg(model, clickedObj, cellId, channel, selectedItem, allSelectedItems, attributes) {
+  const msg = convertObjToSelectionArrayForPublish(model, clickedObj, channel, selectedItem, allSelectedItems, attributes);
+  const topic = `${cellId}:${channel}/${cellId}/${model}/action/1`;
+  //const topic = cellId + '/' + cellID + '/' + model + '/action/1';
+
+  if (mqttClient) {
+    console.info("Publishing -\n Topic: " + topic + "\n Message: " + rtCbor.decodeAll(msg));
+    let cbormsg = rtCbor.encodeArray(msg); //convert msg to smCbor
+    mqttClient.publish(topic, msg);
+  }
+}
+
+export function convertObjToSelectionArrayForPublish(model, obj, clientID, selectedItem, allSelectedItems, attributes) {
+  console.info("rtcbor: ", rtCbor);
+  console.info("OBJ:", obj);
+  rtCbor.encodeString('event');
+  let objVal = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  rtCbor.encodeString('widget');
+  let widgetKey = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  rtCbor.encodeString(obj.identifier);
+  let widgetVal = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  rtCbor.encodeString('channel');
+  let channelKey = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  rtCbor.encodeString(clientID.toString());
+  let channelVal = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  rtCbor.encodeString('selection');
+  let selectionKey = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+  rtCbor.encodeString(selectedItem);
+  let selectionVal = Buffer.from(rtCbor.tempBytes);
+  rtCbor.clearTemp();
+
+  let allSelectedItemsBuffer = [];
+  for (const [key, value] of Object.entries(allSelectedItems)) {
+    rtCbor.encodeString(key);
+    allSelectedItemsBuffer.push(Buffer.from(rtCbor.tempBytes));
+    rtCbor.clearTemp();
+    
+    rtCbor.encodeString(value);
+    allSelectedItemsBuffer.push(Buffer.from(rtCbor.tempBytes));
+    rtCbor.clearTemp();
+  }  
+  
+  return Buffer.concat([omap_start, omap_cborTag, objVal, widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, ...allSelectedItemsBuffer, omap_end]);// widgetKey, widgetVal, channelKey, channelVal, selectionKey, selectionVal, selectorKey, selectorVal, 
+
 }

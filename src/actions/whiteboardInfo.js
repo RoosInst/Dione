@@ -38,3 +38,18 @@ export const finishResizeLayoutUdpdate = (model, w, h) => ({
     w,
     h
 });
+
+export const saveCurrentSession = () => ({
+    type: 'SAVE_CURRENT_SESSION'
+})
+
+export const addSelectedItem = (pane, selectedItem) => ({
+    type: 'ADD_SELECTED_ITEM',
+    pane,
+    selectedItem
+});
+
+export const removeSelectedItem = (pane) => ({
+    type: 'REMOVE_SELECTED_ITEM',
+    pane
+});

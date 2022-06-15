@@ -4,6 +4,7 @@ const connectionReducerDefaultState = {
     mqttClient: {},
     mqttConnectionStatus: 'disconnected',
     mqttSubscriptions: {},
+    whiteboardChannels: {}
 } 
 
 const connectionInfoReducer = (state = connectionReducerDefaultState, action) => {
@@ -48,6 +49,15 @@ const connectionInfoReducer = (state = connectionReducerDefaultState, action) =>
                 mqttSubscriptions
             };
         }
+
+        case 'ADD_WHITEBOARD_CHANNEL': 
+            return {
+                ...state,
+                whiteboardChannels: {
+                    ...state.whiteboardChannels,
+                    [action.model]: action.channel
+                }
+            };
           
         default: 
             return state;
