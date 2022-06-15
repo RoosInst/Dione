@@ -1,0 +1,18 @@
+# /etc/systemd/system
+[Unit]
+Description = RTalk Server
+After network.target = RTalkServer.service
+
+[Service]
+Type = forking
+Restart=always
+RestartSec=1
+SuccessExitStatus=143
+WorkingDirectory=/home/admin/rtalk
+
+ExecStart = /home/admin/rtalk/rc_rtalkServer.sh start
+ExecStop = /home/admin/rtalk/rc_rtalkServer.sh stop
+ExecReload = /home/admin/rtalk/rc_rtalkServer.sh reload
+
+[Install]
+WantedBy=multi-user.target

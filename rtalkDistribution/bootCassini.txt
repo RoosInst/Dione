@@ -1,14 +1,16 @@
 CTZGJ8
 :INFO
-guru 
-logWindow
-logSm
-admin
 appTitle=Rtalk v1
+verbose=true
 :ACTIONS,handler=RtAppLoader
-async,topic=admin/monitor/1,omap=+channel=whiteboard+className=rtalk.whiteboard.SmPortalWhiteboard
-sync,topic=admin/app/1,omap=+runLocal+channel=updateGuru+className=rtalk.remoteGuru.RemoteGuruPortal+remoteIp=192.168.56.15+update=true+backup=true
-async,topic=admin/app/1,omap=+runLocal+channel=rtalk+className=rtalk.SmPortalForRtalk+rtLaunch=RiRemoteViewTranscript:open+rtLoad=GAKRE8CABJADXV00+rtDebug=true+logSm=true
+async,topic=admin/monitor,omap=^monitor+channel=whiteboard+className=rtalk.whiteboard.SmPortalWhiteboard
+sync,topic=admin/app/1,omap=^runLocal+channel=console+className=rtalk.ConsolePortal+standalone=true
+async,topic=admin/app/1,omap=^runLocal+channel=rifl+className=spyder.RiflMasterPortal+type=usb
+async,topic=console/register,omap=^choose+path=admin/who+title=who is there+help=does a query+actionTopic=admin/nodeAdmin^ping+replyApi=log+replyEvent=log
+//async,topic=console/register,omap=^choose+path=admin/whoRmt+title=who is on rmt broker+help=does a query+actionTopic=/broker/admin/nodeAdmin^ping+replyEvent=log+replyApi=log
+async,topic=console/register,omap=^choose+path=admin/msgTool+title=msgTool+help=send receive tool+actionTopic=admin/app^runLocal+className=rtalk.RtalkMessageSenderTool
+async,topic=console/register,omap=^choose+path=apps/guru/browser+title=mb guru+help=Java Based Browser+actionTopic=admin/app^runLocal+className=ri.app.guru.browser.GEU43Y2A+guruIp=127.0.0.1:1883
+async,topic=console/register,omap=^choose+path=apps/guru/edit+title=Guru Edit+help=Query Based edit+actionTopic=admin/app^runLocal+className=rtalk.models.RtalkModelPortal+model=rtalk.models.EditGuruTextModel+nodeName=Edit
 
 :CHECKSUM
 168985

@@ -1,0 +1,11 @@
+CTZGJ8
+:INFO
+appTitle=RI Server
+userPass=rtalk:rtalkrtalkrtalk
+:ACTIONS,handler=RtAppLoader
+async,topic=admin/app/1,omap=^runLocal+className=rtalk.RtalkLogArchiver+autoSaveH=24+historyH=48+pingM=15+nodeName=logger+channel=logger
+async,topic=admin/app/1,omap=^runLocal+className=ritdbEvents.archive.RITdbEventAchiverPortal+autoSaveH=24+historyH=168+historyRollH=4+nodeName=archiver+channel=eventArchive
+
+:CHECKSUM
+168985
+zzN00

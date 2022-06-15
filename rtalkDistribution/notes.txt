@@ -1,0 +1,63 @@
+11/7/2020
+To Create a jdk15 containner
+unzip buildmmddyy.zip
+navigate to build directory
+run ./startDockerBuild
+inside container
+ apt-get update
+ apt-cache search openjdk
+ apt-get openjdk-15-jdk
+outside the container
+docker commit xxxxxx jdk15
+
+can now build minimal app using jlink
+run ./startDockerJlink
+inside container ./build/runJlinkLinuxInDocker
+will generate rtalk-jave-linux in /build
+
+To create an rtalk app container
+unzip buildmmddyy.zip
+navigate to build directory
+run ./startDockerFileBuild  // creates image rtalk
+run //checkDockerBuild.   // runs with build mounted
+docker export ???? > rtalk.tar. // ??? from docker ps
+zip this as rtalkImagemmddyy.zip
+
+To run the rtalk application
+unzip rtalkmmddyy.zip
+docker import rtalk.tar rtalk
+navigate to the rtalk directory
+modify startAdmin facilityName and tz ( java time zone )
+run ./startDocker to launch and expose mosquitto plus app
+run ./startDockerBuildTest to not expose mosquitto port
+
+to run the gui app
+unzip guiyymmdd.zip
+./startGui
+
+
+misc
+docker run -it -p 1883:1883 -v ${PWD:-}:/rtalk rtalk
+docker rmi imageID
+docker exec -it fd8b938b0145 bash to open terminal window
+docker container rm $(docker container ls -aq) // all stopped containes
+sudo docker container rm $(sudo docker container ls -aq)
+docker rmi $(docker images -q --filter "dangling=true"). // all unused images
+
+Building with a docker file
+Create DockerFile in the /build/ directory
+Navigate to the build directory
+Run docker build -t rtalk .   
+To run this image
+docker run -it -v ${PWD}:/rtalk rtalk bash
+
+Passwords 
+ rtalk rtalkrtalkrtalk
+ client rtalkclient
+
+to load jdk 15 on ubuntu
+sudo add-apt-repository ppa:openjdk-r/ppa
+sudo apt-get update
+sudo apt-get install openjdk-15-jdk
+before will need to accept Oracle lic via
+echo oracle-java15-installer shared/accepted-oracle-license-v1-2 select true | sudo /usr/bin/debconf-set-selections
